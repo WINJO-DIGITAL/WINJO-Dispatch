@@ -1,72 +1,31 @@
-# EV Exec
+# EV Exec website and database
 
-Premium airport transfer website with backend lead capture, Supabase API routes, admin leads dashboard, and deployment setup.
+The customer website, booking and payment API, and database migrations for the EV Exec platform (a multi-tenant booking, dispatch and payments system). The Operator app and Driver App are separate repositories and share the same Supabase project.
 
-## Features
+**Start with `CLAUDE.md`, then `docs/HANDOVER.md` (runbook) and `docs/TASKS.md` (live checklist).**
 
-- Premium airport transfer landing page
-- Mobile responsive design
-- Real customer reviews
-- Airport transfer pricing
-- Areas covered section
-- Backend lead capture system
-- Supabase integration
-- Admin dashboard
-- Deployment ready setup
+## Set up
 
-## Frontend Image Placement
+- Node 24 (`.nvmrc`). `npm ci` installs the dev tools; the site itself has no runtime dependencies.
+- Copy `.env.example` into your host's environment settings (Vercel) and fill every value. Never commit values. **Set `SUPABASE_URL`**: if it is missing the code falls back to the live project and logs a warning (`lib/supabaseUrl.js`).
+- Twilio is switched off by owner decision. Do not set `SMS_ENABLED`.
 
-The website frontend is programmed to feature airport route images in the airport route cards. The images should stay in the exact positions already defined in the HTML.
+## Test
 
-Do not redesign the layout, move sections, place writing over images, or change the image card structure. The README documents which image belongs in each programmed route position.
+| What | Command |
+|---|---|
+| Website unit tests (211) | `npm run test:unit` |
+| Browser tests | `npm run test:browser` (needs Playwright and Chromium) |
+| Database tests (pgTAP, 12 files) | `bash scripts/db-test.sh` (needs Postgres 17 and pgTAP; see `docs/HANDOVER.md`) |
 
-## Airport Routes Featured
+## Build
 
-The website currently includes custom airport route imagery for:
+`npm run build:pages` regenerates the marketing pages and `sitemap.xml` from `scripts/site/`; never edit the generated HTML. `npm run build:domains` writes per-business domain routes into `vercel.json`.
 
-| Route Card Position | Airport | Image To Use | Website Placement |
-| --- | --- | --- | --- |
-| 1 | Manchester Airport | Manchester Airport Tesla / EV Exec image | First airport route card |
-| 2 | Liverpool Airport | Liverpool Airport Tesla / EV Exec image | Second airport route card |
-| 3 | Leeds Bradford Airport | Leeds Bradford Airport Tesla / EV Exec image | Third airport route card |
-| 4 | Birmingham Airport | Birmingham Airport Tesla / EV Exec image | Fourth airport route card |
-| 5 | Newcastle Airport | Newcastle Airport Tesla / EV Exec image | Fifth airport route card |
+## Deploy
 
-## Image Rules
+Production deploys are manual and need the owner's approval (`.github/workflows/deploy.yml`). Merging to `main` does not deploy through GitHub Actions.
 
-- Keep the current website design and picture positions exactly as programmed in the HTML.
-- Do not place text or writing over route images.
-- Do not replace the premium dark theme.
-- Do not add emojis.
-- Do not move route cards around.
-- Use the correct airport image for the matching airport route.
-- Keep image sizing consistent across all airport cards.
-- Keep images optimised for fast loading where possible.
+## EV Exec specifics that are on purpose
 
-## Recommended Image Paths
-
-If images are stored as separate files, use simple predictable paths such as:
-
-```bash
-assets/images/manchester-airport.jpg
-assets/images/liverpool-airport.jpg
-assets/images/leeds-bradford-airport.jpg
-assets/images/birmingham-airport.jpg
-assets/images/newcastle-airport.jpg
-```
-
-If the current HTML uses embedded/base64 images, keep the embedded images in their existing programmed locations unless deliberately converting them to external files.
-
-## Project Structure
-
-```bash
-admin/        # Admin dashboard
-api/          # API routes
-docs/         # Documentation
-supabase/     # Database setup
-index.html    # Main website
-```
-
-## Deployment
-
-After updating images or `index.html`, redeploy the Vercel project and hard refresh the live site.
+The canonical host `www.evexec.co.uk`, the first business's id (`00000000-0000-0000-0000-000000000001`, used when a domain matches no other business) and EV Exec's built-in price list are defaults for the first customer, not mistakes. Other businesses are configured in the database and the Operator app.

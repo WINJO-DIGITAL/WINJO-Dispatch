@@ -1,4 +1,6 @@
-# EV Exec platform: progress tracker
+# EV Exec platform: progress tracker (earlier all-repos tracker, last updated 12/11/2026)
+
+> **The live checklist for this repository is `docs/TASKS.md` (updated 13/11/2026), with the runbook in `docs/HANDOVER.md`.** This file is kept as the earlier all-three-repos record; where the two differ, `docs/TASKS.md` wins.
 
 One tracker for all three repos (`evexec` website and database, `evexecoperator` Operator app, `evexecdriverapp` Driver App) and the shared Supabase project. Update it as work moves. Last updated 12/11/2026.
 

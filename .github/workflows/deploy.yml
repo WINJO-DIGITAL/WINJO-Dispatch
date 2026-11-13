@@ -1,13 +1,19 @@
-name: Deploy to Vercel
+name: Deploy to Vercel (manual)
+
+# Production deploys are an owner-approved action (see CLAUDE.md, "Production").
+# This used to run on every push to main, so merging a pull request deployed it.
+# It now runs only when someone starts it from the Actions tab and types "deploy".
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "deploy" to deploy main to production'
+        required: true
 
 jobs:
   deploy:
+    if: ${{ github.event.inputs.confirm == 'deploy' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,5 +21,5 @@ jobs:
       - name: Deploy to Vercel (production)
         run: npx vercel deploy --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
         env:
-          VERCEL_ORG_ID: team_j5oMNS3chhJVz7zmZj3qAQfC
-          VERCEL_PROJECT_ID: prj_8Fg2dXA2Bqx5Pxb58RA8Sz0ADgEU
+          VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}

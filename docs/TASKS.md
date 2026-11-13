@@ -72,4 +72,4 @@ None open that affect the live business.
 
 ## Test results (13/11/2026)
 
-- Website unit tests: 164 pass. Database tests (local pgTAP): all pass in CI. Operator app: 389 pass, lint 0 errors, typecheck clean.
+- Website unit tests: 211 pass (`npm run test:unit`, checked 13/11/2026; 208 listed in the handover plus 3 from `card-owner-only`, now included). Database tests (local pgTAP): all pass in CI. Operator app: 389 pass, lint 0 errors, typecheck clean.
