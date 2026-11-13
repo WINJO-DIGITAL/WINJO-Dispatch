@@ -6,7 +6,7 @@ const { isValidUUID } = require('../../lib/supabase');
 const { normaliseUkPhone } = require('../../lib/notify');
 const { stripeRequest, getOrCreateStripeCustomer } = require('../../lib/stripeCustomer');
 
-const SUPABASE_URL = () => process.env.SUPABASE_URL || 'https://yoltkmhtxwluqxxpewbl.supabase.co';
+const SUPABASE_URL = () => require('../../lib/supabaseUrl')();
 const SERVICE_KEY  = () => process.env.SUPABASE_SERVICE_ROLE_KEY;
 // Public anon key (same one /api/config hands the browser); used only to call
 // sync_my_points() as the signed-in customer.

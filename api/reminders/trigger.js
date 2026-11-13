@@ -9,7 +9,7 @@ const { journeyLine, fmtDate, fmtTime, emailJourneyHtml, paymentLine } = require
 const { logMany } = require('../../lib/notifyLog');
 const { sendOrQueue } = require('../../lib/notificationQueue');
 
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://yoltkmhtxwluqxxpewbl.supabase.co';
+const SUPABASE_URL = require('../../lib/supabaseUrl')();
 
 function dbHeaders(extra = {}) {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;

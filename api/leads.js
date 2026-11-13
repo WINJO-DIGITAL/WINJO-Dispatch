@@ -11,7 +11,7 @@ const E = require('../lib/emailContent');
 const crypto = require('crypto');
 const { tenantId, tenantIdFor, staffEmailFor } = require('../lib/brand');
 
-const SUPABASE_URL = () => process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://yoltkmhtxwluqxxpewbl.supabase.co';
+const SUPABASE_URL = () => require('../lib/supabaseUrl')();
 const SERVICE_KEY  = () => process.env.SUPABASE_SERVICE_ROLE_KEY;
 const ALLOWED_TABLES = ['quote_requests', 'contact_messages'];
 const ALLOWED_STATUS = ['new', 'contacted', 'quoted', 'booked', 'lost'];

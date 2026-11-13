@@ -10,7 +10,7 @@ const { sendSMS, sendEmail, normaliseUkPhone } = require('../../lib/notify');
 const { processDue } = require('../../lib/notificationQueue');
 const { dbRpc } = require('../../lib/supabase');
 
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://yoltkmhtxwluqxxpewbl.supabase.co';
+const SUPABASE_URL = require('../../lib/supabaseUrl')();
 
 function serviceKey() {
   return process.env.SUPABASE_SERVICE_ROLE_KEY;

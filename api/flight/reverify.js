@@ -13,7 +13,7 @@
 // Auth: Vercel Cron sends `Authorization: Bearer $CRON_SECRET` automatically
 // when CRON_SECRET is set on the project -- same check as reminders/trigger.js.
 
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://yoltkmhtxwluqxxpewbl.supabase.co';
+const SUPABASE_URL = require('../../lib/supabaseUrl')();
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 function dbHeaders() {
