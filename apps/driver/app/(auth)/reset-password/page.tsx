@@ -1,0 +1,175 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { Eye, EyeOff, Loader2, CheckCircle2 } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+import { BRAND } from '@/lib/brand'
+import { useSigninBrand } from '@/lib/use-signin-brand'
+
+export default function ResetPasswordPage() {
+  const brand = useSigninBrand()
+  const router = useRouter()
+  const [showPassword, setShowPassword] = useState(false)
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
+  const [isPending, setIsPending] = useState(false)
+  const [ready, setReady] = useState(false)
+  // Opened from the office's "Driver App invite" email (Operator app, Drivers).
+  const [invite, setInvite] = useState(false)
+
+  const supabase = createClient()
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      // Invite and office-sent links carry a one-time token
+      // (?token_hash=…&type=recovery[&invite=1]); verify it to sign in.
+      const params = new URLSearchParams(window.location.search)
+      const tokenHash = params.get('token_hash')
+      const type = params.get('type')
+      if (params.get('invite') === '1') setInvite(true)
+      if (tokenHash && (type === 'recovery' || type === 'invite' || type === 'magiclink')) {
+        const { error: err } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type })
+        if (cancelled) return
+        // Drop the used token from the address bar.
+        window.history.replaceState(null, '', window.location.pathname)
+        if (err) {
+          setError('This link has expired or has already been used. Ask the office to send a new invite, or request a new link.')
+          setReady(true)
+          return
+        }
+      }
+      const { data: { session } } = await supabase.auth.getSession()
+      if (cancelled) return
+      if (!session) {
+        setError('This password reset link is invalid or has expired. Please request a new one.')
+      }
+      setReady(true)
+    })()
+    return () => { cancelled = true }
+  }, [supabase])
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setError('')
+
+    if (password.length < 8 || !/[A-Za-z]/.test(password) || !/[0-9]/.test(password)) {
+      setError('Password must be at least 8 characters, with a letter and a number.')
+      return
+    }
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.')
+      return
+    }
+
+    setIsPending(true)
+    const { error } = await supabase.auth.updateUser({ password })
+    setIsPending(false)
+
+    if (error) {
+      setError(error.message)
+    } else {
+      setSuccess(true)
+      setTimeout(() => {
+        router.push('/dashboard')
+        router.refresh()
+      }, 1500)
+    }
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-[#eaeff7]">
+      <div className="mb-8 text-center">
+        {brand && !brand.logoUrl ? (
+          <p className="mx-auto max-w-xs text-2xl font-semibold tracking-widest uppercase text-[#060C1A]">{brand.name}</p>
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={brand?.logoUrl || '/logo.png'} alt={brand?.name || BRAND.name} width={160} height={160} className="mx-auto max-h-40 w-auto object-contain" />
+        )}
+        <p className="text-[#4f6580] mt-2 tracking-widest uppercase text-xs">Driver Portal</p>
+      </div>
+
+      <div className="w-full max-w-sm bg-white border border-[#c4d4e4] rounded-2xl p-6 shadow-2xl">
+        {success ? (
+          <div className="text-center py-2">
+            <CheckCircle2 size={32} className="mx-auto mb-3 text-green-800" />
+            <h2 className="text-lg font-semibold text-[#060C1A] mb-2">Password updated</h2>
+            <p className="text-[#3b5470] text-sm">Taking you to your dashboard…</p>
+          </div>
+        ) : (
+          <>
+            <h2 className="text-lg font-semibold text-[#060C1A] mb-2">{invite ? 'Welcome to the Driver App' : 'Set a new password'}</h2>
+            <p className="text-[#3b5470] text-sm mb-6">{invite ? 'Choose a password. You\'ll use it with your email address to sign in.' : 'Choose a new password for your account.'}</p>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-[10px] font-semibold text-[#4f6580] mb-2 uppercase tracking-widest">
+                  New Password
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    name="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full bg-[#dce8f2] border border-[#c4d4e4] rounded-xl px-4 py-3 pr-12 text-[#060C1A] placeholder-[#7a9ab8] text-sm focus:outline-none focus:border-[#d5a538] focus:ring-1 focus:ring-[#d5a538] transition-colors"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#4f6580] hover:text-[#3b5470] transition-colors"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-semibold text-[#4f6580] mb-2 uppercase tracking-widest">
+                  Confirm Password
+                </label>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  name="confirmPassword"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full bg-[#dce8f2] border border-[#c4d4e4] rounded-xl px-4 py-3 text-[#060C1A] placeholder-[#7a9ab8] text-sm focus:outline-none focus:border-[#d5a538] focus:ring-1 focus:ring-[#d5a538] transition-colors"
+                />
+              </div>
+
+              {error && (
+                <div className="text-red-800 text-xs bg-red-100 border border-red-200 rounded-lg px-3 py-2 space-y-1">
+                  <p>{error}</p>
+                  {!ready ? null : (
+                    <Link href="/forgot-password" className="underline inline-block">
+                      Request a new link
+                    </Link>
+                  )}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={isPending || !ready}
+                className="w-full py-3.5 rounded-xl font-semibold text-[#020813] text-sm flex items-center justify-center gap-2 disabled:opacity-60 transition-opacity mt-2"
+                style={brand ? { background: brand.accent, color: brand.onAccent } : { background: 'linear-gradient(135deg, #f1c56a, #d5a538 55%, #a97918)' }}
+              >
+                {isPending ? <Loader2 size={16} className="animate-spin" /> : null}
+                {isPending ? 'Saving…' : invite ? 'Set Password' : 'Update Password'}
+              </button>
+            </form>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}

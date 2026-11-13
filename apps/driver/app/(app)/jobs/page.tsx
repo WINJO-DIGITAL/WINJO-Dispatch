@@ -1,0 +1,274 @@
+'use client'
+
+import { useEffect, useState, useCallback } from 'react'
+import Link from 'next/link'
+import { ChevronRight, Car, Users, Search, X } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+import { BookingStatusBadge } from '@/components/badges'
+import { RouteDisplay } from '@/components/route-icons'
+import { formatDate, formatTime, paymentInfo, formatStampDate } from '@/lib/format'
+import type { Booking } from '@/lib/types'
+
+type Tab = 'upcoming' | 'active' | 'completed'
+type DateFilter = 'all' | 'today' | 'tomorrow' | '7days'
+
+function bookingDateTimeValue(booking: Booking) {
+  const date = booking.travel_date || '9999-12-31'
+  const time = booking.travel_time || '23:59:59'
+  return new Date(`${date}T${time}`).getTime()
+}
+
+function sortNearestFirst(list: Booking[]) {
+  return [...list].sort((a, b) => bookingDateTimeValue(a) - bookingDateTimeValue(b))
+}
+
+function BookingCard({ booking }: { booking: Booking }) {
+  return (
+    <Link href={`/jobs/${booking.id}`}>
+      <div className="bg-white border border-[#c4d4e4] rounded-2xl p-4 shadow-sm active:opacity-80 transition-opacity">
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <span className="text-[#7a5c14] font-bold text-base">{formatTime(booking.travel_time)}</span>
+            <span className="text-[#5a6f88] text-xs">{formatDate(booking.travel_date)}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <BookingStatusBadge status={booking.status} />
+            <ChevronRight size={14} className="text-[#4f6580]" />
+          </div>
+        </div>
+
+        <div className="flex items-baseline justify-between gap-2 mb-0.5">
+          <p className="text-[#060C1A] font-semibold text-[15px]">{booking.customer_name}</p>
+          {booking.ref && (
+            <span className="text-[#4f6580] text-[10px] font-mono flex-shrink-0">{booking.ref}</span>
+          )}
+        </div>
+        {booking.journey_type && (
+          <p className="text-[#4f6580] text-xs mb-3 capitalize">{booking.journey_type.replace(/_/g, ' ')}</p>
+        )}
+
+        <RouteDisplay booking={booking} />
+
+        {(booking.quoted_price || booking.payment_method || booking.payment_status) && (
+          <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[#d8e6f0]">
+            {booking.passengers > 0 && (
+              <span className="text-[#4f6580] text-xs flex items-center gap-1">
+                <Users size={11} /> {booking.passengers}
+              </span>
+            )}
+            {(() => {
+              const p = paymentInfo(booking.payment_method, booking.payment_status, booking.notes)
+              return (
+                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${p.className}`}>
+                  {p.text}
+                </span>
+              )
+            })()}
+            {booking.quoted_price && (
+              <span className="ml-auto text-[#7a5c14] font-semibold text-sm">
+                £{booking.quoted_price.toFixed(0)}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+    </Link>
+  )
+}
+
+export default function JobsPage() {
+  const [tab, setTab] = useState<Tab>('active')
+  // Set once the driver picks a tab themselves, so the automatic choice below never overrides them.
+  const [tabChosen, setTabChosen] = useState(false)
+  const chooseTab = (t: Tab) => { setTabChosen(true); setTab(t) }
+  const [dateFilter, setDateFilter] = useState<DateFilter>('all')
+  const [bookings, setBookings] = useState<Booking[]>([])
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+
+  const supabase = createClient()
+
+  const loadBookings = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    const { data } = await supabase
+      .from('bookings')
+      .select('*')
+      .eq('assigned_driver_id', user.id)
+      .in('status', ['accepted', 'confirmed', 'Dispatched', 'En Route', 'en_route', 'Passenger On Board', 'Arrived', 'arrived', 'Active', 'active', 'No Show', 'completed', 'Completed', 'cancelled', 'Cancelled'])
+      .order('travel_date', { ascending: true })
+      .order('travel_time', { ascending: true })
+
+    if (data) setBookings(sortNearestFirst(data))
+    setLoading(false)
+  }, [supabase])
+
+  useEffect(() => { loadBookings() }, [loadBookings])
+
+  // Live updates — patch the board in-place without requiring a page refresh
+  useEffect(() => {
+    let channel: ReturnType<typeof supabase.channel> | null = null
+    let unassignChannel: ReturnType<typeof supabase.channel> | null = null
+    const setup = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      channel = supabase
+        .channel('jobs-board-live')
+        .on('postgres_changes', {
+          event: 'INSERT', schema: 'public', table: 'bookings',
+          filter: `assigned_driver_id=eq.${user.id}`,
+        }, (payload) => {
+          const b = payload.new as Booking
+          setBookings(prev => sortNearestFirst([...prev.filter(x => x.id !== b.id), b]))
+        })
+        .on('postgres_changes', {
+          event: 'UPDATE', schema: 'public', table: 'bookings',
+          filter: `assigned_driver_id=eq.${user.id}`,
+        }, (payload) => {
+          const b = payload.new as Booking
+          setBookings(prev => sortNearestFirst(prev.map(x => x.id === b.id ? b : x)))
+        })
+        .subscribe()
+
+      // Remove booking from board when operator unassigns this driver.
+      // Requires REPLICA IDENTITY FULL on bookings (already applied via migration).
+      unassignChannel = supabase
+        .channel('jobs-board-unassignment')
+        .on('postgres_changes', {
+          event: 'UPDATE', schema: 'public', table: 'bookings',
+        }, (payload) => {
+          const b = payload.new as Booking
+          const old = payload.old as { assigned_driver_id?: string }
+          if (old.assigned_driver_id === user.id && b.assigned_driver_id !== user.id) {
+            setBookings(prev => prev.filter(x => x.id !== b.id))
+          }
+        })
+        .subscribe()
+    }
+    setup()
+    return () => {
+      if (channel) supabase.removeChannel(channel)
+      if (unassignChannel) supabase.removeChannel(unassignChannel)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const upcoming = sortNearestFirst(bookings.filter((b) => ['accepted', 'confirmed', 'Dispatched'].includes(b.status)))
+  const active = sortNearestFirst(bookings.filter((b) => ['En Route', 'en_route', 'Passenger On Board', 'Arrived', 'arrived', 'Active', 'active'].includes(b.status)))
+  const completed = sortNearestFirst(bookings.filter((b) => ['completed', 'Completed', 'cancelled', 'Cancelled', 'No Show'].includes(b.status)))
+
+  // Nothing under way but jobs coming up: open on those, not an empty list.
+  useEffect(() => {
+    if (!loading && !tabChosen && tab === 'active' && active.length === 0 && upcoming.length > 0) setTab('upcoming')
+  }, [loading, tabChosen, tab, active.length, upcoming.length])
+
+  const applyDateFilter = (list: Booking[]) => {
+    const now = new Date()
+    const pad = (n: number) => String(n).padStart(2, '0')
+    const fmt = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+    const todayStr = fmt(now)
+    const tomorrowStr = fmt(new Date(now.getTime() + 86400000))
+    const in7Str = fmt(new Date(now.getTime() + 7 * 86400000))
+    if (dateFilter === 'today') return list.filter(b => b.travel_date === todayStr)
+    if (dateFilter === 'tomorrow') return list.filter(b => b.travel_date === tomorrowStr)
+    if (dateFilter === '7days') return list.filter(b => b.travel_date && b.travel_date >= todayStr && b.travel_date <= in7Str)
+    return list
+  }
+
+  const baseList = tab === 'upcoming' ? upcoming : tab === 'active' ? active : completed
+  const applySearch = (list: Booking[]) => {
+    const q = search.trim().toLowerCase()
+    if (!q) return list
+    return list.filter(b =>
+      b.customer_name.toLowerCase().includes(q) ||
+      (b.ref ?? '').toLowerCase().includes(q)
+    )
+  }
+  const currentList = sortNearestFirst(applySearch(applyDateFilter(baseList)))
+
+  const today = formatStampDate(new Date())
+
+  return (
+    <div className="min-h-screen bg-[#eaeff7] px-4 pt-12 pb-4">
+      <div className="mb-4">
+        <h1 className="text-[#060C1A] font-bold text-xl">Jobs</h1>
+        <p className="text-[#4f6580] text-xs mt-1">{today}</p>
+      </div>
+
+      {/* Search */}
+      <div className="relative mb-4">
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4f6580] pointer-events-none" />
+        <input
+          type="text"
+          placeholder="Search by name or reference"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="w-full bg-[#dce8f2] border border-[#c4d4e4] rounded-xl pl-8 pr-8 py-2.5 text-[#060C1A] text-sm placeholder-[#7a9ab8] focus:outline-none focus:border-[#d5a538]/50"
+        />
+        {search && (
+          <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#4f6580]">
+            <X size={14} />
+          </button>
+        )}
+      </div>
+
+      <div className="flex gap-2 mb-4 overflow-x-auto pb-1 no-scrollbar">
+        {([
+          { key: 'all' as DateFilter, label: 'All' },
+          { key: 'today' as DateFilter, label: 'Today' },
+          { key: 'tomorrow' as DateFilter, label: 'Tomorrow' },
+          { key: '7days' as DateFilter, label: '7 Days' },
+        ]).map(({ key, label }) => (
+          <button
+            key={key}
+            onClick={() => setDateFilter(key)}
+            className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
+            style={dateFilter === key
+              ? { background: 'linear-gradient(135deg, #f1c56a, #d5a538 55%, #a97918)', color: '#020813', borderColor: 'transparent' }
+              : { background: '#ffffff', color: '#3b5470', borderColor: '#c4d4e4' }
+            }
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      <div className="flex gap-1 bg-[#dce8f2] rounded-xl p-1 mb-5">
+        {([
+          { key: 'active' as Tab, label: `Active (${active.length})` },
+          { key: 'upcoming' as Tab, label: `Upcoming (${upcoming.length})` },
+          { key: 'completed' as Tab, label: 'Done' },
+        ]).map(({ key, label }) => (
+          <button
+            key={key}
+            onClick={() => chooseTab(key)}
+            className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${
+              tab === key ? 'text-[#020813]' : 'text-[#4f6580] hover:text-[#3b5470]'
+            }`}
+            style={tab === key ? { background: 'linear-gradient(135deg, #f1c56a, #d5a538 55%, #a97918)' } : {}}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <div className="w-7 h-7 rounded-full border-2 border-[#d5a538] border-t-transparent animate-spin" />
+        </div>
+      ) : currentList.length === 0 ? (
+        <div className="bg-white border border-[#c4d4e4] rounded-2xl p-10 text-center">
+          <Car size={28} className="mx-auto mb-2 text-[#5a6f88]" />
+          <p className="text-[#4f6580] text-sm">No {tab} jobs</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {currentList.map((booking) => (
+            <BookingCard key={booking.id} booking={booking} />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}

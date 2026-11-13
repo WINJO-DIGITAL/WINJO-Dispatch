@@ -1,0 +1,121 @@
+'use client'
+
+import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { Eye, EyeOff, Loader2 } from 'lucide-react'
+import { login } from '@/app/actions/auth'
+import { BRAND } from '@/lib/brand'
+import { useSigninBrand } from '@/lib/use-signin-brand'
+
+export default function LoginPage() {
+  const brand = useSigninBrand()
+  const router = useRouter()
+  const [showPassword, setShowPassword] = useState(false)
+  const [error, setError] = useState('')
+  const [isPending, startTransition] = useTransition()
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setError('')
+    const formData = new FormData(e.currentTarget)
+    startTransition(async () => {
+      const result = await login(formData)
+      if (result?.error) {
+        setError(result.error)
+      } else {
+        router.push('/dashboard')
+        router.refresh()
+      }
+    })
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-[#020813]" style={brand ? { background: brand.primary } : undefined}>
+      {/* Logo */}
+      <div className="mb-8 text-center">
+        {brand && !brand.logoUrl ? (
+          <p className="mx-auto max-w-xs text-2xl font-semibold tracking-widest uppercase" style={{ color: brand.accent }}>{brand.name}</p>
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={brand?.logoUrl || '/logo.png'}
+            alt={brand?.name || BRAND.name}
+            width={160}
+            height={160}
+            className="mx-auto max-h-40 w-auto object-contain"
+          />
+        )}
+        <p className="text-white/50 mt-2 tracking-widest uppercase text-xs">Driver Portal</p>
+      </div>
+
+      {/* Card */}
+      <div className="w-full max-w-sm bg-white border border-[#c4d4e4] rounded-2xl p-6 shadow-2xl">
+        <h2 className="text-lg font-semibold text-[#060C1A] mb-6">Sign in</h2>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-[10px] font-semibold text-[#4f6580] mb-2 uppercase tracking-widest">
+              Email
+            </label>
+            <input
+              type="email"
+              name="email"
+              required
+              placeholder={brand ? 'you@example.com' : BRAND.loginPlaceholder}
+              className="w-full bg-[#dce8f2] border border-[#c4d4e4] rounded-xl px-4 py-3 text-[#060C1A] placeholder-[#7a9ab8] text-sm focus:outline-none focus:border-[#d5a538] focus:ring-1 focus:ring-[#d5a538] transition-colors"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-semibold text-[#4f6580] mb-2 uppercase tracking-widest">
+              Password
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                name="password"
+                required
+                placeholder="••••••••"
+                className="w-full bg-[#dce8f2] border border-[#c4d4e4] rounded-xl px-4 py-3 pr-12 text-[#060C1A] placeholder-[#7a9ab8] text-sm focus:outline-none focus:border-[#d5a538] focus:ring-1 focus:ring-[#d5a538] transition-colors"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#4f6580] hover:text-[#3b5470] transition-colors"
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+            <div className="text-right mt-2">
+              <Link href="/forgot-password" className="text-[#7a5c14] text-xs font-medium">
+                Forgot password?
+              </Link>
+            </div>
+          </div>
+
+          {error && (
+            <p className="text-red-800 text-xs bg-red-100 border border-red-200 rounded-lg px-3 py-2">
+              {error}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={isPending}
+            className="w-full py-3.5 rounded-xl font-semibold text-[#020813] text-sm flex items-center justify-center gap-2 disabled:opacity-60 transition-opacity mt-2"
+            style={brand ? { background: brand.accent, color: brand.onAccent } : { background: 'linear-gradient(135deg, #f1c56a, #d5a538 55%, #a97918)' }}
+          >
+            {isPending ? <Loader2 size={16} className="animate-spin" /> : null}
+            {isPending ? 'Signing in…' : 'Sign In'}
+          </button>
+        </form>
+
+        <p className="text-center text-xs text-[#5a6f88] mt-6">
+          Account access is managed by {brand?.name || BRAND.name}
+        </p>
+      </div>
+    </div>
+  )
+}

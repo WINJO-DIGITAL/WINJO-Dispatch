@@ -1,0 +1,282 @@
+'use client'
+
+import { useEffect, useState, useCallback } from 'react'
+import Link from 'next/link'
+import { Car, ChevronRight, Bell, Briefcase, Star, RefreshCw, CheckCircle2, Loader2 } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+import { BookingStatusBadge } from '@/components/badges'
+import { RouteDisplay } from '@/components/route-icons'
+import { formatDate, formatTime, ukToday } from '@/lib/format'
+import type { Booking, Driver } from '@/lib/types'
+import { useToast } from '@/components/toast'
+
+type AttestBooking = Pick<Booking, 'id' | 'ref' | 'customer_name' | 'travel_date' | 'travel_time' | 'pickup_location' | 'airport' | 'attestation_status'>
+
+export default function DashboardPage() {
+  const [driver, setDriver] = useState<Driver | null>(null)
+  const [bookings, setBookings] = useState<Booking[]>([])
+  const [completedTodayCount, setCompletedTodayCount] = useState(0)
+  const [attestationBookings, setAttestationBookings] = useState<AttestBooking[]>([])
+  const [confirmingJobId, setConfirmingJobId] = useState<string | null>(null)
+  const { addToast } = useToast()
+  const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
+
+  const supabase = createClient()
+
+  const loadData = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    const [{ data: driverData }, { data: bookingData }, { data: attestData }, { count: doneCount }] = await Promise.all([
+      supabase.from('drivers').select('*').eq('id', user.id).single(),
+      supabase
+        .from('bookings')
+        .select('*')
+        .eq('assigned_driver_id', user.id)
+        .in('status', ['accepted', 'confirmed', 'Dispatched', 'En Route', 'en_route', 'Passenger On Board', 'Arrived', 'arrived', 'Active', 'active'])
+        .order('travel_date', { ascending: true })
+        .order('travel_time', { ascending: true }),
+      supabase
+        .from('bookings')
+        .select('id, ref, customer_name, travel_date, travel_time, pickup_location, airport, attestation_status')
+        .eq('assigned_driver_id', user.id)
+        .in('attestation_status', ['awaiting_first_attestation', 'awaiting_second_attestation'])
+        .is('driver_confirmed_at', null),
+      supabase
+        .from('bookings')
+        .select('id', { count: 'exact', head: true })
+        .eq('assigned_driver_id', user.id)
+        .in('status', ['completed', 'Completed'])
+        .eq('travel_date', ukToday()),
+    ])
+
+    if (driverData) setDriver(driverData)
+    if (bookingData) setBookings(bookingData)
+    if (attestData) setAttestationBookings(attestData as AttestBooking[])
+    setCompletedTodayCount(doneCount ?? 0)
+    setLoading(false)
+  }, [supabase])
+
+  useEffect(() => { loadData() }, [loadData])
+
+  // Live updates when operator assigns or changes bookings
+  useEffect(() => {
+    let channel: ReturnType<typeof supabase.channel> | null = null
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return
+      channel = supabase
+        .channel('dashboard-live')
+        .on('postgres_changes', {
+          event: '*', schema: 'public', table: 'bookings',
+          filter: `assigned_driver_id=eq.${user.id}`,
+        }, () => loadData())
+        .subscribe()
+    })
+    return () => { if (channel) supabase.removeChannel(channel) }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const today = ukToday()
+  const todayBookings = bookings.filter((b) => b.travel_date === today)
+  const activeBooking = bookings.find((b) => ['En Route', 'en_route', 'Passenger On Board', 'Arrived', 'arrived', 'Active', 'active'].includes(b.status))
+  const upcomingBookings = todayBookings.filter((b) => ['accepted', 'confirmed', 'Dispatched'].includes(b.status))
+
+  const initials = driver?.full_name
+    ? driver.full_name.split(' ').map((n) => n[0]).join('').slice(0, 2)
+    : '?'
+
+  const confirmJob = async (bookingId: string) => {
+    setConfirmingJobId(bookingId)
+    // Only take the job off the list once the confirmation is saved. Otherwise the office
+    // would still get a 'driver hasn't confirmed' alert, and the driver would think it was done.
+    const { data, error } = await supabase.from('bookings').update({
+      driver_confirmed_at: new Date().toISOString(),
+      attestation_status: 'confirmed',
+    }).eq('id', bookingId).select('id')
+    if (error || !data?.length) {
+      addToast({ title: 'Not confirmed', message: 'Could not confirm the pickup. Check your connection and try again.' })
+    } else {
+      setAttestationBookings(prev => prev.filter(b => b.id !== bookingId))
+    }
+    setConfirmingJobId(null)
+  }
+
+  const greeting = () => {
+    const h = new Date().getHours()
+    if (h < 12) return 'Good morning'
+    if (h < 18) return 'Good afternoon'
+    return 'Good evening'
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#eaeff7] flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-2 border-[#d5a538] border-t-transparent animate-spin" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-[#eaeff7] px-4 pt-12 pb-4">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <p className="text-[#4f6580] text-xs uppercase tracking-widest">{greeting()}</p>
+          <h1 className="text-[#060C1A] font-semibold text-lg mt-0.5">{driver?.full_name ?? 'Driver'}</h1>
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={async () => { setRefreshing(true); await loadData(); setRefreshing(false) }}
+            disabled={refreshing}
+            className="w-10 h-10 rounded-xl bg-[#dce8f2] border border-[#c4d4e4] flex items-center justify-center active:opacity-70 disabled:opacity-50"
+          >
+            <RefreshCw size={16} className={`text-[#3b5470] ${refreshing ? 'animate-spin' : ''}`} />
+          </button>
+          <Link
+            href="/notifications"
+            className="relative w-10 h-10 rounded-xl bg-[#dce8f2] border border-[#c4d4e4] flex items-center justify-center"
+          >
+            <Bell size={18} className="text-[#3b5470]" />
+            {upcomingBookings.length > 0 && (
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#d5a538]" />
+            )}
+          </Link>
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center font-semibold text-sm text-[#020813]"
+            style={{ background: 'linear-gradient(135deg, #f1c56a, #d5a538 55%, #a97918)' }}
+          >
+            {initials}
+          </div>
+        </div>
+      </div>
+
+      {/* Attestation — jobs needing driver confirmation */}
+      {attestationBookings.length > 0 && (
+        <div className="mb-5 space-y-2.5">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-amber-800">
+            ⚠ Confirmation Required
+          </p>
+          {attestationBookings.map(b => (
+            <div
+              key={b.id}
+              className="bg-white border border-amber-300 rounded-2xl p-4"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <p className="text-[#060C1A] font-semibold text-sm">{b.customer_name}</p>
+                  <p className="text-[#4f6580] text-xs mt-0.5">
+                    {b.travel_date ? formatDate(b.travel_date) : ''}
+                    {b.travel_time ? ` · ${formatTime(b.travel_time)}` : ''}
+                  </p>
+                  <p className="text-[#4f6580] text-xs mt-0.5 truncate">
+                    {b.pickup_location ?? b.airport ?? '—'}
+                  </p>
+                </div>
+                <button
+                  onClick={() => confirmJob(b.id)}
+                  disabled={confirmingJobId === b.id}
+                  className="flex-shrink-0 px-4 py-2 rounded-xl text-sm font-bold text-[#020813] disabled:opacity-50 flex items-center gap-1.5"
+                  style={{ background: 'linear-gradient(135deg, #f1c56a, #d5a538)' }}
+                >
+                  {confirmingJobId === b.id
+                    ? <Loader2 size={14} className="animate-spin" />
+                    : <CheckCircle2 size={14} />}
+                  Confirm
+                </button>
+              </div>
+              <div className="mt-2.5">
+                <span className="text-[10px] font-semibold px-2 py-1 rounded-full text-amber-800 bg-amber-100 border border-amber-200">
+                  {b.attestation_status === 'awaiting_second_attestation'
+                    ? '2nd confirmation'
+                    : '1st confirmation'}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Active Job Banner */}
+      {activeBooking && (
+        <Link href={`/jobs/${activeBooking.id}`}>
+          <div
+            className="mb-5 rounded-2xl border border-[#d5a538]/30 p-4"
+            style={{ background: 'linear-gradient(135deg, rgba(213,165,56,0.12), rgba(213,165,56,0.04))' }}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-[#7a5c14]">
+                ● Active Job
+              </span>
+              <ChevronRight size={16} className="text-[#7a5c14]" />
+            </div>
+            <p className="text-[#060C1A] font-semibold text-sm">{activeBooking.customer_name}</p>
+            <p className="text-[#3b5470] text-xs mt-0.5">
+              {activeBooking.pickup_location ?? activeBooking.airport ?? 'Pickup location'}
+            </p>
+          </div>
+        </Link>
+      )}
+
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-3 mb-5">
+        <div className="bg-white border border-[#c4d4e4] rounded-xl p-3 text-center">
+          <Briefcase size={16} className="mx-auto mb-1 text-[#7a5c14]" />
+          <p className="text-[#060C1A] font-bold text-lg">{upcomingBookings.length + (activeBooking ? 1 : 0)}</p>
+          <p className="text-[#4f6580] text-[10px] uppercase tracking-wide mt-0.5">Today</p>
+        </div>
+        <div className="bg-white border border-[#c4d4e4] rounded-xl p-3 text-center">
+          <Car size={16} className="mx-auto mb-1 text-[#7a5c14]" />
+          <p className="text-[#060C1A] font-bold text-lg">{completedTodayCount}</p>
+          <p className="text-[#4f6580] text-[10px] uppercase tracking-wide mt-0.5">Done</p>
+        </div>
+        <div className="bg-white border border-[#c4d4e4] rounded-xl p-3 text-center">
+          <Star size={16} className="mx-auto mb-1 text-[#7a5c14]" />
+          <p className="text-[#060C1A] font-bold text-lg">{bookings.length}</p>
+          <p className="text-[#4f6580] text-[10px] uppercase tracking-wide mt-0.5">Total</p>
+        </div>
+      </div>
+
+      {/* Upcoming Jobs */}
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-[#060C1A] font-semibold text-sm">Today&apos;s Jobs</h2>
+        <Link href="/jobs" className="text-[#7a5c14] text-xs font-medium">
+          View all
+        </Link>
+      </div>
+
+      {upcomingBookings.length === 0 && !activeBooking ? (
+        <div className="bg-white border border-[#c4d4e4] rounded-2xl p-6 text-center">
+          <Car size={28} className="mx-auto mb-2 text-[#5a6f88]" />
+          <p className="text-[#4f6580] text-sm">No upcoming jobs today</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {upcomingBookings.slice(0, 3).map((booking) => (
+            <Link key={booking.id} href={`/jobs/${booking.id}`}>
+              <div className="bg-white border border-[#c4d4e4] rounded-2xl p-4 shadow-sm active:opacity-80 transition-opacity">
+                <div className="flex items-start justify-between mb-2">
+                  <span className="text-[#7a5c14] font-bold text-base">{formatTime(booking.travel_time)}</span>
+                  <div className="flex items-center gap-2">
+                    <BookingStatusBadge status={booking.status} />
+                    <ChevronRight size={14} className="text-[#4f6580]" />
+                  </div>
+                </div>
+                <p className="text-[#060C1A] font-semibold text-[15px] mb-3">{booking.customer_name}</p>
+                <RouteDisplay booking={booking} />
+                {booking.quoted_price && (
+                  <div className="flex items-center mt-3 pt-3 border-t border-[#d8e6f0]">
+                    <span className="ml-auto text-[#7a5c14] font-semibold text-sm">
+                      £{booking.quoted_price.toFixed(0)}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
+
+    </div>
+  )
+}

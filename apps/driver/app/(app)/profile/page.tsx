@@ -1,0 +1,225 @@
+'use client'
+
+import { useEffect, useState, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
+import { logout } from '@/app/actions/auth'
+import {
+  Car, ChevronRight, Phone, Mail, LogOut, Bell,
+  HelpCircle, Loader2, ClipboardList, MessageCircle, PoundSterling,
+} from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+import { BRAND } from '@/lib/brand'
+import { useBusiness } from '@/components/business'
+import type { Driver } from '@/lib/types'
+import { PushSettings } from '@/components/push-settings'
+
+export default function ProfilePage() {
+  const router = useRouter()
+  const business = useBusiness()
+  const [driver, setDriver] = useState<Driver | null>(null)
+  const [email, setEmail] = useState<string | null>(null)
+  const [tripCount, setTripCount] = useState(0)
+  const [loading, setLoading] = useState(true)
+  const supabase = createClient()
+
+  const loadProfile = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    setEmail(user.email ?? null)
+
+    const [driverRes, tripsRes] = await Promise.all([
+      supabase.from('drivers').select('*').eq('id', user.id).single(),
+      supabase
+        .from('bookings')
+        .select('id', { count: 'exact', head: true })
+        .eq('assigned_driver_id', user.id)
+        .in('status', ['completed', 'Completed']),
+    ])
+
+    if (driverRes.data) setDriver(driverRes.data)
+    setTripCount(tripsRes.count ?? 0)
+    setLoading(false)
+  }, [supabase])
+
+  useEffect(() => { loadProfile() }, [loadProfile])
+
+  const initials = driver?.full_name
+    ? driver.full_name.split(' ').map((n) => n[0]).join('').slice(0, 2)
+    : '?'
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#eaeff7] flex items-center justify-center">
+        <Loader2 className="animate-spin text-[#7a5c14]" size={28} />
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-[#eaeff7] px-4 pt-12 pb-4">
+      <h1 className="text-[#060C1A] font-bold text-xl mb-6">Profile</h1>
+
+      {/* Driver card */}
+      <div className="bg-white border border-[#c4d4e4] rounded-2xl p-5 mb-4">
+        <div className="flex items-center gap-4">
+          <div
+            className="w-16 h-16 rounded-2xl flex items-center justify-center text-xl font-bold text-[#020813] flex-shrink-0"
+            style={{ background: 'linear-gradient(135deg, #f1c56a, #d5a538 55%, #a97918)' }}
+          >
+            {initials}
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-[#060C1A] font-bold text-lg">{driver?.full_name ?? 'Driver'}</h2>
+            <p className="text-[#4f6580] text-xs mt-0.5">
+              {tripCount > 0 ? `${tripCount} trips completed` : 'No trips yet'}
+            </p>
+          </div>
+        </div>
+        <div className="mt-4 pt-4 border-t border-[#d8e6f0] space-y-2">
+          {email && (
+            <div className="flex items-center gap-2 text-[#3b5470] text-sm">
+              <Mail size={14} className="text-[#4f6580]" />
+              {email}
+            </div>
+          )}
+          {driver?.phone && (
+            <div className="flex items-center gap-2 text-[#3b5470] text-sm">
+              <Phone size={14} className="text-[#4f6580]" />
+              {driver.phone}
+            </div>
+          )}
+        </div>
+
+      </div>
+
+      {/* Vehicle */}
+      {(driver?.vehicle_model || driver?.vehicle_registration) && (
+        <div className="bg-white border border-[#c4d4e4] rounded-2xl p-4 mb-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Car size={14} className="text-[#7a5c14]" />
+            <p className="text-[#3b5470] text-xs font-semibold uppercase tracking-widest">Vehicle</p>
+          </div>
+          <div className="grid grid-cols-2 gap-y-3">
+            {driver.vehicle_model && (
+              <div>
+                <p className="text-[#4f6580] text-[10px] uppercase tracking-wide">Model</p>
+                <p className="text-[#060C1A] text-sm font-medium mt-0.5">{driver.vehicle_model}</p>
+              </div>
+            )}
+            {driver.vehicle_registration && (
+              <div>
+                <p className="text-[#4f6580] text-[10px] uppercase tracking-wide">Registration</p>
+                <p className="text-[#060C1A] text-sm font-medium mt-0.5 font-mono">{driver.vehicle_registration}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      <PushSettings />
+
+      {/* Menu rows */}
+      <div className="bg-white border border-[#c4d4e4] rounded-2xl overflow-hidden mb-4">
+        <button
+          onClick={() => router.push('/earnings')}
+          className="w-full flex items-center justify-between px-4 py-3.5 border-b border-[#d8e6f0] active:bg-[#dce8f2]"
+        >
+          <div className="flex items-center gap-3">
+            <PoundSterling size={16} className="text-[#4f6580]" />
+            <span className="text-[#1e3a5f] text-sm">Earnings</span>
+          </div>
+          <ChevronRight size={15} className="text-[#5a6f88]" />
+        </button>
+
+        <button
+          onClick={() => router.push('/earnings?view=report')}
+          className="w-full flex items-center justify-between px-4 py-3.5 border-b border-[#d8e6f0] active:bg-[#dce8f2]"
+        >
+          <div className="flex items-center gap-3">
+            <ClipboardList size={16} className="text-[#4f6580]" />
+            <span className="text-[#1e3a5f] text-sm">Trip History</span>
+          </div>
+          <div className="flex items-center gap-2">
+            {tripCount > 0 && <span className="text-[#4f6580] text-xs">{tripCount} trips</span>}
+            <ChevronRight size={15} className="text-[#5a6f88]" />
+          </div>
+        </button>
+
+        <button
+          onClick={() => router.push('/notifications')}
+          className="w-full flex items-center justify-between px-4 py-3.5 border-b border-[#d8e6f0] active:bg-[#dce8f2]"
+        >
+          <div className="flex items-center gap-3">
+            <Bell size={16} className="text-[#4f6580]" />
+            <span className="text-[#1e3a5f] text-sm">Notifications</span>
+          </div>
+          <ChevronRight size={15} className="text-[#5a6f88]" />
+        </button>
+
+        {business.phone && <a
+          href={`tel:${business.phone}`}
+          className="w-full flex items-center justify-between px-4 py-3.5 border-b border-[#d8e6f0] active:bg-[#dce8f2]"
+        >
+          <div className="flex items-center gap-3">
+            <Phone size={16} className="text-[#7a5c14]" />
+            <span className="text-[#1e3a5f] text-sm">Call Operations</span>
+          </div>
+          <span className="text-[#4f6580] text-xs">{business.name} Dispatch</span>
+        </a>}
+
+        {business.whatsapp && <a
+          href={business.whatsapp}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full flex items-center justify-between px-4 py-3.5 border-b border-[#d8e6f0] active:bg-[#dce8f2]"
+        >
+          <div className="flex items-center gap-3">
+            <MessageCircle size={16} className="text-green-800" />
+            <span className="text-[#1e3a5f] text-sm">WhatsApp Dispatch</span>
+          </div>
+          <ChevronRight size={15} className="text-[#5a6f88]" />
+        </a>}
+
+        <a
+          href={`mailto:${BRAND.supportEmail}`}
+          className="w-full flex items-center justify-between px-4 py-3.5 active:bg-[#dce8f2]"
+        >
+          <div className="flex items-center gap-3">
+            <HelpCircle size={16} className="text-[#4f6580]" />
+            <span className="text-[#1e3a5f] text-sm">Help &amp; Support</span>
+          </div>
+          <ChevronRight size={15} className="text-[#5a6f88]" />
+        </a>
+      </div>
+
+      {/* Your data: what is tracked and how long it is kept, plus a way to ask for a copy */}
+      <div className="bg-white border border-[#c4d4e4] rounded-2xl p-4 mb-4">
+        <h3 className="text-[#060C1A] font-semibold text-sm mb-2">Your data</h3>
+        <ul className="text-[#3b5470] text-xs leading-relaxed list-disc pl-4 space-y-1">
+          <li>Your location is shared only while a job is on its way: from Head to Pickup until the passenger is on board.</li>
+          <li>Only your latest position is kept. There is no travel history of where you have been.</li>
+          <li>Job records are kept for the business&apos;s own records, as set out in its privacy notice.</li>
+        </ul>
+        <a
+          href={`mailto:${BRAND.supportEmail}?subject=${encodeURIComponent('My data request')}`}
+          className="mt-3 inline-flex items-center gap-2 text-[#1e3a5f] text-sm font-semibold underline"
+        >
+          Ask for a copy of your data
+        </a>
+      </div>
+
+      {/* Logout */}
+      <form action={logout}>
+        <button
+          type="submit"
+          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl border border-red-200 text-red-800 text-sm font-semibold bg-red-100 active:opacity-70 transition-opacity"
+        >
+          <LogOut size={16} />
+          Sign Out
+        </button>
+      </form>
+
+      <p className="text-center text-[#c4d4e4] text-xs mt-4">{business.name} Driver v1.0</p>
+    </div>
+  )
+}

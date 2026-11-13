@@ -1,0 +1,1412 @@
+'use client'
+
+import { useState, use, useEffect, useCallback, useRef } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import {
+  ArrowLeft, Phone, MessageSquare, Navigation2, User, FileText, CheckCircle2,
+  AlertOctagon, ChevronRight, Loader2, Users, Luggage, CreditCard,
+  UserX, X, Car, MapPin, RefreshCw, Camera, Trash2, ArrowLeftRight, Banknote, Clock,
+} from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+import { useToast } from '@/components/toast'
+import { BookingStatusBadge } from '@/components/badges'
+import { PickupIcon, DropoffIcon } from '@/components/route-icons'
+import { JobMap } from '@/components/job-map'
+import { VerifiedFlightCard } from '@/components/verified-flight-card'
+import { formatDate, formatTime, isReturnLeg } from '@/lib/format'
+import { useBusiness } from '@/components/business'
+import {
+  customerUpdateSms, smsHref, type SmsDriver,
+  customerReminderSms, reminderInfo, ukToday, daysBetween,
+  WEEK_REMINDER_TYPE, REMINDER_TYPES, isReminderType, reminderLabel, type ReminderType,
+} from '@/lib/customer-sms'
+import type { Booking, BookingStatus } from '@/lib/types'
+import { STATUS_FLOW, TIMESTAMP_FIELD, PROGRESS_STEPS, STEP_LABELS, getGraceMinutes, formatPref, isNoShowJob } from '@/lib/job'
+
+// ─── SwipeToConfirm ───────────────────────────────────────────────────────────
+
+function SwipeToConfirm({
+  label,
+  onConfirm,
+  loading,
+  variant = 'gold',
+}: {
+  label: string
+  onConfirm: () => void
+  loading: boolean
+  variant?: 'gold' | 'green'
+}) {
+  const [dragX, setDragX] = useState(0)
+  const [dragging, setDragging] = useState(false)
+  const startXRef = useRef(0)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const THUMB = 56
+
+  const maxDrag = () => Math.max(0, (containerRef.current?.offsetWidth ?? 320) - THUMB - 8)
+
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (loading) return
+    e.currentTarget.setPointerCapture(e.pointerId)
+    startXRef.current = e.clientX - dragX
+    setDragging(true)
+  }
+
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragging) return
+    setDragX(Math.max(0, Math.min(maxDrag(), e.clientX - startXRef.current)))
+  }
+
+  const onPointerUp = () => {
+    if (!dragging) return
+    setDragging(false)
+    if (dragX >= maxDrag() * 0.80) {
+      setDragX(maxDrag())
+      onConfirm()
+    } else {
+      setDragX(0)
+    }
+  }
+
+  useEffect(() => { if (!loading) setDragX(0) }, [loading])
+
+  const progress = maxDrag() > 0 ? dragX / maxDrag() : 0
+  const rgb = variant === 'green' ? '16,185,129' : '213,165,56'
+  const thumbBg = variant === 'green'
+    ? 'linear-gradient(135deg, #34d399, #10b981 55%, #059669)'
+    : 'linear-gradient(135deg, #f1c56a, #d5a538 55%, #a97918)'
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative w-full h-16 rounded-2xl select-none overflow-hidden"
+      style={{ background: `rgba(${rgb},0.18)`, border: `1px solid rgba(${rgb},0.55)` }}
+    >
+      <div
+        className="absolute inset-y-0 left-0 rounded-2xl"
+        style={{
+          width: `${Math.min(100, (dragX + THUMB + 4) / (containerRef.current?.offsetWidth ?? 320) * 100)}%`,
+          background: `linear-gradient(90deg,rgba(${rgb},0.22) 0%,rgba(${rgb},${0.06 + progress * 0.16}) 100%)`,
+          transition: dragging ? 'none' : 'width 0.2s ease',
+        }}
+      />
+      <div className="absolute inset-0 flex items-center justify-end pr-4 pointer-events-none gap-0.5">
+        {[0.55, 0.30, 0.12].map((op, i) => (
+          <ChevronRight key={i} size={13} style={{ color: `rgba(${rgb},${op * (1 - progress * 0.9)})` }} />
+        ))}
+      </div>
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none pl-16">
+        <span className="text-sm font-bold" style={{ color: `rgba(6,12,26,${0.55 + progress * 0.35})` }}>
+          {label}
+        </span>
+      </div>
+      <div
+        className="absolute top-2 rounded-xl flex items-center justify-center touch-none cursor-grab active:cursor-grabbing"
+        style={{
+          left: `${dragX + 4}px`,
+          width: THUMB,
+          bottom: 8,
+          background: loading ? `rgba(${rgb},0.45)` : thumbBg,
+          transition: dragging ? 'none' : 'left 0.2s ease',
+          boxShadow: `0 2px 10px rgba(${rgb},0.35)`,
+        }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+      >
+        {loading
+          ? <Loader2 size={18} className="animate-spin text-[#020813]" />
+          : <ChevronRight size={22} className="text-[#020813]" strokeWidth={2.5} />
+        }
+      </div>
+    </div>
+  )
+}
+
+// ─── Wait timer ───────────────────────────────────────────────────────────────
+
+function WaitTimer({ since, graceMinutes }: { since: string | null; graceMinutes: number }) {
+  const [elapsed, setElapsed] = useState(0)
+  useEffect(() => {
+    if (!since) return
+    const update = () => setElapsed(Math.floor((Date.now() - new Date(since).getTime()) / 1000))
+    update()
+    const id = setInterval(update, 1000)
+    return () => clearInterval(id)
+  }, [since])
+
+  const elapsedMin = Math.floor(elapsed / 60)
+  const elapsedSec = elapsed % 60
+  const graceRemaining = graceMinutes * 60 - elapsed
+  const overtime = graceRemaining < 0
+  const overMinutes = Math.floor(Math.abs(graceRemaining) / 60)
+  const overSeconds = Math.abs(graceRemaining) % 60
+
+  return (
+    <div className="flex items-center gap-3">
+      <div>
+        <p className="text-[9px] font-semibold uppercase tracking-widest text-[#4f6580] mb-0.5">Waiting</p>
+        <span className="text-[#7a5c14] font-mono font-bold text-sm">
+          {String(elapsedMin).padStart(2, '0')}:{String(elapsedSec).padStart(2, '0')}
+        </span>
+      </div>
+      <div className="w-px h-7 bg-[#cad8e8]" />
+      <div>
+        <p className="text-[9px] font-semibold uppercase tracking-widest text-[#4f6580] mb-0.5">
+          {overtime ? 'Overtime' : 'Free wait'}
+        </p>
+        <span
+          className="font-mono font-bold text-sm"
+          style={{ color: overtime ? '#f87171' : 'rgba(255,255,255,0.5)' }}
+        >
+          {overtime ? '+' : ''}{String(overMinutes).padStart(2, '0')}:{String(overSeconds).padStart(2, '0')}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+// ─── Completion overlay ───────────────────────────────────────────────────────
+
+function CompletionOverlay({ ref: bookingRef, price, onDone }: { ref: string; price: number | null; onDone: () => void }) {
+  const wordmark = useBusiness().name.toUpperCase()
+  useEffect(() => {
+    const t = setTimeout(onDone, 3000)
+    return () => clearTimeout(t)
+  }, [onDone])
+
+  return (
+    <>
+      <style>{`
+        @keyframes evx-pop { 0%{transform:scale(0.4);opacity:0} 60%{transform:scale(1.1)} 100%{transform:scale(1);opacity:1} }
+        @keyframes evx-draw { 0%{stroke-dashoffset:80} 100%{stroke-dashoffset:0} }
+        @keyframes evx-fade { 0%{opacity:0;transform:translateY(12px)} 100%{opacity:1;transform:translateY(0)} }
+        @keyframes evx-ring { 0%,100%{box-shadow:0 0 0 0 rgba(52,211,153,0.5)} 50%{box-shadow:0 0 0 24px rgba(52,211,153,0)} }
+        .evx-pop { animation: evx-pop 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards }
+        .evx-draw { stroke-dasharray:80; stroke-dashoffset:80; animation: evx-draw 0.45s ease-out 0.45s forwards }
+        .evx-fade { opacity:0; animation: evx-fade 0.4s ease-out forwards }
+        .evx-ring { animation: evx-ring 1.5s ease-in-out 0.6s infinite }
+      `}</style>
+      <div
+        className="fixed inset-0 flex flex-col items-center justify-center"
+        style={{ background: '#060C1A', zIndex: 9999 }}
+      >
+        {/* Animated circle + check */}
+        <div className="evx-pop evx-ring mb-8 flex items-center justify-center rounded-full"
+          style={{ width: 120, height: 120, background: 'rgba(52,211,153,0.12)', border: '3px solid #34d399' }}>
+          <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+            <polyline
+              className="evx-draw"
+              points="14,29 24,39 42,18"
+              stroke="#34d399"
+              strokeWidth="4.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
+
+        {/* Text */}
+        <p className="evx-fade text-white font-bold text-2xl tracking-tight mb-1" style={{ animationDelay: '0.6s' }}>
+          Journey Complete
+        </p>
+        <p className="evx-fade text-emerald-400 text-sm font-semibold mb-6" style={{ animationDelay: '0.75s' }}>
+          {bookingRef}
+        </p>
+        {price != null && price > 0 && (
+          <p className="evx-fade font-bold text-3xl" style={{ color: '#d5a538', animationDelay: '0.85s' }}>
+            £{price.toFixed(2)}
+          </p>
+        )}
+
+        {/* Business wordmark */}
+        <p className="evx-fade absolute bottom-14 text-[#d5a538] text-xs font-bold tracking-[4px] opacity-40"
+          style={{ animationDelay: '1s' }}>{wordmark}</p>
+      </div>
+    </>
+  )
+}
+
+// ─── Payment modal ────────────────────────────────────────────────────────────
+
+function PaymentModal({
+  quotedPrice,
+  onConfirm,
+  onBack,
+  loading,
+}: {
+  quotedPrice: number | null
+  onConfirm: (method: 'Cash' | 'Card' | 'Bank Transfer') => void
+  onBack: () => void
+  loading: boolean
+}) {
+  // No default: the driver must say how the customer paid.
+  const [method, setMethod] = useState<'Cash' | 'Card' | 'Bank Transfer' | null>(null)
+  const [cashReceived, setCashReceived] = useState('')
+  const cashReceivedValid = method !== null && (method !== 'Cash' || parseFloat(cashReceived) > 0)
+
+  return (
+    <div className="fixed inset-0 flex flex-col justify-end" style={{ background: 'rgba(2,8,19,0.85)', zIndex: 9999 }}>
+      <div className="bg-white rounded-t-3xl px-5 pt-5 pb-10">
+        <div className="w-10 h-1 rounded-full bg-[#c4d4e4] mx-auto mb-5" />
+        <h2 className="text-[#060C1A] font-bold text-lg mb-1">How was payment made?</h2>
+        <p className="text-[#4f6580] text-xs mb-5">Confirm before completing the journey</p>
+
+        <div className="grid grid-cols-3 gap-3 mb-5">
+          {(['Card', 'Cash', 'Bank Transfer'] as const).map((m) => {
+            const active = method === m
+            return (
+              <button
+                key={m}
+                onClick={() => setMethod(m)}
+                className="py-4 rounded-2xl flex flex-col items-center gap-2 transition-all active:opacity-70"
+                style={
+                  active
+                    ? m === 'Cash'
+                      ? { background: 'rgba(213,165,56,0.12)', border: '2px solid rgba(213,165,56,0.5)', color: '#7a5c14' }
+                      : { background: 'rgba(16,185,129,0.12)', border: '2px solid rgba(16,185,129,0.4)', color: '#047857' }
+                    : { background: '#f0f5fa', border: '2px solid #e2eaf2', color: '#4f6580' }
+                }
+              >
+                {m === 'Card' && <CreditCard size={20} />}
+                {m === 'Cash' && <Banknote size={20} />}
+                {m === 'Bank Transfer' && <ArrowLeftRight size={20} />}
+                <span className="text-xs font-bold">{m === 'Bank Transfer' ? 'Transfer' : m}</span>
+                {m === 'Card' && <span className="text-[10px] font-normal opacity-60">Paid to office</span>}
+              </button>
+            )
+          })}
+        </div>
+
+        {method === 'Cash' && (
+          <div className="mb-5">
+            <p className="text-[#4f6580] text-[10px] uppercase tracking-wide mb-2">Cash Received</p>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7a5c14] font-bold text-sm">£</span>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="0.00"
+                value={cashReceived}
+                onChange={e => setCashReceived(e.target.value)}
+                autoFocus
+                className="w-full bg-[#dce8f2] border border-[#d5a538]/30 rounded-xl pl-7 pr-3 py-3 text-[#060C1A] text-sm font-semibold focus:outline-none focus:border-[#d5a538]/60"
+              />
+            </div>
+            {cashReceived && parseFloat(cashReceived) > 0 && quotedPrice != null && quotedPrice > 0 && (
+              <p className="text-[#4f6580] text-xs mt-1.5 text-right">
+                Change: £{Math.max(0, parseFloat(cashReceived) - quotedPrice).toFixed(2)}
+              </p>
+            )}
+          </div>
+        )}
+
+        {(method === 'Card' || method === 'Bank Transfer') && (
+          <div className="mb-5 flex items-center gap-2 bg-emerald-100 border border-emerald-200 rounded-xl px-3 py-2.5">
+            <CheckCircle2 size={14} className="text-emerald-800 flex-shrink-0" />
+            <p className="text-emerald-800 text-xs font-semibold">
+              {method === 'Card' ? 'Card or payment link — nothing to collect, the office records the payment' : 'Bank transfer — nothing to collect, the office confirms the payment'}
+            </p>
+          </div>
+        )}
+
+        <div className="flex gap-3">
+          <button
+            onClick={onBack}
+            disabled={loading}
+            className="flex-1 py-3.5 rounded-xl text-sm font-semibold text-[#4f6580] border border-[#c4d4e4] bg-[#dce8f2] active:opacity-70 disabled:opacity-40"
+          >
+            Back
+          </button>
+          <button
+            onClick={() => { if (method) onConfirm(method) }}
+            disabled={loading || !cashReceivedValid}
+            className="px-5 py-3.5 rounded-xl text-sm font-bold text-[#020813] flex items-center justify-center gap-2 disabled:opacity-50"
+            style={{ flex: 2, background: 'linear-gradient(135deg, #34d399, #10b981 55%, #059669)' }}
+          >
+            {loading ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
+            {loading ? 'Completing…' : 'Confirm & Complete'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Navigation helper ────────────────────────────────────────────────────────
+
+function openMaps(destination: string, from?: string) {
+  const dest = encodeURIComponent(destination)
+  const url = from
+    ? `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(from)}&destination=${dest}&travelmode=driving`
+    : `https://www.google.com/maps/dir/?api=1&destination=${dest}&travelmode=driving`
+  window.open(url, '_blank')
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
+export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
+  const router = useRouter()
+  const business = useBusiness()
+  const supabase = createClient()
+  const { addToast } = useToast()
+
+  const [booking, setBooking] = useState<Booking | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [updating, setUpdating] = useState(false)
+  const [updateError, setUpdateError] = useState<string | null>(null)
+  const [noShowConfirm, setNoShowConfirm] = useState(false)
+  const [driverNote, setDriverNote] = useState('')
+  const [savingNote, setSavingNote] = useState(false)
+  const [noteSaved, setNoteSaved] = useState(false)
+
+  // 5-second undo buffer after "Passenger On Board"
+  const [pobUndoActive, setPobUndoActive] = useState(false)
+  const [pobCountdown, setPobCountdown] = useState(5)
+  const pobTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pobIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  // Expense modal shown before completing journey
+
+  // Payment modal + completion overlay
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [showCompletion, setShowCompletion] = useState(false)
+
+  // Pre-filled customer update SMS (opened from the driver's own phone on swipe)
+  const [smsDriver, setSmsDriver] = useState<SmsDriver | null>(null)
+  const [pendingSms, setPendingSms] = useState<{ href: string; label: string } | null>(null)
+
+  // Customer reminders, week ahead and day before (driver_sms_reminders,
+  // one row per type per leg)
+  const [driverId, setDriverId] = useState<string | null>(null)
+  const [reminders, setReminders] = useState<Record<string, { status: string; sent_at: string | null }>>({})
+  const [reminderFocus, setReminderFocus] = useState<ReminderType | null>(null)
+  const reminderRef = useRef<HTMLDivElement>(null)
+
+  // Photo / damage reports
+  // `url` in state is always a short-lived signed URL (bucket is private).
+  // `booking_photos.url` in the DB stores the storage path (new uploads) or
+  // the legacy public URL (old rows — path is extracted on load).
+  interface BookingPhoto { id: string; url: string; caption: string | null; created_at: string }
+  const [photos, setPhotos] = useState<BookingPhoto[]>([])
+  const [uploadingPhoto, setUploadingPhoto] = useState(false)
+  const photoInputRef = useRef<HTMLInputElement>(null)
+
+  // Extract the storage path from either a raw path or a legacy public URL.
+  const extractPhotoPath = (urlOrPath: string): string | null => {
+    if (urlOrPath.startsWith('http')) {
+      const part = urlOrPath.split('/job-photos/')[1]
+      return part ?? null
+    }
+    return urlOrPath || null
+  }
+
+  const loadBooking = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    const [bookingRes, photosRes, driverRes, remindersRes] = await Promise.all([
+      supabase.from('bookings').select('*').eq('id', id).single(),
+      supabase.from('booking_photos').select('id, url, caption, created_at').eq('booking_id', id).order('created_at', { ascending: true }),
+      user
+        ? supabase.from('drivers').select('full_name, vehicle_model, vehicle_registration').eq('id', user.id).single()
+        : Promise.resolve({ data: null }),
+      supabase.from('driver_sms_reminders').select('reminder_type, status, sent_at')
+        .eq('booking_id', id).in('reminder_type', [...REMINDER_TYPES]),
+    ])
+    if (user) setDriverId(user.id)
+    if (driverRes.data) setSmsDriver(driverRes.data as SmsDriver)
+    if (remindersRes.data) {
+      setReminders(Object.fromEntries(remindersRes.data.map(r => [r.reminder_type, { status: r.status, sent_at: r.sent_at }])))
+    }
+    if (bookingRes.data) {
+      setBooking(bookingRes.data as Booking)
+      setDriverNote(bookingRes.data.driver_notes ?? '')
+    }
+    if (photosRes.data && photosRes.data.length > 0) {
+      const paths = photosRes.data.map(p => extractPhotoPath(p.url)).filter(Boolean) as string[]
+      const { data: signed } = await supabase.storage.from('job-photos').createSignedUrls(paths, 3600)
+      const signedMap = new Map((signed ?? []).map(s => [s.path, s.signedUrl]))
+      setPhotos(photosRes.data.map((p, i) => ({
+        ...p,
+        url: signedMap.get(paths[i]) ?? p.url,
+      })))
+    }
+    setLoading(false)
+  }, [id, supabase])
+
+  useEffect(() => { loadBooking() }, [loadBooking])
+
+  // Opened from a reminder notification (?reminder=24hr or ?reminder=7day):
+  // bring that reminder action into view once the booking has loaded.
+  useEffect(() => {
+    const type = new URLSearchParams(window.location.search).get('reminder')
+    if (isReminderType(type)) setReminderFocus(type)
+  }, [])
+
+  useEffect(() => {
+    if (!loading && reminderFocus) reminderRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, [loading, reminderFocus])
+
+  useEffect(() => {
+    const channel = supabase
+      .channel(`booking-${id}`)
+      .on('postgres_changes', {
+        event: 'UPDATE', schema: 'public', table: 'bookings', filter: `id=eq.${id}`,
+      }, (payload) => { setBooking(payload.new as Booking) })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [id, supabase])
+
+  useEffect(() => () => {
+    if (pobTimerRef.current) clearTimeout(pobTimerRef.current)
+    if (pobIntervalRef.current) clearInterval(pobIntervalRef.current)
+  }, [])
+
+  // ── GPS tracking (En Route + Arrived) ────────────────────────────────────────
+  const gpsWatchRef = useRef<number | null>(null)
+  const gpsLastPushRef = useRef<number>(0)
+
+  const bookingStatus = booking?.status
+  const bookingDriverId = booking?.assigned_driver_id
+
+  // Stop tracking when the driver leaves this screen. Tracking only ever runs while the
+  // screen is open on an active job; it must not carry on in the background.
+  useEffect(() => () => {
+    if (gpsWatchRef.current != null && typeof navigator !== 'undefined' && navigator.geolocation) {
+      navigator.geolocation.clearWatch(gpsWatchRef.current)
+      gpsWatchRef.current = null
+    }
+  }, [])
+
+  useEffect(() => {
+    const statusNeedsGps = bookingStatus && ['En Route', 'en_route', 'Arrived', 'arrived'].includes(bookingStatus)
+    const driverId = bookingDriverId
+
+    if (!statusNeedsGps || !driverId || typeof navigator === 'undefined' || !navigator.geolocation) {
+      if (gpsWatchRef.current != null) {
+        navigator.geolocation.clearWatch(gpsWatchRef.current)
+        gpsWatchRef.current = null
+      }
+      return
+    }
+
+    if (gpsWatchRef.current != null) return // already watching
+
+    gpsWatchRef.current = navigator.geolocation.watchPosition(
+      async (pos) => {
+        const now = Date.now()
+        if (now - gpsLastPushRef.current < 30_000) return
+        gpsLastPushRef.current = now
+        await supabase.from('drivers').update({
+          current_lat: pos.coords.latitude,
+          current_lng: pos.coords.longitude,
+          location_updated_at: new Date().toISOString(),
+        }).eq('id', driverId)
+      },
+      (err) => console.warn('[GPS]', err.message),
+      { enableHighAccuracy: true, maximumAge: 15_000, timeout: 10_000 },
+    )
+
+    return () => {
+      if (gpsWatchRef.current != null) {
+        navigator.geolocation.clearWatch(gpsWatchRef.current)
+        gpsWatchRef.current = null
+      }
+    }
+  }, [bookingStatus, bookingDriverId, supabase])
+
+  // Ask for location up front on "Head to Pickup" so the permission prompt
+  // appears while the driver is still on this screen, and push a first fix
+  // straight away so the customer can see the car before the 30s watch kicks in.
+  const requestLocationNow = (driverId: string | null) =>
+    new Promise<void>((resolve) => {
+      if (typeof navigator === 'undefined' || !navigator.geolocation) return resolve()
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          // Always resolve, even if saving the position fails: the status update waits on
+          // this, and a stuck promise would leave the job screen 'updating' with no text sent.
+          try {
+            if (driverId) {
+              gpsLastPushRef.current = Date.now()
+              await supabase.from('drivers').update({
+                current_lat: pos.coords.latitude,
+                current_lng: pos.coords.longitude,
+                location_updated_at: new Date().toISOString(),
+              }).eq('id', driverId)
+            }
+          } catch (err) {
+            console.warn('[GPS] could not save position', err)
+          } finally {
+            resolve()
+          }
+        },
+        (err) => {
+          addToast({ title: 'Location off', message: 'Enable location so the customer can track you.' })
+          console.warn('[GPS]', err.message)
+          resolve()
+        },
+        { enableHighAccuracy: true, maximumAge: 15_000, timeout: 8_000 },
+      )
+    })
+
+  const openCustomerSms = (status: BookingStatus, b: Booking) => {
+    if (!b.customer_phone) return
+    const body = customerUpdateSms(status, b, smsDriver, business)
+    if (!body) return
+    const href = smsHref(b.customer_phone, body)
+    setPendingSms({ href, label: status === 'En Route' ? 'Text customer: on my way' : 'Text customer: arrived' })
+    window.location.href = href
+  }
+
+  // Tap 1 opens Messages with the reminder pre-filled; the driver presses Send
+  // (tap 2). Recorded as sent straight away so it can't go out twice by accident.
+  const sendCustomerReminder = async (type: ReminderType, again = false) => {
+    if (!booking?.customer_phone || !driverId) return
+    if (again && !window.confirm('This reminder has already been sent. Open it again?')) return
+    const info = reminderInfo(booking)
+    const body = customerReminderSms(booking, business)
+    const now = new Date().toISOString()
+    setReminders(prev => ({ ...prev, [type]: { status: 'sent', sent_at: now } }))
+    window.location.href = smsHref(booking.customer_phone, body)
+    const { error } = await supabase.from('driver_sms_reminders').upsert({
+      booking_id: booking.id,
+      driver_id: driverId,
+      reminder_type: type,
+      customer_name: booking.customer_name,
+      customer_phone: booking.customer_phone,
+      travel_date: info.date,
+      travel_time: info.time,
+      message: body,
+      status: 'sent',
+      opened_at: now,
+      sent_at: now,
+    }, { onConflict: 'booking_id,reminder_type' })
+    if (error) {
+      console.error(`[${type} reminder]`, error.message)
+      addToast({ title: 'Reminder not saved', message: 'Messages opened, but it could not be marked as sent. Check your signal.' })
+    }
+  }
+
+  const triggerReceiptEmail = (bookingId: string) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+      if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`
+      fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/send-journey-receipt`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ bookingId }),
+      }).catch(() => {})
+    })
+  }
+
+  const handleStatusUpdate = async (nextStatus: BookingStatus, triggerUndo = true) => {
+    if (!booking || updating) return
+    setUpdating(true)
+    setUpdateError(null)
+    setPendingSms(null)
+    setPobUndoActive(false)
+    if (pobTimerRef.current) clearTimeout(pobTimerRef.current)
+    if (pobIntervalRef.current) clearInterval(pobIntervalRef.current)
+
+    const tsField = TIMESTAMP_FIELD[nextStatus]
+    const now = new Date().toISOString()
+    const patch: Record<string, string> = { status: nextStatus, updated_at: now }
+    if (tsField) patch[tsField] = now
+
+    const { data, error } = await supabase.from('bookings').update(patch).eq('id', booking.id).select('id')
+
+    // No row back = the update didn't apply (e.g. the office has just taken
+    // the job off this driver).
+    if (error || !data?.length) {
+      setUpdateError(error?.message ?? 'This job could not be updated. It may have been changed by the office. Refresh and try again.')
+    } else {
+      const updated = { ...booking, status: nextStatus, ...(tsField ? { [tsField]: now } : {}) } as Booking
+      setBooking(updated)
+
+      // triggerUndo is false only when undoing On Board — no customer text then.
+      if (triggerUndo) {
+        if (nextStatus === 'En Route') await requestLocationNow(booking.assigned_driver_id)
+        openCustomerSms(nextStatus, updated)
+      }
+
+      if (nextStatus === 'Passenger On Board' && triggerUndo) {
+        setPobCountdown(5)
+        setPobUndoActive(true)
+        pobIntervalRef.current = setInterval(() => {
+          setPobCountdown(c => {
+            if (c <= 1) { clearInterval(pobIntervalRef.current!); return 0 }
+            return c - 1
+          })
+        }, 1000)
+        pobTimerRef.current = setTimeout(() => { setPobUndoActive(false) }, 5000)
+      }
+    }
+    setUpdating(false)
+  }
+
+  const handleUndoPob = async () => {
+    if (pobTimerRef.current) clearTimeout(pobTimerRef.current)
+    if (pobIntervalRef.current) clearInterval(pobIntervalRef.current)
+    setPobUndoActive(false)
+    await handleStatusUpdate('Arrived', false)
+  }
+
+  // paymentMethod null = a return leg, paid with its outbound booking: the
+  // payment fields are left as they are.
+  const handleComplete = async (paymentMethod: 'Cash' | 'Card' | 'Bank Transfer' | null) => {
+    if (!booking) return
+    setShowPaymentModal(false)
+    setUpdating(true)
+    setUpdateError(null)
+
+    const now = new Date().toISOString()
+    // Payment status is left to the office (and Stripe): the driver only says how
+    // the customer paid.
+    const { data, error } = await supabase.from('bookings').update({
+      status: 'Completed', completed_at: now, updated_at: now,
+      ...(paymentMethod ? { payment_method: paymentMethod } : {}),
+    }).eq('id', booking.id).select('id')
+
+    if (error || !data?.length) {
+      setUpdateError(error?.message ?? 'This job could not be updated. It may have been changed by the office. Refresh and try again.')
+    } else {
+      setBooking({ ...booking, status: 'Completed', completed_at: now, payment_method: paymentMethod ?? booking.payment_method })
+      setShowCompletion(true)
+      // Fire-and-forget receipt emails
+      triggerReceiptEmail(booking.id)
+    }
+    setUpdating(false)
+  }
+
+  const handleNoShow = async () => {
+    if (!booking || updating) return
+    setUpdating(true)
+    setUpdateError(null)
+    setNoShowConfirm(false)
+    const noShowNote = [driverNote.trim(), '[No Show] Passenger was not at the pickup location.']
+      .filter(Boolean).join('\n\n')
+    const { data, error } = await supabase.from('bookings').update({
+      status: 'No Show', driver_notes: noShowNote, updated_at: new Date().toISOString(),
+    }).eq('id', booking.id).select('id')
+    // No row back = the update didn't apply (for example the office has moved the job on).
+    // Don't show 'No Show' on screen unless it was saved.
+    if (error || !data?.length) {
+      setUpdateError(error?.message ?? 'The no show could not be saved. The job may have been changed by the office. Refresh and try again.')
+    } else {
+      setBooking({ ...booking, status: 'No Show', driver_notes: noShowNote })
+      setDriverNote(noShowNote)
+    }
+    setUpdating(false)
+  }
+
+  const uploadPhoto = async (file: File) => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user || !booking || uploadingPhoto) return
+    setUploadingPhoto(true)
+    const ext = file.name.split('.').pop() ?? 'jpg'
+    const path = `${user.id}/${booking.id}/${crypto.randomUUID()}.${ext}`
+    const { error: upErr } = await supabase.storage.from('job-photos').upload(path, file, { upsert: false })
+    if (upErr) {
+      addToast({ title: 'Upload failed', message: upErr.message })
+    } else {
+      // Store the storage path (not a public URL) — bucket is private.
+      const { data: row, error: rowErr } = await supabase.from('booking_photos')
+        .insert({ booking_id: booking.id, driver_id: user.id, url: path })
+        .select('id, url, caption, created_at').single()
+      if (rowErr) {
+        addToast({ title: 'Photo saved but record failed', message: rowErr.message })
+      } else if (row) {
+        // Generate a signed URL for immediate display
+        const { data: signed } = await supabase.storage.from('job-photos').createSignedUrl(path, 3600)
+        setPhotos(prev => [...prev, { ...row, url: signed?.signedUrl ?? row.url }])
+      }
+    }
+    setUploadingPhoto(false)
+  }
+
+  const deletePhoto = async (photoId: string) => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    // Fetch the DB row to get the stored path (state `url` is a signed URL).
+    const { data: row } = await supabase.from('booking_photos').select('url').eq('id', photoId).single()
+    const storedUrl = row?.url ?? ''
+    const rawPath = storedUrl.split('/job-photos/')[1]?.split('?')[0] ?? ''
+    const path = storedUrl.startsWith('http') ? rawPath : storedUrl
+    if (path) {
+      const { error: storageErr } = await supabase.storage.from('job-photos').remove([path])
+      if (storageErr) {
+        addToast({ title: 'Delete failed', message: storageErr.message })
+        return
+      }
+    }
+    const { error: dbErr } = await supabase.from('booking_photos').delete().eq('id', photoId)
+    if (dbErr) {
+      addToast({ title: 'Delete failed', message: dbErr.message })
+      return
+    }
+    setPhotos(prev => prev.filter(p => p.id !== photoId))
+  }
+
+  const saveNote = async () => {
+    if (!booking) return
+    setSavingNote(true)
+    const { error } = await supabase.from('bookings').update({ driver_notes: driverNote }).eq('id', booking.id)
+    setSavingNote(false)
+    if (error) {
+      addToast({ title: 'Note not saved', message: error.message })
+    } else {
+      setNoteSaved(true)
+      setTimeout(() => setNoteSaved(false), 2500)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#eaeff7] flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-2 border-[#d5a538] border-t-transparent animate-spin" />
+      </div>
+    )
+  }
+
+  if (!booking) {
+    return (
+      <div className="min-h-screen bg-[#eaeff7] flex items-center justify-center">
+        <p className="text-[#4f6580]">Booking not found</p>
+      </div>
+    )
+  }
+
+  // ── Derived state ──────────────────────────────────────────────────────────
+
+  const nextStep = STATUS_FLOW.find(s => s.from === booking.status)
+  const isDone = ['completed', 'Completed', 'cancelled', 'Cancelled', 'rejected', 'No Show'].includes(booking.status)
+  // A no-show is its own status now; older ones were Cancelled with a note.
+  const isNoShow = isNoShowJob(booking)
+  const isEnRoute = ['En Route', 'en_route'].includes(booking.status)
+  const isArrived = ['Arrived', 'arrived'].includes(booking.status)
+  const isPob = booking.status === 'Passenger On Board'
+  const isActive = isPob || ['active', 'Active'].includes(booking.status)
+  const isCompleted = ['completed', 'Completed'].includes(booking.status)
+
+  const progressIndex = PROGRESS_STEPS.findIndex(s => s === booking.status)
+  const showProgress = progressIndex >= 0 || isCompleted
+
+  // Only allow initial dispatch transitions within 24 h of pickup;
+  // mid-job statuses (En Route and beyond) are always unlocked.
+  const jobDateTime = booking.travel_date
+    ? new Date(`${booking.travel_date}T${booking.travel_time ?? '00:00:00'}`)
+    : null
+  const withinSwipeWindow =
+    isEnRoute || isArrived || isPob || isActive ||
+    !jobDateTime ||
+    (jobDateTime.getTime() - Date.now()) / 3_600_000 <= 24
+
+  const pickupAddress = booking.pickup_location ?? booking.airport ?? '—'
+  const dropoffAddress = booking.dropoff_address ?? booking.airport ?? '—'
+  const bookingRef = booking.ref ?? booking.id.slice(0, 8).toUpperCase()
+  const noteChanged = driverNote !== (booking.driver_notes ?? '')
+  const showNotes = booking.operator_note || !isDone || (isDone && booking.driver_notes)
+  const showNoShow = (isEnRoute || isArrived) && !isDone
+  const graceMinutes = getGraceMinutes(booking.journey_type, booking.flight_number, booking.wait_time_minutes)
+  const prefs = booking.passenger_preferences ?? []
+
+  // Day-before reminder: offered on the UK day before (or the day of) the
+  // pickup, until the journey starts. Week-ahead reminder: offered 2-7 days
+  // before, once the website has handed one off (or when opened from its
+  // notification). A return trip is its own booking, with its own reminders.
+  type ReminderView = { type: ReminderType; state: 'ready' | 'sent' | 'no-phone' | 'closed'; note?: string; sentAt?: string | null }
+  const ukNow = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date())
+  const isCancelledBooking = ['cancelled', 'Cancelled', 'rejected'].includes(booking.status)
+  const journeyStarted = !['pending', 'accepted', 'confirmed', 'Dispatched'].includes(booking.status)
+  const reminderViewFor = (type: ReminderType): ReminderView | null => {
+    const focused = reminderFocus === type
+    const info = reminderInfo(booking)
+    if (!info.date) return null
+    const days = daysBetween(ukToday(), info.date)
+    const row = reminders[type]
+    const inWindow = type === WEEK_REMINDER_TYPE
+      ? days >= 2 && days <= 7 && (Boolean(row) || focused)
+      : days === 0 || days === 1 || (focused && days > 1)
+    if (!inWindow) return null
+    if (row?.status === 'sent') return { type, state: 'sent', sentAt: row.sent_at }
+    const closed = (note: string): ReminderView | null => (focused ? { type, state: 'closed', note } : null)
+    if (isCancelledBooking || isNoShow) return closed('this booking has been cancelled.')
+    if (journeyStarted) return closed(isCompleted ? 'this journey has already been completed.' : 'this journey is already under way.')
+    if (days === 0 && info.time && info.time.slice(0, 5) <= ukNow) return closed('the pickup time has already passed.')
+    if (!booking.customer_phone) return { type, state: 'no-phone' }
+    return { type, state: 'ready' }
+  }
+  const reminderViews = REMINDER_TYPES.map(reminderViewFor).filter((v): v is ReminderView => v !== null)
+
+  return (
+    <>
+      <div className="min-h-screen bg-[#eaeff7] pb-8">
+
+        {/* Header */}
+        <div className="px-4 pt-12 pb-4 flex items-center gap-3 border-b border-[#d8e6f0]">
+          <button
+            onClick={() => router.back()}
+            className="w-9 h-9 rounded-xl bg-[#dce8f2] flex items-center justify-center active:opacity-70"
+          >
+            <ArrowLeft size={18} className="text-[#2d4c6d]" />
+          </button>
+          <div className="flex-1">
+            <h1 className="text-[#060C1A] font-semibold text-base">{bookingRef}</h1>
+            <div className="mt-0.5"><BookingStatusBadge status={booking.status} /></div>
+          </div>
+        </div>
+
+        <div className="px-4 pt-4 space-y-3">
+
+          {/* ── Journey action card ──────────────────────────────────────── */}
+          {(nextStep || isCompleted || isNoShow || reminderViews.length > 0) && (
+            <div
+              className="rounded-2xl p-4 space-y-4"
+              style={{
+                background: isCompleted ? 'rgba(16,185,129,0.06)' : 'rgba(213,165,56,0.04)',
+                border: isCompleted ? '1px solid rgba(16,185,129,0.2)' : '1px solid rgba(213,165,56,0.15)',
+              }}
+            >
+              {/* Stage context */}
+              {(isEnRoute || isArrived || isPob) && (
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ background: 'rgba(213,165,56,0.12)', border: '1px solid rgba(213,165,56,0.2)' }}
+                  >
+                    {isEnRoute && <Navigation2 size={18} className="text-[#7a5c14]" />}
+                    {isArrived  && <MapPin size={18} className="text-[#7a5c14]" />}
+                    {isPob      && <Car size={18} className="text-[#7a5c14]" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    {isEnRoute && (
+                      <>
+                        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#4f6580] mb-0.5">En Route to Pickup</p>
+                        <p className="text-[#060C1A] text-sm font-medium leading-snug truncate">{pickupAddress}</p>
+                      </>
+                    )}
+                    {isArrived && (
+                      <>
+                        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#4f6580] mb-1">Arrived — Waiting</p>
+                        <WaitTimer since={booking.arrived_at} graceMinutes={graceMinutes} />
+                      </>
+                    )}
+                    {isPob && (
+                      <>
+                        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#4f6580] mb-0.5">Passenger On Board</p>
+                        <p className="text-[#060C1A] text-sm font-medium leading-snug truncate">{dropoffAddress}</p>
+                      </>
+                    )}
+                  </div>
+                  {(isEnRoute || isPob) && (
+                    <button
+                      onClick={() => openMaps(isActive ? dropoffAddress : pickupAddress)}
+                      className="flex items-center gap-1.5 text-[#7a5c14] text-xs font-semibold flex-shrink-0 bg-[#d5a538]/10 px-3 py-2 rounded-xl active:opacity-70"
+                    >
+                      <Navigation2 size={12} /> Go
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Completed */}
+              {isCompleted && (
+                <div className="text-center py-2">
+                  <CheckCircle2 size={32} className="mx-auto mb-2 text-green-800" />
+                  <p className="text-green-800 font-bold text-lg">Journey Complete</p>
+                  {booking.quoted_price != null && booking.quoted_price > 0 && (
+                    <p className="text-green-800 text-sm mt-1">£{booking.quoted_price.toFixed(2)}</p>
+                  )}
+                  <Link href={`/jobs/${booking.id}/receipt`} className="inline-flex items-center gap-1.5 mt-3 px-4 py-2 rounded-xl bg-[#dce8f2] border border-[#c4d4e4] text-[#3b5470] text-sm font-medium hover:bg-[#dce8f2] transition-colors">
+                    <FileText size={14} />
+                    View Receipt
+                  </Link>
+                </div>
+              )}
+
+              {/* No Show */}
+              {isNoShow && !isCompleted && (
+                <div className="text-center py-2">
+                  <UserX size={32} className="mx-auto mb-2 text-amber-800" />
+                  <p className="text-amber-800 font-bold">Passenger No Show</p>
+                </div>
+              )}
+
+              {/* 5-second undo after POB */}
+              {pobUndoActive && (
+                <div className="flex items-center justify-between bg-[#d5a538]/10 border border-[#d5a538]/25 rounded-xl px-4 py-3">
+                  <span className="text-[#3b5470] text-sm">Passenger On Board set</span>
+                  <button
+                    onClick={handleUndoPob}
+                    className="text-[#7a5c14] text-sm font-bold flex items-center gap-2"
+                  >
+                    Undo
+                    <span className="w-6 h-6 rounded-full border-2 border-[#d5a538]/60 flex items-center justify-center text-[11px] font-bold text-[#7a5c14]">
+                      {pobCountdown}
+                    </span>
+                  </button>
+                </div>
+              )}
+
+              {/* Customer reminders — same two-tap text as the progress updates */}
+              {reminderViews.map(r => {
+                return (
+                  <div
+                    key={r.type}
+                    ref={reminderFocus === r.type ? reminderRef : undefined}
+                    className={reminderFocus === r.type ? 'rounded-xl ring-2 ring-[#d5a538]/50 ring-offset-2 ring-offset-[#eaeff7]' : ''}
+                  >
+                    {r.state === 'ready' && (
+                      <button
+                        onClick={() => sendCustomerReminder(r.type)}
+                        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-[#060C1A] bg-white border border-[#d5a538]/40 active:opacity-70"
+                      >
+                        <MessageSquare size={15} className="text-[#7a5c14]" />
+                        Send {reminderLabel(r.type)}
+                      </button>
+                    )}
+                    {r.state === 'sent' && (
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-green-600 bg-green-100 border border-green-200">
+                          <CheckCircle2 size={15} />
+                          {reminderLabel(r.type)} Sent ✓
+                        </div>
+                        {booking.customer_phone && (
+                          <button
+                            onClick={() => sendCustomerReminder(r.type, true)}
+                            aria-label="Open the reminder again"
+                            className="w-11 h-11 rounded-xl flex items-center justify-center border border-[#c4d4e4] bg-[#dce8f2] active:opacity-70"
+                          >
+                            <RefreshCw size={16} className="text-[#4f6580]" />
+                          </button>
+                        )}
+                      </div>
+                    )}
+                    {r.state === 'no-phone' && (
+                      <div className="flex items-center justify-center gap-2 py-3 px-3 rounded-xl text-xs font-medium text-amber-600 bg-amber-100 border border-amber-200 text-center">
+                        <AlertOctagon size={14} className="flex-shrink-0" />
+                        No customer phone number, so the {reminderLabel(r.type).toLowerCase()} can&apos;t be sent. Please let the office know.
+                      </div>
+                    )}
+                    {r.state === 'closed' && (
+                      <p className="py-2 text-xs text-[#4f6580] text-center">No {reminderLabel(r.type).toLowerCase()} needed: {r.note}</p>
+                    )}
+                  </div>
+                )
+              })}
+
+              {/* Pre-filled customer text — fallback if Messages didn't open */}
+              {pendingSms && !pobUndoActive && (
+                <div className="flex items-center gap-2">
+                  <a
+                    href={pendingSms.href}
+                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-[#060C1A] bg-white border border-[#d5a538]/40 active:opacity-70"
+                  >
+                    <MessageSquare size={15} className="text-[#7a5c14]" />
+                    {pendingSms.label}
+                  </a>
+                  <button
+                    onClick={() => setPendingSms(null)}
+                    aria-label="Dismiss"
+                    className="w-11 h-11 rounded-xl flex items-center justify-center border border-[#c4d4e4] bg-[#dce8f2] active:opacity-70"
+                  >
+                    <X size={16} className="text-[#4f6580]" />
+                  </button>
+                </div>
+              )}
+
+              {/* Swipe action */}
+              {nextStep && !pobUndoActive && (
+                <>
+                  {withinSwipeWindow ? (
+                    <SwipeToConfirm
+                      label={nextStep.label}
+                      onConfirm={() => {
+                        if (nextStep.to === 'Completed') {
+                          // Return legs are paid with the outbound; paid bookings need no question.
+                          if (isReturnLeg(booking.notes) || String(booking.payment_status ?? '').toLowerCase() === 'paid') handleComplete(null)
+                          else setShowPaymentModal(true)
+                        } else {
+                          handleStatusUpdate(nextStep.to)
+                        }
+                      }}
+                      loading={updating}
+                      variant={nextStep.to === 'Completed' ? 'green' : 'gold'}
+                    />
+                  ) : (
+                    <div className="w-full h-16 rounded-2xl bg-[#f0f5fa] border border-[#c4d4e4] flex items-center justify-center gap-2">
+                      <Clock size={14} className="text-[#4f6580]" />
+                      <span className="text-[#4f6580] text-sm font-semibold">Available 24 h before pickup</span>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* No Show */}
+              {showNoShow && !pobUndoActive && (
+                noShowConfirm ? (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setNoShowConfirm(false)}
+                      className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-[#4f6580] border border-[#c4d4e4] bg-[#dce8f2] active:opacity-70"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleNoShow}
+                      disabled={updating}
+                      className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-amber-800 border border-amber-300 bg-amber-100 active:opacity-70 disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      <UserX size={14} /> Confirm No Show
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setNoShowConfirm(true)}
+                    className="w-full py-2.5 rounded-xl text-sm font-semibold text-amber-800 border border-amber-200 bg-amber-50 active:opacity-70 flex items-center justify-center gap-2"
+                  >
+                    <UserX size={14} /> Passenger No Show
+                  </button>
+                )
+              )}
+            </div>
+          )}
+
+          {/* ── Progress stepper ─────────────────────────────────────────── */}
+          {showProgress && (
+            <div className="bg-white border border-[#c4d4e4] rounded-2xl px-4 py-3.5">
+              <div className="relative flex items-start justify-between">
+                <div
+                  className="absolute"
+                  style={{ top: 12, left: '12.5%', right: '12.5%', height: 1, background: 'rgba(255,255,255,0.06)' }}
+                />
+                {PROGRESS_STEPS.map((step, i) => {
+                  const done = i < progressIndex || isCompleted
+                  const current = i === progressIndex && !isCompleted
+                  return (
+                    <div key={step} className="flex flex-col items-center gap-1.5 relative z-10" style={{ flex: 1 }}>
+                      <div
+                        className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold"
+                        style={{
+                          background: done
+                            ? 'linear-gradient(135deg,#f1c56a,#d5a538)'
+                            : current
+                              ? 'rgba(213,165,56,0.18)'
+                              : 'rgba(0,0,0,0.06)',
+                          border: current ? '1.5px solid rgba(213,165,56,0.6)' : 'none',
+                          color: done ? '#020813' : current ? '#d5a538' : 'rgba(0,0,0,0.25)',
+                        }}
+                      >
+                        {done ? '✓' : i + 1}
+                      </div>
+                      <span className="text-[9px] text-[#4f6580] text-center leading-tight" style={{ maxWidth: 52 }}>
+                        {STEP_LABELS[step]}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* ── Error ────────────────────────────────────────────────────── */}
+          {updateError && (
+            <div className="bg-red-100 border border-red-200 rounded-xl px-4 py-3">
+              <p className="text-red-800 text-sm">{updateError}</p>
+            </div>
+          )}
+
+          {/* ── Passenger ────────────────────────────────────────────────── */}
+          <div className="bg-white border border-[#c4d4e4] rounded-2xl p-4">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#4f6580] mb-3">Passenger</p>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#dce8f2] flex items-center justify-center flex-shrink-0">
+                  <User size={18} className="text-[#4f6580]" />
+                </div>
+                <div>
+                  <p className="text-[#060C1A] font-semibold text-sm">{booking.customer_name}</p>
+                  {booking.customer_email && (
+                    <p className="text-[#4f6580] text-xs mt-0.5 truncate max-w-[180px]">{booking.customer_email}</p>
+                  )}
+                </div>
+              </div>
+              {booking.customer_phone && (
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <a
+                    href={(() => {
+                      const body = customerUpdateSms(booking.status, booking, smsDriver, business)
+                      return body ? smsHref(booking.customer_phone, body) : `sms:${booking.customer_phone}`
+                    })()}
+                    className="w-10 h-10 rounded-xl flex items-center justify-center border border-[#c4d4e4] bg-[#dce8f2] active:opacity-70"
+                  >
+                    <MessageSquare size={16} className="text-[#3b5470]" />
+                  </a>
+                  <a
+                    href={`tel:${booking.customer_phone}`}
+                    className="w-10 h-10 rounded-xl flex items-center justify-center border border-[#c4d4e4] bg-[#dce8f2] active:opacity-70"
+                  >
+                    <Phone size={16} className="text-[#7a5c14]" />
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ── Passenger preferences ────────────────────────────────────── */}
+          {prefs.length > 0 && (
+            <div className="bg-white border border-[#c4d4e4] rounded-2xl px-4 py-3.5">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#4f6580] mb-2.5">Passenger Preferences</p>
+              <div className="flex flex-wrap gap-2">
+                {prefs.map((pref) => (
+                  <span
+                    key={pref}
+                    className="text-xs font-medium px-2.5 py-1 rounded-full"
+                    style={{ background: 'rgba(213,165,56,0.1)', color: '#7a5c14', border: '1px solid rgba(213,165,56,0.2)' }}
+                  >
+                    {formatPref(pref)}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── Route ────────────────────────────────────────────────────── */}
+          <div className="bg-white border border-[#c4d4e4] rounded-2xl p-4">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#4f6580] mb-4">Route</p>
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="flex flex-col items-center gap-1 flex-shrink-0 mt-0.5">
+                  <PickupIcon booking={booking} size={10} />
+                  <div className="w-px h-5 bg-[#d5a538]/20" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[#4f6580] text-[10px] uppercase tracking-wider mb-0.5">
+                    Pickup
+                    {booking.travel_time ? ` · ${formatTime(booking.travel_time)}` : ''}
+                    {booking.travel_date ? ` · ${formatDate(booking.travel_date)}` : ''}
+                  </p>
+                  <p className="text-[#060C1A] text-sm font-medium leading-snug">{pickupAddress}</p>
+                </div>
+                <button
+                  onClick={() => openMaps(pickupAddress)}
+                  className="flex items-center gap-1.5 text-[#7a5c14] text-xs font-semibold flex-shrink-0 bg-[#d5a538]/10 px-3 py-2 rounded-xl active:opacity-70"
+                >
+                  <Navigation2 size={12} /> Go
+                </button>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 mt-0.5">
+                  <DropoffIcon size={10} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[#4f6580] text-[10px] uppercase tracking-wider mb-0.5">Drop-off</p>
+                  <p className="text-[#060C1A] text-sm font-medium leading-snug">{dropoffAddress}</p>
+                </div>
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  {isPob && dropoffAddress !== '—' && (
+                    <button
+                      onClick={() =>
+                        window.open(
+                          `https://www.google.com/maps/search/EV+charging+station+near+${encodeURIComponent(dropoffAddress)}`,
+                          '_blank',
+                        )
+                      }
+                      className="flex items-center gap-1 text-green-800 text-[10px] font-semibold bg-green-100 border border-green-200 px-2 py-2 rounded-xl active:opacity-70"
+                      title="Find EV charger near dropoff"
+                    >
+                      <Car size={10} />
+                      <span>⚡</span>
+                    </button>
+                  )}
+                  <button
+                    onClick={() => openMaps(dropoffAddress, pickupAddress)}
+                    className="flex items-center gap-1.5 text-[#7a5c14] text-xs font-semibold bg-[#d5a538]/10 px-3 py-2 rounded-xl active:opacity-70"
+                  >
+                    <Navigation2 size={12} /> Go
+                  </button>
+                </div>
+              </div>
+              {(booking.passengers > 0 || booking.luggage) && (
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 pt-3 border-t border-[#d8e6f0]">
+                  {booking.passengers > 0 && (
+                    <span className="text-[#4f6580] text-xs flex items-center gap-1">
+                      <Users size={11} /> {booking.passengers} Passengers
+                    </span>
+                  )}
+                  {booking.luggage && (
+                    <span className="text-[#4f6580] text-xs flex items-center gap-1">
+                      <Luggage size={11} /> {booking.luggage.replace(/pieces?/i, 'Bags')}
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+
+          {/* ── Verified flight (AeroDataBox, checked by the operator) ──────── */}
+          {booking.flight_number && <VerifiedFlightCard bookingId={booking.id} />}
+
+          {/* ── Map ──────────────────────────────────────────────────────── */}
+          {pickupAddress !== '—' && dropoffAddress !== '—' && (
+            <JobMap pickup={pickupAddress} dropoff={dropoffAddress} />
+          )}
+
+          {/* ── Return journey ─────────────────────────────────────────── */}
+          {booking.return_journey && (
+            <div className="bg-white border border-[#c4d4e4] rounded-xl px-4 py-3 flex items-center gap-3">
+              <div
+                className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ background: 'rgba(213,165,56,0.1)', border: '1px solid rgba(213,165,56,0.2)' }}
+              >
+                <ArrowLeftRight size={15} className="text-[#7a5c14]" />
+              </div>
+              <div>
+                <p className="text-[#1e3a5f] text-xs font-semibold">Return journey included</p>
+                <p className="text-[#4f6580] text-[10px] mt-0.5">Round-trip booking</p>
+              </div>
+            </div>
+          )}
+
+          {/* ── Notes ────────────────────────────────────────────────────── */}
+          {showNotes && (
+            <div className="bg-white border border-[#c4d4e4] rounded-2xl p-4">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#4f6580] mb-3 flex items-center gap-1.5">
+                <FileText size={11} /> Notes
+              </p>
+              {booking.operator_note && (
+                <div className={!isDone ? 'mb-4' : ''}>
+                  <p className="text-[10px] text-[#4f6580] mb-1 uppercase tracking-wide">From operator</p>
+                  <p className="text-[#2d4c6d] text-sm leading-relaxed">{booking.operator_note}</p>
+                </div>
+              )}
+              {!isDone && (
+                <div>
+                  <p className="text-[10px] text-[#4f6580] mb-1.5 uppercase tracking-wide">Your notes</p>
+                  <textarea
+                    value={driverNote}
+                    onChange={(e) => setDriverNote(e.target.value)}
+                    placeholder="Add a note about this job…"
+                    rows={2}
+                    className="w-full bg-[#dce8f2] border border-[#c4d4e4] rounded-xl px-3 py-2.5 text-[#1e3a5f] text-sm placeholder-[#7a9ab8] focus:outline-none focus:border-[#d5a538]/40 resize-none"
+                  />
+                  {noteChanged && (
+                    <button
+                      onClick={saveNote}
+                      disabled={savingNote}
+                      className="mt-2 w-full py-2 rounded-lg text-xs font-semibold text-[#7a5c14] border border-[#d5a538]/30 bg-[#d5a538]/8 disabled:opacity-50"
+                    >
+                      {noteSaved ? '✓ Saved' : savingNote ? 'Saving…' : 'Save note'}
+                    </button>
+                  )}
+                </div>
+              )}
+              {isDone && booking.driver_notes && (
+                <div>
+                  <p className="text-[10px] text-[#4f6580] mb-1 uppercase tracking-wide">Your notes</p>
+                  <p className="text-[#3b5470] text-sm leading-relaxed">{booking.driver_notes}</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── Photos / damage report ───────────────────────────────────── */}
+          <div className="bg-white border border-[#c4d4e4] rounded-2xl p-4">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#4f6580] flex items-center gap-1.5">
+                <Camera size={11} /> Photos
+              </p>
+              {!isDone && (
+                <button
+                  onClick={() => photoInputRef.current?.click()}
+                  disabled={uploadingPhoto}
+                  className="flex items-center gap-1.5 text-[#7a5c14] text-xs font-semibold bg-[#d5a538]/10 border border-[#d5a538]/25 px-3 py-1.5 rounded-xl active:opacity-70 disabled:opacity-40"
+                >
+                  {uploadingPhoto ? <Loader2 size={12} className="animate-spin" /> : <Camera size={12} />}
+                  {uploadingPhoto ? 'Uploading…' : 'Add Photo'}
+                </button>
+              )}
+            </div>
+            <input
+              ref={photoInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={e => {
+                const file = e.target.files?.[0]
+                if (file) uploadPhoto(file)
+                e.target.value = ''
+              }}
+            />
+            {photos.length === 0 ? (
+              <p className="text-[#5a6f88] text-xs text-center py-4">
+                {isDone ? 'No photos recorded' : 'Tap Add Photo to capture damage or evidence'}
+              </p>
+            ) : (
+              <div className="grid grid-cols-3 gap-2">
+                {photos.map(photo => (
+                  <div key={photo.id} className="relative aspect-square rounded-xl overflow-hidden bg-[#dce8f2]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={photo.url} alt="" className="w-full h-full object-cover" />
+                    {!isDone && (
+                      <button
+                        onClick={() => deletePhoto(photo.id)}
+                        className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/60 flex items-center justify-center active:opacity-70"
+                      >
+                        <Trash2 size={11} className="text-red-800" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* ── Dispatch + SOS ───────────────────────────────────────────── */}
+          <div className={`grid gap-3 ${!isDone && business.phone ? 'grid-cols-2' : 'grid-cols-1'}`}>
+            {business.phone && (
+              <a
+                href={`tel:${business.phone}`}
+                className="py-3 rounded-xl font-semibold text-[#7a5c14] text-sm flex items-center justify-center gap-2 border border-[#d5a538]/25 bg-[#d5a538]/8 active:opacity-70"
+              >
+                <Phone size={14} /> Call Dispatch
+              </a>
+            )}
+            {!isDone && (
+              <a
+                href="tel:999"
+                className="py-3 rounded-xl font-semibold text-red-800 text-sm flex items-center justify-center gap-2 bg-red-100 border border-red-200 active:opacity-70"
+              >
+                <AlertOctagon size={14} /> SOS 999
+              </a>
+            )}
+          </div>
+
+        </div>
+      </div>
+
+      {/* ── Payment modal ──────────────────────────────────────────────────── */}
+      {showPaymentModal && (
+        <PaymentModal
+          quotedPrice={booking?.quoted_price ?? null}
+          onConfirm={handleComplete}
+          onBack={() => setShowPaymentModal(false)}
+          loading={updating}
+        />
+      )}
+
+      {/* ── Completion overlay ─────────────────────────────────────────────── */}
+      {showCompletion && booking && (
+        <CompletionOverlay
+          ref={booking.ref ?? booking.id.slice(0, 8).toUpperCase()}
+          price={booking.quoted_price ?? null}
+          onDone={() => setShowCompletion(false)}
+        />
+      )}
+    </>
+  )
+}

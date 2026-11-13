@@ -1,0 +1,190 @@
+'use client'
+
+import { useEffect, useRef } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { syncPush } from '@/lib/push'
+import { useToast } from './toast'
+import { formatDate } from '@/lib/format'
+
+const CANCELLED_STATUSES = new Set(['cancelled', 'Cancelled', 'canceled', 'Canceled', 'No Show', 'no show'])
+const DETAIL_FIELDS = [
+  'travel_date', 'travel_time', 'pickup_location', 'airport', 'dropoff_address',
+  'quoted_price', 'payment_method', 'payment_status',
+] as const
+
+type BookingRow = Record<string, string | number | boolean | null>
+type DriverEventRow = { event_type: string; payload: Record<string, string | null> | null }
+
+function showNativeNotification(title: string, body: string, tag: string) {
+  // Only while the app is hidden: when it's on screen the toast is enough.
+  // `new Notification()` throws on iPhones, so go through the service worker.
+  if (!('Notification' in window) || Notification.permission !== 'granted') return
+  if (document.visibilityState === 'visible') return
+  navigator.serviceWorker?.ready
+    .then((reg) => reg.showNotification(title, { body, icon: '/icons/icon-192.png', badge: '/icons/badge-96.png', tag }))
+    .catch(() => {})
+}
+
+export function JobNotifier() {
+  const supabase = createClient()
+  const { addToast } = useToast()
+  const askedRef = useRef(false)
+  // Last values seen for each of this driver's bookings. Realtime UPDATE
+  // events on an RLS table carry only the primary key in `old`, so changes are
+  // worked out against this copy instead.
+  const lastSeen = useRef(new Map<string, BookingRow>())
+
+  useEffect(() => {
+    let channel: ReturnType<typeof supabase.channel> | null = null
+    let eventsChannel: ReturnType<typeof supabase.channel> | null = null
+
+    const setup = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      // Save this phone's current push subscription. Permission itself is only
+      // ever asked for from a tap (PushPrompt / Profile), as iPhones require.
+      if (!askedRef.current) {
+        askedRef.current = true
+        await syncPush(user.id)
+      }
+
+      const { data: current } = await supabase
+        .from('bookings')
+        .select(`id, status, ${DETAIL_FIELDS.join(', ')}`)
+        .eq('assigned_driver_id', user.id)
+      for (const row of (current ?? []) as unknown as BookingRow[]) lastSeen.current.set(String(row.id), row)
+
+      channel = supabase
+        .channel('driver-job-events')
+        // New job assigned
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'bookings', filter: `assigned_driver_id=eq.${user.id}` },
+          (payload) => {
+            const b = payload.new as BookingRow
+            lastSeen.current.set(String(b.id), b)
+            const pickup = (b.pickup_location ?? b.airport ?? 'See job details') as string
+            const customer = (b.customer_name ?? 'New booking') as string
+            const msg = `${pickup}${b.travel_date ? ` · ${formatDate(b.travel_date as string)}` : ''}`
+            addToast({ title: `New job — ${customer}`, message: msg, href: `/jobs/${b.id}` })
+            showNativeNotification(`New job — ${customer}`, `${customer} · ${pickup}`, 'new-job')
+          }
+        )
+        // Job updated, status changed, or cancelled
+        .on(
+          'postgres_changes',
+          { event: 'UPDATE', schema: 'public', table: 'bookings', filter: `assigned_driver_id=eq.${user.id}` },
+          (payload) => {
+            const b = payload.new as BookingRow
+            const old = lastSeen.current.get(String(b.id))
+            lastSeen.current.set(String(b.id), b)
+            const customer = (b.customer_name ?? 'Your booking') as string
+            const ref = (b.ref ?? String(b.id).slice(0, 8).toUpperCase()) as string
+            // First sight of this booking: it has just been given to this driver.
+            if (!old) {
+              if (CANCELLED_STATUSES.has(b.status as string) || String(b.status ?? '').toLowerCase() === 'completed') return
+              const pickup = (b.pickup_location ?? b.airport ?? 'See job details') as string
+              addToast({ title: `New job — ${customer}`, message: `${pickup}${b.travel_date ? ` · ${formatDate(b.travel_date as string)}` : ''}`, href: `/jobs/${b.id}` })
+              showNativeNotification(`New job — ${customer}`, `${customer} · ${pickup}`, 'new-job')
+              return
+            }
+
+            // The driver's own no-show: they know, so no "job cancelled" alert.
+            const ownNoShow = b.status === 'No Show' || String(b.driver_notes ?? '').includes('[No Show]')
+            const isCancelled = CANCELLED_STATUSES.has(b.status as string)
+              && !CANCELLED_STATUSES.has(old.status as string)
+              && !ownNoShow
+
+            if (isCancelled) {
+              addToast({
+                title: `Job cancelled — ${ref}`,
+                message: `Booking for ${customer} has been cancelled.`,
+                href: `/jobs/${b.id}`,
+              })
+              showNativeNotification(
+                `Job cancelled — ${ref}`,
+                `Booking for ${customer} has been cancelled.`,
+                `cancelled-${b.id}`
+              )
+              return
+            }
+
+            // Payment received / customer chose cash: say so plainly.
+            const done = String(b.status ?? '').toLowerCase() === 'completed'
+            const nowPaid = !done && String(b.payment_status ?? '').toLowerCase() === 'paid'
+              && String(old.payment_status ?? '').toLowerCase() !== 'paid'
+            const nowCash = !done && !nowPaid && String(b.payment_method ?? '').toLowerCase() === 'cash'
+              && String(old.payment_method ?? '').toLowerCase() !== 'cash'
+            if (nowPaid || nowCash) {
+              const amount = b.quoted_price ? `£${Number(b.quoted_price).toFixed(2)}` : ''
+              const title = nowPaid ? `Payment received — ${ref}` : `Customer paying cash — ${ref}`
+              const message = nowPaid
+                ? `${customer}${amount ? ` · ${amount}` : ''} · Paid by card. Nothing to collect.`
+                : `${customer} · Collect ${amount || 'the fare'} in cash.`
+              addToast({ title, message, href: `/jobs/${b.id}` })
+              showNativeNotification(title, message, `payment-${b.id}`)
+              return
+            }
+
+            // Detail or payment field changes
+            const changed = DETAIL_FIELDS.filter(f => b[f] !== old[f])
+            if (changed.length > 0) {
+              addToast({
+                title: `Job updated — ${ref}`,
+                message: `${customer} · Details have changed. Tap to view.`,
+                href: `/jobs/${b.id}`,
+              })
+              showNativeNotification(
+                `Job updated — ${ref}`,
+                `${customer} · Journey details have changed.`,
+                `updated-${b.id}`
+              )
+            }
+          }
+        )
+        .subscribe()
+
+      // Unassignment detection — the DB trigger trg_notify_driver_unassigned
+      // writes a row to driver_events when this driver is removed from a booking.
+      // Filtered subscription means only this driver's own events are delivered.
+      eventsChannel = supabase
+        .channel('driver-events')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'driver_events',
+            filter: `driver_id=eq.${user.id}`,
+          },
+          (payload) => {
+            const ev = payload.new as DriverEventRow
+            if (ev.event_type !== 'booking_unassigned') return
+            const p = ev.payload ?? {}
+            const ref = (p.ref ?? String(p.booking_id ?? '').slice(0, 8).toUpperCase())
+            const customer = p.customer_name ?? 'A booking'
+            addToast({
+              title: `Job removed — ${ref}`,
+              message: `${customer} has been removed from your schedule.`,
+            })
+            showNativeNotification(
+              `Job removed — ${ref}`,
+              `${customer} has been removed from your schedule.`,
+              `unassigned-${p.booking_id}`
+            )
+          }
+        )
+        .subscribe()
+    }
+
+    setup()
+    return () => {
+      if (channel) supabase.removeChannel(channel)
+      if (eventsChannel) supabase.removeChannel(eventsChannel)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  return null
+}
