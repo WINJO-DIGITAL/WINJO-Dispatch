@@ -2,6 +2,10 @@
 
 **EV Exec is no longer relevant to this project.** The product is Winjo Digital's own multi-tenant platform that other businesses sign up to. Do not prioritise EV Exec-specific work (its marketing and SEO pages, blog, reminders, legal text, domain, Stripe or Vercel accounts), do not treat it as a customer or as the default business in new work, and do not ask the owner about EV Exec's production. Sections below that describe EV Exec are history and constraints on code that still exists; the cost, legal, date-format, secrets and no-deploy-without-approval rules still apply. Code that still assumes EV Exec (the default business id, `EV_EXEC` in `lib/brand.js`, the built-in price list, the generated marketing pages) is tracked in `docs/TASKS.md` for removal once the owner confirms how.
 
+# Working mode
+
+Use the project skills in `.claude/skills/`: `loop-engineering` (work continuously: assess, plan, build, test, fix, review, repeat; keep `docs/TASKS.md` and `docs/HANDOVER.md` current; stop only for a real owner decision) and `anti-ai-design` (any website or visual design work). The rules in this file win over both skills.
+
 # Cost policy (hard constraint — read before doing anything)
 
 **We do not pay for any additional cost, under any circumstance, without explicit prior approval from the user.**
