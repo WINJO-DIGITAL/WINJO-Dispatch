@@ -9,7 +9,7 @@ One platform, three apps, many businesses:
 - **Website** (this repository, Vercel): a branded website for each business on its own domain (`lib/tenantSite.js`: home page with booking form, booking and payment page). Booking, payment, account and operator APIs are per business (each booking carries its own business). The platform's own address shows a neutral placeholder page.
 - **Operator app** (`evexecoperator`): the office app. Each business has its own staff, prices, branding, legal settings, Stripe connection and drivers. The platform owner (super admin) also has Settings, Platform: set up businesses, set each one's website address, and record fees.
 - **Driver App** (`evexecdriverapp`): drivers sign in through their business's own link (`/login?b=<short name>`).
-- **Database** (Supabase, one project): every business-owned row has a `tenant_id`; row-level security limits staff to their own business. Verified by the local database suite (`scripts/db-test.sh`, 12 files).
+- **Database** (Supabase, one project): every business-owned row has a `tenant_id`; row-level security limits staff to their own business. Verified by the local database suite (`scripts/db-test.sh`, 13 files).
 
 ## How the website chooses the business
 
@@ -52,7 +52,7 @@ Until they are applied: the Fees screen shows £49, anonymous direct inserts rem
 ## How to run the tests
 
 - Website: `npm run test:unit` (236 tests; `npm ci` now works, Node 24 per `.nvmrc`) and `npm run test:browser` (18 tests in Chromium; screenshots in `tests/browser/out/`).
-- Database: `bash scripts/db-test.sh` (builds a throwaway Postgres 17; 12 files). It needs Postgres 17 and pgTAP from the PostgreSQL apt repository (`postgresql-17`, `postgresql-17-pgtap`, see `.github/workflows/db-tests.yml` for the exact steps). Docker is not used. If Postgres 17 is missing it exits 2 with a message.
+- Database: `bash scripts/db-test.sh` (builds a throwaway Postgres 17; 13 files). It needs Postgres 17 and pgTAP from the PostgreSQL apt repository (`postgresql-17`, `postgresql-17-pgtap`, see `.github/workflows/db-tests.yml` for the exact steps). Docker is not used. If Postgres 17 is missing it exits 2 with a message.
 - Operator app: `npm test`, `npx tsc --noEmit`, `npm run lint`.
 - Driver App: `npm test`, `npm run test:functions`, `npm run typecheck`, `npm run lint`.
 
