@@ -29,6 +29,9 @@ select throws_ok($$select public.update_tenant_site((select id from biz), '{"her
 select throws_ok($$select public.update_tenant_site((select id from biz), jsonb_build_object('areas', (select jsonb_agg(i) from generate_series(1, 31) i)), false)$$, '22023', null, 'a list over its cap is refused');
 select throws_ok($$select public.update_tenant_site((select id from biz), '[]'::jsonb, false)$$, '22023', null, 'content that is not an object is refused');
 
+select lives_ok($$select public.update_tenant_site((select id from biz), '{"hero":{"headline":"H"},"design":{"direction":"editorial"}}'::jsonb, false)$$, 'a known design direction is accepted');
+select throws_ok($$select public.update_tenant_site((select id from biz), '{"hero":{"headline":"H"},"design":{"direction":"neon"}}'::jsonb, false)$$, '22023', null, 'an unknown design direction is refused');
+
 select lives_ok(format($f$select public.update_tenant_site((select id from biz), '{"hero":{"headline":"H","image_url":"https://abc.supabase.co/storage/v1/object/public/brand-assets/%s/hero.jpg"}}'::jsonb, false)$f$, (select id from biz)), 'a photo in the business''s own folder is accepted');
 select throws_ok(format($f$select public.update_tenant_site((select id from biz), '{"hero":{"headline":"H","image_url":"https://abc.supabase.co/storage/v1/object/public/brand-assets/%s/hero.jpg"}}'::jsonb, false)$f$, (select id from other)), '22023', null, 'a photo in another business''s folder is refused');
 select throws_ok($$select public.update_tenant_site((select id from biz), '{"hero":{"headline":"H","image_url":"https://evil.example/x.jpg"}}'::jsonb, false)$$, '22023', null, 'a photo from elsewhere is refused');

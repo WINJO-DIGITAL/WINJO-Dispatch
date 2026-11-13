@@ -31,7 +31,7 @@ test('photos from anywhere except this business\'s own folder are refused', () =
 
 test('unknown fields and markup-bearing keys are dropped; text stays plain text', () => {
   const r = clean({ hero: { headline: '<script>alert(1)</script>Hi', onclick: 'x' }, script: '<b>', theme: { css: 'body{}' } }, opt);
-  assert.deepEqual(Object.keys(r.clean).sort(), ['about', 'areas', 'contact', 'faqs', 'fleet', 'hero', 'reviews', 'seo', 'services']);
+  assert.deepEqual(Object.keys(r.clean).sort(), ['about', 'areas', 'contact', 'design', 'faqs', 'fleet', 'hero', 'reviews', 'seo', 'services']);
   assert.equal(r.clean.hero.headline, '<script>alert(1)</script>Hi', 'kept as text: the renderer must escape it');
   assert.equal(r.clean.hero.onclick, undefined);
 });
@@ -61,4 +61,10 @@ test('odd opening hours are refused, not stored', () => {
 
 test('it will not run without knowing whose photos to allow', () => {
   assert.throws(() => clean({ hero: { headline: 'H' } }, {}), /tenantId/);
+});
+
+test('the design direction is one of the known ones, otherwise classic', () => {
+  for (const d of ['classic', 'editorial', 'bold']) assert.equal(clean({ hero: { headline: 'H' }, design: { direction: d } }, opt).clean.design.direction, d);
+  for (const d of ['neon', '<script>', '', null, 5]) assert.equal(clean({ hero: { headline: 'H' }, design: { direction: d } }, opt).clean.design.direction, 'classic');
+  assert.equal(clean({ hero: { headline: 'H' } }, opt).clean.design.direction, 'classic');
 });

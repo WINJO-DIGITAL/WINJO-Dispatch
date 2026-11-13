@@ -12,6 +12,18 @@ Owner decision 13/11/2026: use the original first business's website as the desi
 
 Hero (headline, sub-line, button label, photo), About (title, text, photo), Services (up to 8), Fleet (up to 12, with seats and photo), Areas (up to 30), Reviews (up to 12), FAQs (up to 12), Contact (address, hours, WhatsApp), SEO (title, description). Plain text only, length-capped; photos must be in the business's own folder; unknown fields are dropped. Never HTML, CSS or scripts.
 
+## Design directions (owner instruction 13/11/2026: no two businesses should look alike)
+
+The standard is the project skill `.claude/skills/anti-ai-design`. A business picks a direction (`content.design.direction`) and the renderer changes layout, type and component shapes, not only colours:
+
+| Direction | Layout | Type | Notable parts |
+|---|---|---|---|
+| `classic` | cards in grids | Jost | the plainest, safest look |
+| `editorial` | numbered hairline lists, alternating image rows, pull quotes, areas as a running line | Georgia headings | about first, square image corners |
+| `bold` | large numerals, full-width rows, a dark reviews band | heavy Jost | services first, hard-edged buttons, accent bar on the headline |
+
+Section order differs per direction. A published site shows only what the business entered: the generic three-card claims strip ("Fixed prices" and so on) is removed because it repeated on every site and asserted things the business had not said. Still to do: more directions, per-business typeface choice from free self-hosted fonts, and real photographs (the screenshots so far have none because photos only exist once a business uploads them).
+
 ## Build order
 
 1. **Done:** content format and validation, with tests (`lib/siteContent.js`, `tests/unit/site-content.test.cjs`).

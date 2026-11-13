@@ -51,7 +51,7 @@ Until they are applied: the Fees screen shows £49, anonymous direct inserts rem
 
 ## How to run the tests
 
-- Website: `npm run test:unit` (226 tests; `npm ci` now works, Node 24 per `.nvmrc`) and `npm run test:browser` (18 tests in Chromium; screenshots in `tests/browser/out/`).
+- Website: `npm run test:unit` (233 tests; `npm ci` now works, Node 24 per `.nvmrc`) and `npm run test:browser` (18 tests in Chromium; screenshots in `tests/browser/out/`).
 - Database: `bash scripts/db-test.sh` (builds a throwaway Postgres 17; 12 files). It needs Postgres 17 and pgTAP from the PostgreSQL apt repository (`postgresql-17`, `postgresql-17-pgtap`, see `.github/workflows/db-tests.yml` for the exact steps). Docker is not used. If Postgres 17 is missing it exits 2 with a message.
 - Operator app: `npm test`, `npx tsc --noEmit`, `npm run lint`.
 - Driver App: `npm test`, `npm run test:functions`, `npm run typecheck`, `npm run lint`.

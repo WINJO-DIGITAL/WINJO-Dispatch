@@ -55,7 +55,7 @@ begin
   end loop;
 
   -- Single sections: object.
-  for v_key in select unnest(array['hero', 'about', 'contact', 'seo']) loop
+  for v_key in select unnest(array['hero', 'about', 'contact', 'seo', 'design']) loop
     if v_site ? v_key and jsonb_typeof(v_site -> v_key) is distinct from 'object' then
       raise exception '% must be an object', v_key using errcode = '22023';
     end if;
@@ -71,6 +71,10 @@ begin
       end if;
     end if;
   end loop;
+
+  if v_site #>> '{design,direction}' is not null and (v_site #>> '{design,direction}') not in ('classic', 'editorial', 'bold') then
+    raise exception 'Unknown design direction' using errcode = '22023';
+  end if;
 
   v_headline := btrim(coalesce(v_site #>> '{hero,headline}', ''));
   if coalesce(p_published, false) and v_headline = '' then
