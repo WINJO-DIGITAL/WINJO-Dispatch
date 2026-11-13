@@ -20,6 +20,7 @@ A multi-tenant booking, dispatch and payments platform. Winjo Digital owns the p
 > The full onboarding runbook and what is pending on the live database are in `docs/HANDOVER.md`.
 
 ### Done since the last update
+- [x] (13/11/2026) New-business template: `npm run new:business` turns one validated config into provisioning SQL, an Operator app checklist and website/domain steps (`template/`). Direction confirmed by the owner: the product is the owner's own platform that businesses sign up to, not a one-off white-label copy. Website `/api/config` now reads `SUPABASE_ANON_KEY` from the environment.
 - [x] One website serves many businesses by domain (prices, references, links, alerts per business), merged (#73, #75, #77).
 - [x] A business's own website: branded home page with booking form, and booking and payment page; explicit per-domain routing (#78). 18 browser tests and 22 unit tests.
 - [x] Owner-only website address per business with a one-domain-per-business guard (#75, Operator app #47).
@@ -34,7 +35,7 @@ A multi-tenant booking, dispatch and payments platform. Winjo Digital owns the p
 - [ ] Supabase size: needs owner approval for VACUUM FULL, a 5-minute job schedule and a keep period.
 - [ ] One test-mode payment through a second business: needs the Test Operator login and Stripe test onboarding.
 - [ ] Automatic billing: needs owner approval (Stripe Billing has fees).
-- [ ] After launch: automatic domain routing, self-serve sign-up.
+- [ ] After launch: automatic domain routing, self-serve sign-up (needs the owner's decisions on payment of the £999 set-up fee, approval step and terms acceptance before any build).
 
 ### Blocked on the owner
 - [x] Add `STRIPE_PLATFORM_SECRET_KEY` (test) to the website's Vercel project, Sensitive, Production and Preview. *Done by owner; website redeployed and READY.*
