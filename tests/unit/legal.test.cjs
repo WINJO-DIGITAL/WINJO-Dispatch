@@ -24,37 +24,10 @@ function cards(file) {
   return out;
 }
 
-// EV Exec as it is on live (shared with scripts/legal/build.js).
-const EV_RECORD = require('../../scripts/legal/ev-exec-tenant');
+// A realistic sample business record (test data only).
+const EV_RECORD = require('../helpers/sample-business');
 // The template tests need a business that has confirmed the operator responsibilities statement.
 const EV = { ...EV_RECORD, brand: { ...EV_RECORD.brand, legal: { ...EV_RECORD.brand.legal, responsibilities_confirmed: true } } };
-
-test('with EV Exec\'s details the terms reproduce every section of terms.html', () => {
-  const doc = termsDocument(EV);
-  const live = cards('terms.html');
-  assert.equal(doc.sections.length, 20);
-  const html = require('../../lib/legal/render').renderSections(doc.sections);
-  const mine = {};
-  const re = /<div class="content-card"[^>]*>\s*<p class="section-label">(\d+)<\/p>([\s\S]*?)\n<\/div>/g;
-  let m; while ((m = re.exec(html))) mine[+m[1]] = m[0];
-  for (let i = 1; i <= 20; i++) {
-    let want = flat(live[i]);
-    if (i === 20) want = want.replace(/Previousversions:.*$/, ''); // EV Exec's own version history
-    assert.equal(flat(mine[i]), want, `terms section ${i} differs from terms.html`);
-  }
-  assert.equal(doc.ready, true);
-});
-
-test('with EV Exec\'s details the privacy policy matches privacy.html', () => {
-  const doc = privacyDocument(EV);
-  const live = cards('privacy.html');
-  const html = require('../../lib/legal/render').renderSections(doc.sections);
-  const mine = {};
-  const re = /<div class="content-card"[^>]*>\s*<p class="section-label">(\d+)<\/p>([\s\S]*?)\n<\/div>/g;
-  let m; while ((m = re.exec(html))) mine[+m[1]] = m[0];
-  assert.equal(doc.sections.length, 10);
-  for (let i = 1; i <= 10; i++) assert.equal(flat(mine[i]), flat(live[i]), `privacy section ${i} differs from privacy.html`);
-});
 
 // ── Another business ────────────────────────────────────────────────────────
 
@@ -147,21 +120,6 @@ test('invalid policy numbers fall back to the defaults', () => {
 
 // ── The audit fixes (docs/legal/audit-2026-11-12.md) ─────────────────────────
 
-test('the published pages are built from the templates (run npm run build:legal after changing them)', () => {
-  const t = fs.readFileSync(path.join(ROOT, 'terms.html'), 'utf8');
-  assert.match(t, /Version 4 &middot; effective 12\/11\/2026/);
-  assert.match(t, /href="\/terms-v3">Version 3<\/a>/);
-  const v3 = fs.readFileSync(path.join(ROOT, 'terms-v3.html'), 'utf8');
-  assert.match(v3, /<meta name="robots" content="noindex, follow"\/>/);
-  assert.match(v3, /canonical" href="https:\/\/www\.evexec\.co\.uk\/terms-v3"/);
-  assert.match(v3, /Version 3\. These terms applied to bookings accepted from 16\/10\/2026 until version 4/);
-  const P = require('../../lib/cancellation');
-  assert.equal(P.TERMS_VERSION, '4');
-  assert.equal(P.policyPath('3'), '/terms-v3');
-  assert.equal(P.policyPath('4'), '/terms');
-  assert.deepEqual(P.BANDS['4'], P.BANDS['3'], 'version 4 charges are the same as version 3');
-});
-
 test('terms: consumers are not stripped of rights the law gives them', () => {
   const t = termsDocument(EV).text;
   assert.match(t, /Assistance dogs\. We always accept a booking from a disabled passenger who travels with an assistance dog, and we never charge extra/);
@@ -205,14 +163,6 @@ test('the ICO data protection fee is flagged, not guessed', () => {
   const exempt = privacyDocument({ ...EV, brand: { ...EV.brand, legal: { ...EV.brand.legal, ico_registration: 'exempt' } } });
   assert.equal(exempt.advice.length, 0);
   assert.doesNotMatch(exempt.text, /ICO registration number/);
-});
-
-test('the booking form makes the obligation to pay clear before the request is sent', () => {
-  const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-  assert.match(html, /I understand that if my booking is confirmed I must pay the price and any cancellation charge/);
-  assert.match(html, /id="bwOrderLine"/);
-  assert.match(html, /Request Transfer &middot; I Agree to Pay if Confirmed/);
-  assert.ok(html.indexOf('id="bwOrderLine"') < html.indexOf('id="bwSubmit"'), 'the total price line sits directly before the button');
 });
 
 test('insurance and DBS statements appear only once the operator has confirmed them', () => {

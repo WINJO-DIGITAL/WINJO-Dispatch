@@ -39,9 +39,10 @@ const routeFor = (d) => `    { "src": "/((?!api/|public/|t/).*)", "has": [{"type
 /** The vercel.json text with this list's routes in place of any earlier ones. */
 function apply(text, domains) {
   const lines = text.split('\n').filter((l) => !l.includes(MARK));
-  const anchor = lines.findIndex((l) => l.includes('"X-Robots-Tag": "noindex"') && l.includes('evexec.vercel.app'));
+  // The business routes go just before the per-business legal route, ahead of the API and page routes.
+  const anchor = lines.findIndex((l) => l.includes('/t/([a-z0-9-]+)/(terms|privacy)'));
   if (anchor < 0) throw new Error('vercel.json: could not find where to put the routes');
-  lines.splice(anchor + 1, 0, ...domains.map(routeFor));
+  lines.splice(anchor, 0, ...domains.map(routeFor));
   const next = lines.join('\n');
   JSON.parse(next); // must stay valid
   return next;

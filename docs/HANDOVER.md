@@ -6,7 +6,7 @@ Read this first, then `docs/TASKS.md` for the live checklist. Written so the wor
 
 One platform, three apps, many businesses:
 
-- **Website** (`evexec`, Vercel): EV Exec's own marketing site and booking flow, plus a branded website for any other business on its own domain (`lib/tenantSite.js`: home page with booking form, booking and payment page). Booking, payment, account and operator APIs are per business (each booking carries its own business).
+- **Website** (this repository, Vercel): a branded website for each business on its own domain (`lib/tenantSite.js`: home page with booking form, booking and payment page). Booking, payment, account and operator APIs are per business (each booking carries its own business). The platform's own address shows a neutral placeholder page.
 - **Operator app** (`evexecoperator`): the office app. Each business has its own staff, prices, branding, legal settings, Stripe connection and drivers. The platform owner (super admin) also has Settings, Platform: set up businesses, set each one's website address, and record fees.
 - **Driver App** (`evexecdriverapp`): drivers sign in through their business's own link (`/login?b=<short name>`).
 - **Database** (Supabase, one project): every business-owned row has a `tenant_id`; row-level security limits staff to their own business. Verified by the local database suite (`scripts/db-test.sh`, 12 files).
@@ -45,13 +45,13 @@ Until they are applied: the Fees screen shows £49, anonymous direct inserts rem
 
 ## Environment and secrets (names only; values never go in the repo or in chat)
 
-- Website: `STRIPE_SECRET_KEY` (EV Exec's own), `STRIPE_WEBHOOK_SECRET`, `STRIPE_PLATFORM_SECRET_KEY` and `STRIPE_CONNECT_WEBHOOK_SECRET` (Winjo Digital's, for other businesses), `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `OPERATOR_EMAIL` (EV Exec's staff alerts; other businesses use their own contact email).
+- Website: `STRIPE_SECRET_KEY` (EV Exec's own), `STRIPE_WEBHOOK_SECRET`, `STRIPE_PLATFORM_SECRET_KEY` and `STRIPE_CONNECT_WEBHOOK_SECRET` (Winjo Digital's, for other businesses), `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `OPERATOR_EMAIL` (platform staff alerts; each business uses its own contact email).
 - Operator app: `STRIPE_PLATFORM_SECRET_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `INVOICE_FROM` (sender of invitation and password emails; today EV Exec's address, decision pending).
 - Sensitive variables must be created as "Sensitive" in Vercel.
 
 ## How to run the tests
 
-- Website: `npm run test:unit` (211 tests; `npm ci` now works, Node 24 per `.nvmrc`) and `npm run test:browser` (18 tests in Chromium; screenshots in `tests/browser/out/`).
+- Website: `npm run test:unit` (214 tests; `npm ci` now works, Node 24 per `.nvmrc`) and `npm run test:browser` (18 tests in Chromium; screenshots in `tests/browser/out/`).
 - Database: `bash scripts/db-test.sh` (builds a throwaway Postgres 17; 12 files). It needs Postgres 17 and pgTAP from the PostgreSQL apt repository (`postgresql-17`, `postgresql-17-pgtap`, see `.github/workflows/db-tests.yml` for the exact steps). Docker is not used. If Postgres 17 is missing it exits 2 with a message.
 - Operator app: `npm test`, `npx tsc --noEmit`, `npm run lint`.
 - Driver App: `npm test`, `npm run test:functions`, `npm run typecheck`, `npm run lint`.

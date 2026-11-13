@@ -1,6 +1,6 @@
-# EV Exec website and database
+# Booking platform: website, API and database
 
-The customer website, booking and payment API, and database migrations for the EV Exec platform (a multi-tenant booking, dispatch and payments system). The Operator app and Driver App are separate repositories and share the same Supabase project.
+The customer booking website, booking and payment API, and database migrations for a multi-tenant booking, dispatch and payments platform that other businesses sign up to. The Operator app and Driver App are separate repositories and share the same Supabase project.
 
 **Start with `CLAUDE.md`, then `docs/HANDOVER.md` (runbook) and `docs/TASKS.md` (live checklist).**
 
@@ -14,13 +14,13 @@ The customer website, booking and payment API, and database migrations for the E
 
 | What | Command |
 |---|---|
-| Website unit tests (211) | `npm run test:unit` |
+| Website unit tests (214) | `npm run test:unit` |
 | Browser tests | `npm run test:browser` (needs Playwright and Chromium) |
 | Database tests (pgTAP, 12 files) | `bash scripts/db-test.sh` (needs Postgres 17 and pgTAP; see `docs/HANDOVER.md`) |
 
 ## Build
 
-`npm run build:pages` regenerates the marketing pages and `sitemap.xml` from `scripts/site/`; never edit the generated HTML. `npm run build:domains` writes per-business domain routes into `vercel.json`.
+`npm run build:domains` writes per-business domain routes into `vercel.json` from `config/tenant-domains.json`. To start a business, see `template/README.md`.
 
 ## Deploy
 

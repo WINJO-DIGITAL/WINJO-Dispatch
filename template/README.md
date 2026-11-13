@@ -1,6 +1,6 @@
 # Starting a new business on the platform (the template)
 
-The EV Exec website, Operator app and Driver App are already one multi-tenant platform. A new business is a row in `public.tenants`; the website serves it by its own domain (`lib/tenantSite.js`), the Operator app scopes staff, prices, branding and Stripe to it, and drivers sign in at `<driver-app>/login?b=<short name>`. This template is the repeatable way to start one. It does not copy code and it does not touch any database.
+The website, Operator app and Driver App are one multi-tenant platform. A new business is a row in `public.tenants`; the website serves it by its own domain (`lib/tenantSite.js`), the Operator app scopes staff, prices, branding and Stripe to it, and drivers sign in at `<driver-app>/login?b=<short name>`. This template is the repeatable way to start one. It does not copy code and it does not touch any database.
 
 ## How to use it (route A, owner decision 13/11/2026)
 
@@ -18,4 +18,4 @@ A separate copy of the whole platform per business (its own database, hosting an
 
 - A separate website design per business. Every business uses the same booking site, themed from its own colours, logo, prices and legal text. A custom design means changing `lib/tenantSite.js`.
 - Automatic domain routing (each domain still needs a redeploy), per-business sending domains, automatic monthly billing.
-- Any wording specific to the original (now retired) business (its terms, licence, blog and SEO pages) is not part of a new business's site; its legal text comes from its own Settings, Legal.
+- Any wording specific to the retired first business (its terms, licence, blog and SEO pages) is not part of a new business's site; its legal text comes from its own Settings, Legal.

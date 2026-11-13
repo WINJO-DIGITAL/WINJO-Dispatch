@@ -1,9 +1,5 @@
 User-agent: *
-Allow: /
-
-# API and admin endpoints. Booking and account pages are crawlable but
-# carry noindex (meta tag and X-Robots-Tag), so they never appear in results.
 Disallow: /admin/
 Disallow: /api/
-
-Sitemap: https://www.evexec.co.uk/sitemap.xml
+Disallow: /booking
+Disallow: /account

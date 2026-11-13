@@ -44,7 +44,8 @@ A multi-tenant booking, dispatch and payments platform. Winjo Digital owns the p
 - [ ] Complete Stripe test onboarding for Test Operator in the Operator app (Settings → Payments).
 
 ### Decouple from EV Exec (owner decision 13/11/2026: EV Exec is no longer relevant)
-- [ ] Needs the owner's decision first: delete the EV Exec content (marketing/SEO pages, blog, `docs/seo`, terms versions, `scripts/site`) or archive it on a branch, and whether the live EV Exec site keeps running meanwhile.
+- [x] Stage 1 done (owner: delete): EV Exec's marketing and SEO pages, blog, EV Exec terms and privacy pages, page generator (`scripts/site`, `scripts/legal`), SEO docs, sitemap, EV Exec images and routes are deleted (still in git history at `6b12d43`). The home page and 404 are neutral placeholders; `booking.html` has a neutral header. `CLAUDE.md` history cut to rules and platform facts.
+- [ ] Stage 2, still EV Exec-branded and kept only because code uses them: `booking.html` and `account.html` (customer booking/payment and account pages), their logo/icon files, `lib/cancellation.js` links to the deleted `/terms-v1..v3`, `public/js/consent.js` (analytics id), `public/js/invoice-pdf.js`, `public/css/chrome.css`, `public/js/site.js` (now unused), and the Tailwind `src/input.css`.
 - [ ] Then: make the default business configurable (`DEFAULT_TENANT_ID`, `EV_EXEC` in `lib/brand.js`, `STRIPE_PLATFORM_TENANT_ID`, price `FALLBACK`), replace the EV Exec literals in 64 files, remove the hardcoded live Supabase address and anon key fallbacks, and neutralise email wordmark, licence and phone constants.
 - [ ] Same sweep in the Operator app (65 literals) and Driver App (19 literals), which are not in this repository yet.
 - [ ] Drop EV Exec-only items from the checklists below (the Vercel token for its account, the staff alert address, production redeploy).

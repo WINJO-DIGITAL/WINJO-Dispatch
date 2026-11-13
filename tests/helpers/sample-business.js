@@ -1,9 +1,7 @@
 'use strict';
 
-// EV Exec as it is in public.tenants (name, contact details, licence, brand.legal).
-// The tests and scripts/legal/build.js both read this, so EV Exec's published
-// terms and privacy pages are built from the same details the tests check.
-// Keep it in step with EV Exec's tenants row.
+// Sample business record used as test data only (the retired first business, kept as a realistic example).
+// It is not published anywhere and not used by any build.
 
 module.exports = {
   name: 'EV Exec', contact_email: 'book@evexec.co.uk', contact_phone: '07721070370',

@@ -1,4 +1,4 @@
--- EV Exec Notification Infrastructure Setup
+-- Notification Infrastructure Setup
 -- Run inside Supabase SQL editor
 
 create extension if not exists pgcrypto;
@@ -47,4 +47,4 @@ using (auth.role() = 'service_role')
 with check (auth.role() = 'service_role');
 
 comment on table notification_queue is
-'Persistent retry queue for EV Exec SMS and email notifications';
+'Persistent retry queue for SMS and email notifications';
