@@ -1,0 +1,23 @@
+{
+  "_about": "Facts about ONE business on the platform. Copy this file, fill it in, run: npm run new:business -- path/to/your-copy.json. No keys, passwords or tokens in here, ever: the script refuses them.",
+  "slug": "example-cars",
+  "name": "Example Cars Ltd",
+  "contact_email": "bookings@example.test",
+  "contact_phone": "+441234567890",
+  "website": "https://www.example.test",
+  "invoice": {
+    "business_name": "Example Cars Ltd",
+    "address": "1 High Street, Exampleton",
+    "company_number": "00000000",
+    "vat_number": "",
+    "licence": ""
+  },
+  "branding": { "primary": "#0B132B", "accent": "#D7A23F" },
+  "pricing": {
+    "extra_stop": 5,
+    "airports": [
+      { "name": "Example Airport", "code": "EXA", "one_way": 80, "return_fare": 150 }
+    ]
+  },
+  "currency_note": "Prices are GBP. The platform is built for UK dates (DD/MM/YYYY) and 24-hour UK time."
+}

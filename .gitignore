@@ -6,3 +6,4 @@ node_modules/
 evexecoperator/
 evexecdriverapp/
 tests/browser/out/
+template/out/
