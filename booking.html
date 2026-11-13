@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8"/>
+<!-- evx:head -->
+<link rel="icon" href="/favicon.ico" sizes="32x32 48x48">
+<link rel="icon" href="/public/images/ev-exec-icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="/public/images/ev-exec-icon-180.png">
+<link rel="preload" href="/public/fonts/jost-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/public/css/fonts.css">
+<!-- /evx:head -->
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Your Booking | EV Exec Premium Airport Transfers</title>
+<meta name="robots" content="noindex"/>
+<link rel="stylesheet" href="./public/css/tw.min.css"/>
+<!-- Google Analytics loads only after cookie consent -->
+<script src="/public/js/consent.js" defer></script>
+<style>
+:root{
+  --bg:#020813;
+  --gold:#d5a538;
+  --line:rgba(255,255,255,.12);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at 65% 5%, rgba(48,99,160,.22), transparent 30%),
+    radial-gradient(circle at 25% 20%, rgba(213,165,56,.08), transparent 28%),
+    #020813;
+  background-attachment:fixed;
+  color:#fff;
+  font-family:Jost,Arial,sans-serif;
+  min-height:100vh;
+}
+.serif{font-family:Jost,Arial,sans-serif}
+.gold{color:var(--gold)}
+.glass{
+  background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.035));
+  border:1px solid var(--line);
+  box-shadow:0 22px 70px rgba(0,0,0,.35);
+  backdrop-filter:blur(18px);
+}
+.btn-gold{
+  background:linear-gradient(180deg,#dcb354,#c99a35);
+  color:#06101c;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22);
+  transition:all .28s ease;
+  border:none;cursor:pointer;
+}
+.btn-gold:hover:not(:disabled){transform:none;background:linear-gradient(180deg,#e2bb5f,#d0a23d)}
+.btn-gold:disabled{opacity:.5;cursor:not-allowed}
+.btn-outline{
+  background:transparent;
+  border:1px solid rgba(213,165,56,.65);
+  color:#fff;
+  transition:all .28s ease;cursor:pointer;
+}
+.btn-outline:hover:not(:disabled){background:rgba(213,165,56,.08);border-color:var(--gold)}
+.btn-outline:disabled{opacity:.5;cursor:not-allowed}
+.detail-row{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.07)}
+.detail-row:last-child{border-bottom:0}
+.detail-label{color:rgba(255,255,255,.45);font-size:12px;text-transform:uppercase;letter-spacing:.12em;width:110px;flex-shrink:0;padding-top:2px}
+.detail-value{color:rgba(255,255,255,.88)}
+.route-block{padding-bottom:18px;margin-bottom:6px;border-bottom:1px solid rgba(255,255,255,.07)}
+.route-point{display:flex;gap:14px}
+.route-markers{display:flex;flex-direction:column;align-items:center;flex-shrink:0;padding-top:4px}
+.route-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0}
+.route-dot.pickup{background:#60a5fa;box-shadow:0 0 0 3px rgba(96,165,250,.18)}
+.route-dot.dropoff{background:var(--gold);box-shadow:0 0 0 3px rgba(213,165,56,.18)}
+.route-line{width:2px;flex:1;min-height:26px;background:rgba(255,255,255,.14);margin:4px 0}
+.route-label{color:rgba(255,255,255,.45);font-size:11px;text-transform:uppercase;letter-spacing:.12em;font-weight:700;margin-bottom:3px}
+.route-value{color:rgba(255,255,255,.92);font-size:15px;line-height:1.45;font-weight:600}
+.route-stop{padding:12px 0}
+.status-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  border-radius:999px;padding:4px 14px;font-size:12px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.1em;
+}
+.status-pending{background:rgba(234,179,8,.12);color:#eab308;border:1px solid rgba(234,179,8,.30)}
+.status-accepted{background:rgba(59,130,246,.12);color:#60a5fa;border:1px solid rgba(59,130,246,.30)}
+.status-confirmed{background:rgba(34,197,94,.12);color:#4ade80;border:1px solid rgba(34,197,94,.30)}
+.status-rejected{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.30)}
+.skeleton{
+  background:linear-gradient(90deg,rgba(255,255,255,.04) 25%,rgba(255,255,255,.08) 50%,rgba(255,255,255,.04) 75%);
+  background-size:200% 100%;
+  animation:shimmer 1.4s infinite;
+  border-radius:6px;
+}
+@keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+.clean-icon{width:20px;height:20px;color:var(--gold);stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+@media(max-width:640px){
+  .payment-grid{grid-template-columns:1fr!important}
+}
+</style>
+<link rel="stylesheet" href="/public/css/chrome.css">
+</head>
+
+<body>
+
+<!-- evx:header -->
+<header class="evx-header" id="siteHeader">
+<nav class="evx-nav" aria-label="Main">
+<a class="evx-brand" href="/" aria-label="EV Exec home"><img src="/public/images/opt/ev-exec-logo-160.jpg" alt="EV Exec logo" width="64" height="64" decoding="async"><span class="evx-brand-text"><span class="evx-brand-name">EV EXEC</span><span class="evx-brand-motto">Exclusive<i aria-hidden="true"></i>Executive<i aria-hidden="true"></i>Electric</span></span></a>
+<ul class="evx-menu"><li class="evx-has-dd evx-mega-li"><button class="evx-navlink" type="button" aria-expanded="false" aria-controls="evx-dd-services">Services<svg class="evx-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><div class="evx-dd evx-mega" id="evx-dd-services" role="region" aria-label="Services"><div class="evx-mega-col"><p class="evx-mega-h">Services</p><ul class="evx-mega-big"><li><a href="/airport-transfers">Airport Transfers</a></li><li><a href="/corporate-travel">Corporate Travel</a></li><li><a href="/private-hire">Private Hire</a></li><li><a href="/event-transfers">Event &amp; Concert Transfers</a></li><li><a href="/long-distance-transfers">Long-Distance Transfers</a></li></ul></div><div class="evx-mega-col"><p class="evx-mega-h">Airports</p><ul class="evx-mega-list"><li><a href="/manchester-airport-transfer-blackpool"><span>Manchester Airport</span><em>£90</em></a></li><li><a href="/liverpool-airport-transfer-blackpool"><span>Liverpool Airport</span><em>£95</em></a></li><li><a href="/leeds-bradford-airport-transfer-blackpool"><span>Leeds Bradford Airport</span><em>£135</em></a></li><li><a href="/airport-transfers"><span>All airports</span></a></li></ul></div><div class="evx-mega-col evx-mega-next"><p class="evx-mega-h">Next step</p><ul class="evx-mega-list"><li><a href="/#quote"><span>Book a transfer</span></a></li><li><a href="/quote"><span>Get a quote</span></a></li><li><a href="tel:+447721070370"><span>Call 07721 070370</span></a></li><li><a href="https://wa.me/447721070370" target="_blank" rel="noopener"><span>WhatsApp us</span></a></li></ul></div></div></li><li class="evx-has-dd evx-mega-li"><button class="evx-navlink" type="button" aria-expanded="false" aria-controls="evx-dd-prices">Prices<svg class="evx-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><div class="evx-dd evx-mega" id="evx-dd-prices" role="region" aria-label="Prices"><div class="evx-mega-col"><p class="evx-mega-h">Prices</p><ul class="evx-mega-big"><li><a href="/prices">All Prices</a></li><li><a href="/prices#how-pricing-works">How Pricing Works</a></li><li><a href="/prices#cancellations">Cancellations</a></li><li><a href="/quote">Get a Quote</a></li></ul></div><div class="evx-mega-col"><p class="evx-mega-h">Fixed prices, one way</p><ul class="evx-mega-list"><li><a href="/manchester-airport-transfer-blackpool"><span>Manchester Airport</span><em>£90</em></a></li><li><a href="/liverpool-airport-transfer-blackpool"><span>Liverpool Airport</span><em>£95</em></a></li><li><a href="/leeds-bradford-airport-transfer-blackpool"><span>Leeds Bradford Airport</span><em>£135</em></a></li><li><a href="/prices"><span>Birmingham Airport</span><em>£215</em></a></li><li><a href="/prices"><span>Newcastle Airport</span><em>£250</em></a></li></ul></div><div class="evx-mega-col evx-mega-next"><p class="evx-mega-h">Next step</p><ul class="evx-mega-list"><li><a href="/#quote"><span>Book a transfer</span></a></li><li><a href="/quote"><span>Get a quote</span></a></li><li><a href="tel:+447721070370"><span>Call 07721 070370</span></a></li><li><a href="https://wa.me/447721070370" target="_blank" rel="noopener"><span>WhatsApp us</span></a></li></ul></div></div></li><li class="evx-has-dd evx-mega-li"><button class="evx-navlink" type="button" aria-expanded="false" aria-controls="evx-dd-fleet">Fleet<svg class="evx-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><div class="evx-dd evx-mega" id="evx-dd-fleet" role="region" aria-label="Fleet"><div class="evx-mega-col"><p class="evx-mega-h">Fleet</p><ul class="evx-mega-big"><li><a href="/fleet">Explore the Fleet</a></li><li><a href="/prices">Prices</a></li></ul></div><div class="evx-mega-col"><p class="evx-mega-h">The cars</p><ul class="evx-mega-list"><li><a href="/fleet"><span>Tesla Model Y</span><em>4 passengers &middot; 4 cases</em></a></li><li><a href="/fleet"><span>Tesla Model Y Juniper</span><em>4 passengers &middot; 4 cases</em></a></li><li><a href="/fleet"><span>Škoda Enyaq</span><em>4 passengers &middot; 5 cases</em></a></li></ul></div><div class="evx-mega-col evx-mega-next"><p class="evx-mega-h">Next step</p><ul class="evx-mega-list"><li><a href="/#quote"><span>Book a transfer</span></a></li><li><a href="/quote"><span>Get a quote</span></a></li><li><a href="tel:+447721070370"><span>Call 07721 070370</span></a></li><li><a href="https://wa.me/447721070370" target="_blank" rel="noopener"><span>WhatsApp us</span></a></li></ul></div></div></li><li class="evx-has-dd evx-mega-li"><button class="evx-navlink" type="button" aria-expanded="false" aria-controls="evx-dd-areas">Areas<svg class="evx-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><div class="evx-dd evx-mega" id="evx-dd-areas" role="region" aria-label="Areas"><div class="evx-mega-col"><p class="evx-mega-h">Areas</p><ul class="evx-mega-big"><li><a href="/areas">All Areas</a></li><li><a href="/areas#blackpool">Blackpool</a></li></ul></div><div class="evx-mega-col"><p class="evx-mega-h">Towns</p><ul class="evx-mega-list"><li><a href="/airport-transfer-lytham-st-annes"><span>Lytham St Annes</span></a></li><li><a href="/airport-transfer-poulton-le-fylde"><span>Poulton-le-Fylde</span></a></li><li><a href="/airport-transfer-fleetwood"><span>Fleetwood & Thornton-Cleveleys</span></a></li><li><a href="/airport-transfer-kirkham"><span>Kirkham, Freckleton & Warton</span></a></li><li><a href="/airport-transfer-preston"><span>Preston</span></a></li></ul></div><div class="evx-mega-col evx-mega-next"><p class="evx-mega-h">Next step</p><ul class="evx-mega-list"><li><a href="/#quote"><span>Book a transfer</span></a></li><li><a href="/quote"><span>Get a quote</span></a></li><li><a href="tel:+447721070370"><span>Call 07721 070370</span></a></li><li><a href="https://wa.me/447721070370" target="_blank" rel="noopener"><span>WhatsApp us</span></a></li></ul></div></div></li><li class="evx-has-dd evx-mega-li"><button class="evx-navlink" type="button" aria-expanded="false" aria-controls="evx-dd-reviews">Reviews<svg class="evx-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><div class="evx-dd evx-mega" id="evx-dd-reviews" role="region" aria-label="Reviews"><div class="evx-mega-col"><p class="evx-mega-h">Reviews</p><ul class="evx-mega-big"><li><a href="/reviews">Read Reviews</a></li><li><a href="https://g.page/r/CVPMqDntIQ3xEAE/review" target="_blank" rel="noopener">Leave a Review</a></li></ul></div><div class="evx-mega-col"><p class="evx-mega-h">Rated on Google</p><a class="evx-mega-rating" href="https://g.page/r/CVPMqDntIQ3xEAE" target="_blank" rel="noopener"><svg class="evx-g" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg><span class="evx-stars" aria-hidden="true">★★★★★</span> 5.0 &middot; 18 reviews</a><blockquote class="evx-mega-quote">&ldquo;Used Moss last week on a trip to Liverpool. Clean car, on time, everything went smoothly. Would recommend.&rdquo;<cite>David S., Google review</cite></blockquote></div><div class="evx-mega-col evx-mega-next"><p class="evx-mega-h">Next step</p><ul class="evx-mega-list"><li><a href="/#quote"><span>Book a transfer</span></a></li><li><a href="/quote"><span>Get a quote</span></a></li><li><a href="tel:+447721070370"><span>Call 07721 070370</span></a></li><li><a href="https://wa.me/447721070370" target="_blank" rel="noopener"><span>WhatsApp us</span></a></li></ul></div></div></li></ul>
+<div class="evx-actions">
+<a class="evx-phone" href="tel:+447721070370" aria-label="Call EV Exec on 07721 070370"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>07721 070370</a>
+<a class="evx-btn evx-btn-dark evx-hide-sm" href="/quote">Get a Quote</a>
+<a class="evx-btn evx-btn-gold evx-hide-xs" href="/#quote">Book Now</a>
+<div class="evx-has-dd evx-account"><button class="evx-icon-btn" type="button" aria-label="Account and help" aria-expanded="false" aria-controls="evx-dd-account"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c1.6-4 4.2-6 8-6s6.4 2 8 6"/></svg></button>
+<div class="evx-dd evx-dd-right" id="evx-dd-account"><a id="navSignInBtn" href="/account"><b>Sign in</b><span>Your bookings and privilege points</span></a><a id="navAccountBtn" href="/account" style="display:none"><b>My account</b></a><a href="/booking"><b>My booking</b><span>Check a booking with your reference</span></a><a id="navSupportBtn" href="/faq"><b>Help &amp; FAQ</b></a><a href="tel:+447721070370"><b>Call 07721 070370</b></a></div></div>
+<button class="evx-menu-btn" id="menuToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu"><span id="menuToggleLabel">Menu</span></button>
+</div>
+</nav>
+</header>
+<div class="evx-mmenu" id="mobileMenu" role="dialog" aria-modal="true" aria-label="Navigation menu">
+<div class="evx-mmenu-top"><button id="menuClose" type="button" aria-label="Close menu"><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M1.5 1.5l15 15M16.5 1.5l-15 15"/></svg></button></div>
+<nav class="evx-mmenu-links" aria-label="Mobile">
+<details><summary>Services<svg class="evx-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><div><a href="/airport-transfers">Airport Transfers</a><a href="/corporate-travel">Corporate Travel</a><a href="/private-hire">Private Hire</a><a href="/event-transfers">Event & Concert Transfers</a><a href="/long-distance-transfers">Long-distance transfers</a></div></details>
+<details><summary>Prices<svg class="evx-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><div><a href="/prices">Prices</a><a href="/prices#how-pricing-works">How Pricing Works</a><a href="/quote">Get a Quote</a></div></details>
+<a href="/fleet">Fleet</a>
+<details><summary>Areas<svg class="evx-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><div><a href="/areas#blackpool">Blackpool</a><a href="/areas">Fylde Coast</a><a href="/airport-transfer-lytham-st-annes">Lytham St Annes</a><a href="/airport-transfer-poulton-le-fylde">Poulton-le-Fylde</a><a href="/airport-transfer-fleetwood">Fleetwood & Thornton-Cleveleys</a><a href="/airport-transfer-kirkham">Kirkham, Freckleton & Warton</a><a href="/airport-transfer-preston">Preston</a></div></details>
+<a href="/reviews">Reviews</a>
+<a href="/booking">My Booking</a>
+<a href="/faq" id="mobileSupportBtn">Help &amp; FAQ</a>
+<a href="/account">Sign In</a>
+</nav>
+<div class="evx-mmenu-foot"><a class="evx-btn evx-btn-gold" href="/#quote">Book Now</a><a class="evx-btn evx-btn-dark" href="/quote">Get a Quote</a><p class="evx-mmenu-contact"><a href="tel:+447721070370">Call 07721 070370</a><span aria-hidden="true">&middot;</span><a href="https://wa.me/447721070370" target="_blank" rel="noopener">WhatsApp</a></p></div>
+</div>
+<!-- /evx:header -->
+<div class="evx-header-space"></div>
+
+<main class="max-w-3xl mx-auto px-4 md:px-6 py-10">
+
+<!-- Loading state -->
+<div id="stateLoading">
+  <div class="skeleton h-6 w-40 mb-3"></div>
+  <div class="skeleton h-10 w-72 mb-8"></div>
+  <div class="glass rounded-xl p-7">
+    <div class="skeleton h-5 w-56 mb-4"></div>
+    <div class="skeleton h-4 w-full mb-3"></div>
+    <div class="skeleton h-4 w-3/4 mb-3"></div>
+    <div class="skeleton h-4 w-1/2"></div>
+  </div>
+</div>
+
+<!-- Error state -->
+<div id="stateError" class="hidden">
+  <h1 class="serif text-4xl font-bold mb-3">Booking <span class="gold">Not Found</span></h1>
+  <p class="text-white/65 mb-6" id="errorMsg">We couldn't load your booking details.</p>
+  <a class="btn-gold rounded-md px-7 py-3.5 font-bold inline-block" href="/">← Back to Home</a>
+</div>
+
+<!-- Lookup state: no ?id in the link, let the customer find their booking themselves -->
+<div id="stateLookup" class="hidden">
+  <h1 class="serif text-4xl md:text-5xl font-bold leading-tight mb-2">Check Your <span class="gold">Booking</span></h1>
+  <p class="text-white/55 mb-7 text-sm">Enter your booking reference and the phone number you booked with to see its status and, if accepted, choose how to pay.</p>
+  <div class="glass rounded-xl p-6 md:p-7">
+    <div class="flex flex-col gap-4">
+      <div>
+        <label for="lkRef" class="block text-xs uppercase tracking-[.12em] text-white/45 font-bold mb-2">Booking Reference</label>
+        <input id="lkRef" placeholder="EVX-XXXXXXXX" autocomplete="off" style="letter-spacing:.06em;text-transform:uppercase" class="w-full rounded-md px-4 py-3 text-white placeholder-white/30 bg-white/5 border border-white/15 focus:outline-none focus:border-[#d5a538]"/>
+      </div>
+      <div>
+        <label for="lkPhone" class="block text-xs uppercase tracking-[.12em] text-white/45 font-bold mb-2">Phone Number</label>
+        <input id="lkPhone" placeholder="07700 000000" type="tel" inputmode="tel" autocomplete="tel" class="w-full rounded-md px-4 py-3 text-white placeholder-white/30 bg-white/5 border border-white/15 focus:outline-none focus:border-[#d5a538]"/>
+      </div>
+      <button class="btn-gold rounded-md py-4 font-bold text-sm w-full mt-1" id="btnLookup" onclick="lookupBooking()">Find My Booking</button>
+      <p id="lookupError" class="text-red-400 text-xs hidden"></p>
+    </div>
+  </div>
+  <p class="text-white/45 text-sm mt-5">Can't find your reference? <a class="gold" href="https://wa.me/447721070370">WhatsApp us</a> or <a class="gold" href="tel:07721070370">call 07721 070370</a></p>
+</div>
+
+<!-- Booking content -->
+<div id="stateContent" class="hidden">
+
+  <div class="mb-7">
+    <div class="flex items-center gap-3 mb-2">
+      <span class="text-xs uppercase tracking-[.18em] text-white/45 font-bold">Your Booking</span>
+      <span id="statusPill" class="status-pill status-pending">Pending</span>
+    </div>
+    <h1 class="serif text-4xl md:text-5xl font-bold leading-tight" id="bookingHeadline">Your Airport Transfer</h1>
+    <p class="text-white/55 mt-2 text-sm" id="bookingSubline"></p>
+    <div class="mt-4 hidden" id="refBadge" style="background:rgba(213,165,56,.08);border:1px solid rgba(213,165,56,.35);border-radius:10px;padding:14px 16px;max-width:420px">
+      <p class="text-xs uppercase tracking-[.1em] font-bold" style="color:#d5a538;margin:0 0 4px">Your Booking Reference</p>
+      <p class="font-mono font-black" style="color:#fff;font-size:22px;letter-spacing:.05em;margin:0 0 6px" id="bookingRef"></p>
+      <p class="text-white/55" style="font-size:12px;line-height:1.5;margin:0">Save this. You'll need it, along with your phone number, to check your booking anytime at <a class="gold" href="/booking">evexec.co.uk/booking</a>.</p>
+    </div>
+  </div>
+
+  <!-- Journey summary -->
+  <div class="glass rounded-xl p-6 mb-5">
+    <p class="text-[#d5a538] text-xs uppercase tracking-[.18em] font-bold mb-4">Journey Details</p>
+    <div id="routeBlock"></div>
+    <div id="journeyDetails"></div>
+    <div id="priceDisplay" class="hidden mt-5 pt-5 border-t border-white/10">
+      <div class="flex items-baseline gap-2">
+        <span class="serif text-5xl font-bold gold" id="priceAmount"></span>
+        <span class="text-white/50 text-sm">all-inclusive · fixed price</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pending state -->
+  <div id="panelPending" class="hidden glass rounded-xl p-6 mb-5">
+    <div class="flex gap-4">
+      <div class="w-10 h-10 rounded-full bg-yellow-500/15 border border-yellow-500/30 flex items-center justify-center flex-shrink-0 text-yellow-400 font-bold text-lg">!</div>
+      <div>
+        <h2 class="font-bold text-lg mb-1">Awaiting Confirmation</h2>
+        <p class="text-white/65 leading-relaxed">Your request has been received. EV Exec will review availability and get back to you shortly with confirmation and payment options.</p>
+        <p class="text-white/45 text-sm mt-3">Need to speak with us? <a class="gold" href="https://wa.me/447721070370">WhatsApp</a> or <a class="gold" href="tel:07721070370">call 07721 070370</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Accepted: payment options -->
+  <div id="panelPayment" class="hidden">
+    <p class="text-white/65 mb-5 leading-relaxed">Your transfer has been accepted. Please choose how you'd like to pay:</p>
+    <div class="glass rounded-xl p-5 mb-5" style="border-color:rgba(213,165,56,.35)">
+      <p class="font-bold text-sm mb-1" style="color:#d5a538">Before you pay: cancellations</p>
+      <p class="text-white/70 text-sm leading-relaxed" id="policySummary">Free more than 48 hours before pickup. 25% of the fare from 48 hours before, 50% from 24 hours before, and the full fare from 2 hours before, once the driver has set off, or if no one is there to be picked up. If someone you booked for cancels, it counts as your cancellation. Changing flight details or the passenger's name is free. If we cancel, you get a full refund. <a class="gold" id="policyLink" href="/terms#cancellation">Full policy</a></p>
+      <label id="policyAcceptRow" class="hidden flex items-start gap-3 mt-4 text-sm text-white/80" style="cursor:pointer">
+        <input type="checkbox" id="policyAccept" style="width:18px;height:18px;margin-top:2px;accent-color:#d5a538;flex-shrink:0">
+        <span>I have read and accept the <a class="gold" href="/terms#cancellation" target="_blank" rel="noopener">Booking, Payment, Changes and Cancellation Policy</a> and the <a class="gold" href="/terms" target="_blank" rel="noopener">Terms &amp; Conditions</a>, including the cancellation charges above.</span>
+      </label>
+      <p id="policyError" class="text-red-400 text-xs mt-2 hidden">Please confirm you accept the cancellation policy to continue.</p>
+    </div>
+    <div class="grid gap-4 payment-grid" style="grid-template-columns:1fr 1fr">
+
+      <div class="glass rounded-xl p-6 flex flex-col gap-4">
+        <div>
+          <h2 class="font-bold text-xl mb-1">Pay by Card</h2>
+          <p class="text-white/55 text-sm leading-relaxed">Secure online payment via Stripe. Visa, Mastercard and more accepted. Confirmation sent immediately.</p>
+        </div>
+        <button class="btn-gold rounded-md py-4 font-bold text-sm w-full" id="btnCard" onclick="payByCard()">Pay by Card Online</button>
+        <p id="cardError" class="text-red-400 text-xs hidden"></p>
+      </div>
+
+      <div class="glass rounded-xl p-6 flex flex-col gap-4">
+        <div>
+          <h2 class="font-bold text-xl mb-1">Pay by Cash</h2>
+          <p class="text-white/55 text-sm leading-relaxed">Pay in cash on the day of travel. Your booking will be confirmed immediately.</p>
+        </div>
+        <button class="btn-outline rounded-md py-4 font-bold text-sm w-full" id="btnCash" onclick="payByCash()">Pay Cash on the Day</button>
+        <p id="cashError" class="text-red-400 text-xs hidden"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment processing (Stripe redirect return before webhook fires) -->
+  <div id="panelPaymentPending" class="hidden glass rounded-xl p-6 mb-5">
+    <div class="flex gap-4">
+      <div class="w-10 h-10 rounded-full bg-blue-500/15 border border-blue-500/30 flex items-center justify-center flex-shrink-0 text-blue-400 font-bold text-lg">↻</div>
+      <div>
+        <h2 class="font-bold text-lg mb-1">Payment Received</h2>
+        <p class="text-white/65 leading-relaxed">Your payment has been received. This page will update automatically in a few seconds, and a confirmation will be sent to your phone or email.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirmed state -->
+  <div id="panelConfirmed" class="hidden glass rounded-xl p-6 mb-5" style="border-color:rgba(34,197,94,.25);background:linear-gradient(180deg,rgba(34,197,94,.05),rgba(255,255,255,.025))">
+    <div class="flex gap-4">
+      <div class="w-10 h-10 rounded-full bg-green-500/15 border border-green-500/30 flex items-center justify-center flex-shrink-0"><svg aria-hidden="true" style="width:18px;height:18px;stroke:#4ade80;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><path d="m5 12.5 4.2 4.2L19 7"></path></svg></div>
+      <div>
+        <h2 class="font-bold text-lg mb-1">Booking Confirmed</h2>
+        <p class="text-white/65 leading-relaxed" id="confirmedMsg">Your transfer is confirmed. We'll see you on the day!</p>
+        <button class="btn-outline rounded-md px-5 py-3 font-bold text-sm mt-3 hidden" id="btnCardInstead" type="button">Pay by card instead</button>
+        <p class="text-white/45 text-sm mt-2 hidden" id="receiptNote">A payment confirmation has been sent to your phone and email. Need a receipt? <a class="gold" href="https://wa.me/447721070370">WhatsApp us</a> and we'll send one over.</p>
+        <p class="text-white/45 text-sm mt-3">Any questions? <a class="gold" href="https://wa.me/447721070370">WhatsApp</a> or <a class="gold" href="tel:07721070370">call 07721 070370</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment cancelled banner -->
+  <div id="panelCancelled" class="hidden glass rounded-xl p-5 mb-5" style="border-color:rgba(234,179,8,.22)">
+    <p class="text-yellow-300/80 text-sm"><strong>Payment cancelled.</strong> Your booking is still accepted. Choose a payment method above whenever you're ready.</p>
+  </div>
+
+  <!-- Claim-to-account panel (shown when user is signed into My Account) -->
+  <div id="panelClaim" class="hidden glass rounded-xl p-6 mb-5" style="border-color:rgba(213,165,56,.22)">
+    <div class="flex gap-4 items-start">
+      <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-xl" style="background:rgba(213,165,56,.12);border:1px solid rgba(213,165,56,.3);color:#d5a538">★</div>
+      <div style="flex:1">
+        <h2 class="font-bold text-lg mb-1">Earn Privilege Points</h2>
+        <p class="text-white/65 text-sm leading-relaxed mb-3">Link this booking to your EV Exec account to earn Privilege Points and track your journey history.</p>
+        <button class="btn-gold rounded-md px-5 py-3 font-bold text-sm" id="btnClaimBooking">Add to My Account</button>
+        <p id="claimMsg" class="text-sm mt-2 hidden"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rejected state -->
+  <div id="panelRejected" class="hidden glass rounded-xl p-6 mb-5" style="border-color:rgba(239,68,68,.22)">
+    <div class="flex gap-4">
+      <div class="w-10 h-10 rounded-full bg-red-500/15 border border-red-500/30 flex items-center justify-center flex-shrink-0 text-red-400 font-bold text-lg">✕</div>
+      <div>
+        <h2 class="font-bold text-lg mb-1">Journey Unavailable</h2>
+        <p class="text-white/65 leading-relaxed">Sorry, EV Exec is unable to cover this journey. No payment has been taken. Please get in touch if you have any questions.</p>
+        <p class="text-white/45 text-sm mt-3"><a class="gold" href="https://wa.me/447721070370">WhatsApp</a> or <a class="gold" href="tel:07721070370">07721 070370</a> · <a class="gold" href="/">Request another transfer</a></p>
+      </div>
+    </div>
+  </div>
+
+</div>
+</main>
+
+<!-- Footer -->
+<!-- evx:footer -->
+<footer class="evx-footer" id="contact">
+<div class="evx-foot-grid">
+<div class="evx-foot-brand">
+<a class="evx-brand" href="/"><img src="/public/images/opt/ev-exec-logo-160.jpg" alt="EV Exec logo" width="56" height="56" loading="lazy"><span class="evx-brand-name evx-gold">EV EXEC</span></a>
+<p>Premium airport transfers and private hire from Blackpool &amp; the Fylde Coast, in a fully electric fleet.</p>
+<p class="evx-foot-rating"><a href="https://g.page/r/CVPMqDntIQ3xEAE" target="_blank" rel="noopener"><svg class="evx-g" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg><span class="evx-stars" aria-hidden="true">★★★★★</span> 5.0 on Google &middot; 18 reviews</a></p>
+<address class="evx-nap"><strong>EV Exec</strong><span>Serving Blackpool, Fylde &amp; Wyre</span><a href="tel:+447721070370">07721 070370</a><a href="mailto:book@evexec.co.uk">book@evexec.co.uk</a><a href="https://wa.me/447721070370" target="_blank" rel="noopener">WhatsApp us</a></address>
+</div>
+<div><p class="evx-foot-h">Services</p><ul><li><a href="/airport-transfers">Airport Transfers</a></li><li><a href="/corporate-travel">Corporate Travel</a></li><li><a href="/private-hire">Private Hire</a></li><li><a href="/event-transfers">Event &amp; Concert Transfers</a></li><li><a href="/long-distance-transfers">Long-Distance Transfers</a></li><li><a href="/fleet">Our Fleet</a></li></ul></div>
+<div><p class="evx-foot-h">Airports &amp; Prices</p><ul><li><a href="/manchester-airport-transfer-blackpool">Manchester Airport</a></li><li><a href="/liverpool-airport-transfer-blackpool">Liverpool Airport</a></li><li><a href="/leeds-bradford-airport-transfer-blackpool">Leeds Bradford Airport</a></li><li><a href="/prices">All prices</a></li><li><a href="/quote">Get a quote</a></li></ul></div>
+<div><p class="evx-foot-h">Areas</p><ul><li><a href="/areas#blackpool">Blackpool</a></li><li><a href="/airport-transfer-lytham-st-annes">Lytham St Annes</a></li><li><a href="/airport-transfer-poulton-le-fylde">Poulton-le-Fylde</a></li><li><a href="/airport-transfer-fleetwood">Fleetwood & Thornton-Cleveleys</a></li><li><a href="/airport-transfer-kirkham">Kirkham, Freckleton & Warton</a></li><li><a href="/airport-transfer-preston">Preston</a></li><li><a href="/areas">All areas</a></li></ul></div>
+</div>
+<div class="evx-foot-base"><p>&copy; 2026 EV Exec. Licensed private hire operator, licence PHO0079.</p><p><a href="/booking">My booking</a> &middot; <a href="/reviews">Reviews</a> &middot; <a href="/faq">FAQ</a> &middot; <a href="/blog">Travel guides</a> &middot; <a href="/terms">Terms</a> &middot; <a href="/privacy">Privacy</a> &middot; <a href="/privacy#cookies" onclick="if(window.evxCookieSettings){evxCookieSettings();return false}">Cookie settings</a></p></div>
+</footer>
+<!-- /evx:footer -->
+
+<script>
+(function () {
+  'use strict';
+
+  var bookingId = null;
+  var bookingData = null;
+
+  var params  = new URLSearchParams(window.location.search);
+  var queryId = params.get('id');
+  var payment = params.get('payment'); // 'success' | 'cancelled'
+
+  function show(id) { document.getElementById(id).classList.remove('hidden'); }
+  function hide(id) { document.getElementById(id).classList.add('hidden'); }
+
+  function fmtDate(d) {
+    if (!d) return 'TBC';
+    try {
+      // d is a plain YYYY-MM-DD date with no time component, so it parses as
+      // UTC midnight -- format in UTC too, or a browser/device set to a
+      // timezone west of UTC would silently show the previous calendar day.
+      var m = String(d).match(/^(\d{4})-(\d{2})-(\d{2})/);
+      return m ? m[3] + '/' + m[2] + '/' + m[1] : d;
+    } catch { return d; }
+  }
+
+  // Confirmed = accepted by the operator (Operator app records
+  // operator_response; the email link also sets Dispatched), or made by the
+  // operator in the Operator app (source 'operator'), which needs no approval.
+  // (Jobs already on the road keep their own "driver on the way" panel below.)
+  function isConfirmed(b) {
+    if (['Cancelled', 'Completed', 'No Show'].includes(b.status) || b.operator_response === 'rejected') return false;
+    return b.operator_response === 'accepted' || b.source === 'operator' || b.status === 'Dispatched';
+  }
+  function isCashChosen(b) { return String(b.payment_method || '').toLowerCase() === 'cash'; }
+
+  function setStatusPill(status, paymentStatus, b) {
+    var pill = document.getElementById('statusPill');
+    // Map DB status values to display labels + CSS class
+    if (status === 'Cancelled' || status === 'No Show') {
+      pill.textContent = b && b.operator_response === 'rejected' ? 'Unavailable' : status === 'No Show' ? 'No Show' : 'Cancelled';
+      pill.className = 'status-pill status-rejected'; return;
+    }
+    if (status === 'Completed') {
+      pill.textContent = 'Completed'; pill.className = 'status-pill status-confirmed'; return;
+    }
+    if (['En Route', 'Passenger On Board'].includes(status)) {
+      pill.textContent = status; pill.className = 'status-pill status-confirmed'; return;
+    }
+    if (b && isConfirmed(b)) {
+      if (paymentStatus === 'Paid' || paymentStatus === 'Invoiced' || isCashChosen(b) || b.return_leg) {
+        pill.textContent = 'Confirmed'; pill.className = 'status-pill status-confirmed'; return;
+      }
+      pill.textContent = 'Accepted'; pill.className = 'status-pill status-accepted'; return;
+    }
+    // Unassigned / Unassigned / Missed Call Recovery
+    pill.textContent = 'Awaiting Confirmation'; pill.className = 'status-pill status-pending';
+  }
+
+  function addDetailRow(label, value) {
+    if (!value) return;
+    var div = document.createElement('div');
+    div.className = 'detail-row';
+    var labelSpan = document.createElement('span');
+    labelSpan.className = 'detail-label';
+    labelSpan.textContent = label;
+    var valueSpan = document.createElement('span');
+    valueSpan.className = 'detail-value';
+    valueSpan.textContent = String(value);
+    div.appendChild(labelSpan);
+    div.appendChild(valueSpan);
+    document.getElementById('journeyDetails').appendChild(div);
+  }
+
+  function routePoint(kind, label, value) {
+    var point = document.createElement('div');
+    point.className = 'route-point';
+    var markers = document.createElement('div');
+    markers.className = 'route-markers';
+    var dot = document.createElement('span');
+    dot.className = 'route-dot ' + kind;
+    markers.appendChild(dot);
+    if (kind === 'pickup') {
+      var line = document.createElement('div');
+      line.className = 'route-line';
+      markers.appendChild(line);
+    }
+    var text = document.createElement('div');
+    text.className = 'route-stop';
+    var labelDiv = document.createElement('div');
+    labelDiv.className = 'route-label';
+    labelDiv.textContent = label;
+    var valueDiv = document.createElement('div');
+    valueDiv.className = 'route-value';
+    valueDiv.textContent = String(value);
+    text.appendChild(labelDiv);
+    text.appendChild(valueDiv);
+    point.appendChild(markers);
+    point.appendChild(text);
+    return point;
+  }
+
+  function renderRoute(from, to) {
+    var block = document.getElementById('routeBlock');
+    block.className = 'route-block';
+    block.appendChild(routePoint('pickup', 'Pickup', from));
+    block.appendChild(routePoint('dropoff', 'Drop-off', to));
+  }
+
+  function renderBooking(b) {
+    bookingData  = b;
+    bookingId    = b.id;
+
+    hide('stateLoading');
+    show('stateContent');
+
+    setStatusPill(b.status, b.payment_status, b);
+
+    // Literal pickup/drop-off always win over the airport fallback -- same
+    // precedence as the server-side email/SMS templates.
+    var from = b.pickup_location || b.airport || 'Pickup';
+    var to   = b.dropoff_address || b.airport || 'Your destination';
+
+    document.getElementById('bookingSubline').textContent  = fmtDate(b.travel_date) + (b.travel_time ? ' at ' + String(b.travel_time).slice(0, 5) : '');
+    if (b.ref) {
+      document.getElementById('bookingRef').textContent = b.ref;
+      document.getElementById('refBadge').classList.remove('hidden');
+    }
+
+    renderRoute(from, to);
+    addDetailRow('Date', fmtDate(b.travel_date) + (b.travel_time ? ' at ' + String(b.travel_time).slice(0, 5) : ''));
+    if (b.passengers) addDetailRow('Passengers', b.passengers);
+    if (b.luggage)    addDetailRow('Luggage', b.luggage);
+    if (b.flight_number) addDetailRow('Flight', b.flight_number);
+    if (b.return_journey) addDetailRow('Return', fmtDate(b.return_date) + (b.return_time ? ' at ' + String(b.return_time).slice(0, 5) : ''));
+
+    if (b.quoted_price && !b.return_leg) {
+      show('priceDisplay');
+      var qp = Number(b.quoted_price);
+      document.getElementById('priceAmount').textContent = '£' + qp.toFixed(Number.isInteger(qp) ? 0 : 2);
+    }
+
+    // Status-specific panels — mapped to actual DB status values
+    // The return leg of a return booking is paid once, with its outbound
+    // booking: never offer a second payment here.
+    if (b.return_leg && (isConfirmed(b) || ['En Route', 'Arrived', 'Passenger On Board'].includes(b.status))) {
+      show('panelConfirmed');
+      document.getElementById('confirmedMsg').textContent =
+        (['En Route', 'Arrived', 'Passenger On Board'].includes(b.status)
+          ? 'Your return journey is confirmed. Your driver is on the way. '
+          : 'Your return journey is confirmed. ') +
+        'It is paid with your outbound booking' + (b.outbound_ref ? ' (Ref ' + b.outbound_ref + ')' : '') + ', so there is nothing to pay here.';
+      return;
+    }
+    if (isConfirmed(b)) {
+      var paid = b.payment_status === 'Paid';
+      if (paid || b.payment_status === 'Invoiced' || isCashChosen(b)) {
+        show('panelConfirmed');
+        var method = paid
+          ? (isCashChosen(b) ? 'Payment: Paid in cash.' : 'Payment: Paid by card online.')
+          : isCashChosen(b) ? 'Payment: Cash on the day of travel.'
+          : 'Payment: On account.';
+        document.getElementById('confirmedMsg').textContent =
+          'Your transfer is confirmed. ' + method + ' We\'ll see you on the day!';
+        if (paid && String(b.payment_method || '').toLowerCase() === 'card') {
+          document.getElementById('receiptNote').classList.remove('hidden');
+        }
+        // Cash chosen but not paid yet: card stays available (the cash email says so).
+        if (!paid && isCashChosen(b) && b.payment_status !== 'Invoiced') {
+          setupPolicy(b);
+          var instead = document.getElementById('btnCardInstead');
+          instead.classList.remove('hidden');
+          instead.onclick = function () { instead.classList.add('hidden'); show('panelPayment'); };
+        }
+        return;
+      }
+      if (payment === 'success') {
+        show('panelPaymentPending');
+        // Ask the server to check the payment with Stripe straight away, so
+        // it is recorded even if Stripe's webhook is slow or fails.
+        fetch('/api/payment/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bookingId: queryId, sessionId: params.get('session_id') || undefined }) })
+          .then(function (r) { return r.json(); })
+          .then(function (d) { if (d && d.paid) window.location.reload(); })
+          .catch(function () {});
+        var pollCount = 0;
+        var pollTimer = setInterval(async function () {
+          pollCount++;
+          if (pollCount > 10) {
+            clearInterval(pollTimer);
+            var pendingEl = document.getElementById('panelPaymentPending');
+            if (pendingEl) {
+              var h2 = pendingEl.querySelector('h2');
+              var p  = pendingEl.querySelector('p');
+              if (h2) h2.textContent = 'Payment is taking longer than expected';
+              if (p)  p.innerHTML = 'Your payment was received but confirmation is taking a moment. Please <a style="color:#d5a538" href="https://wa.me/447721070370">WhatsApp us</a> or call <a style="color:#d5a538" href="tel:07721070370">07721 070370</a> to confirm.';
+            }
+            return;
+          }
+          try {
+            var pr = await fetch('/api/booking/get?id=' + encodeURIComponent(queryId));
+            var pd = await pr.json();
+            if (pd.payment_status === 'Paid') { clearInterval(pollTimer); window.location.reload(); }
+          } catch (_) {}
+        }, 3000);
+      } else {
+        setupPolicy(b);
+        show('panelPayment');
+        if (payment === 'cancelled') show('panelCancelled');
+      }
+      return;
+    }
+
+    if (b.status === 'Unassigned' || b.status === 'Unassigned / Missed Call Recovery') {
+      show('panelPending');
+      return;
+    }
+
+    if (b.status === 'Completed') {
+      show('panelConfirmed');
+      document.querySelector('#panelConfirmed h2').textContent = 'Journey Complete';
+      document.getElementById('confirmedMsg').textContent = 'Thank you for travelling with EV Exec.';
+      return;
+    }
+
+    if (['En Route', 'Arrived', 'Passenger On Board'].includes(b.status)) {
+      show('panelConfirmed');
+      document.getElementById('confirmedMsg').textContent =
+        'Your transfer is confirmed. Your driver is on the way. See you soon!';
+      return;
+    }
+
+    if (b.status === 'Cancelled' || b.status === 'No Show') {
+      show('panelRejected');
+      // "Unavailable" is only for a request we declined.
+      if (b.operator_response !== 'rejected') {
+        document.querySelector('#panelRejected h2').textContent = b.status === 'No Show' ? 'Marked as No Show' : 'Booking Cancelled';
+        document.querySelector('#panelRejected p').textContent =
+          (b.status === 'No Show' ? 'Your driver could not find you at the pickup. ' : 'This booking has been cancelled. ') +
+          (b.payment_status === 'Paid'
+            ? 'We will confirm any refund or cancellation charge by email. Please get in touch if you have any questions.'
+            : 'Please get in touch if you have any questions.');
+      }
+      return;
+    }
+  }
+
+  async function tryClaimPanel(b) {
+    if (!b.ref) return;
+    try {
+      var cfg = await fetch('/api/booking/config').then(function(r) { return r.json(); });
+      var supabaseUrl = cfg.supabaseUrl || '';
+      var projectRef = supabaseUrl.replace('https://', '').split('.')[0];
+      if (!projectRef) return;
+      var sessionRaw = localStorage.getItem('sb-' + projectRef + '-auth-token');
+      if (!sessionRaw) return;
+      var session = JSON.parse(sessionRaw);
+      var token = session.access_token;
+      if (!token) return;
+
+      show('panelClaim');
+
+      document.getElementById('btnClaimBooking').onclick = async function() {
+        var btn = document.getElementById('btnClaimBooking');
+        var msgEl = document.getElementById('claimMsg');
+        btn.disabled = true;
+        btn.textContent = 'Claiming…';
+        msgEl.classList.remove('hidden');
+        msgEl.style.color = 'rgba(255,255,255,.65)';
+        msgEl.textContent = 'Linking to your account…';
+        try {
+          var claim = function (extra) {
+            return fetch('/api/account/claim-booking', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+              body: JSON.stringify(Object.assign({ ref: b.ref }, extra))
+            });
+          };
+          var r = await claim({});
+          var d = await r.json();
+          // Phone bookings with no email: prove it's yours with the phone number.
+          if (!r.ok && d.error === 'phone_required') {
+            var ph = window.prompt(d.message || 'Enter the phone number used when booking.');
+            if (ph) { r = await claim({ phone: ph }); d = await r.json(); }
+          }
+          if (!r.ok) throw new Error(d.message || (d.error === 'phone_required' ? 'Please add the phone number used for this booking to your account, then try again.' : d.error) || 'Failed to claim booking.');
+          if (d.already_claimed) {
+            msgEl.style.color = '#4ade80';
+            msgEl.textContent = '✓ This booking is already in your account.';
+          } else {
+            msgEl.style.color = '#4ade80';
+            msgEl.textContent = '✓ Booking linked to your account. Privilege Points are added when the journey is completed.';
+          }
+          btn.textContent = 'Added ✓';
+        } catch (e) {
+          msgEl.style.color = '#f87171';
+          msgEl.textContent = e.message;
+          btn.disabled = false;
+          btn.textContent = 'Add to My Account';
+        }
+      };
+    } catch (_) {}
+  }
+
+  function showError(msg) {
+    hide('stateLoading');
+    show('stateError');
+    document.getElementById('errorMsg').textContent = msg || 'We couldn\'t load your booking details.';
+  }
+
+  async function load() {
+    if (!queryId) {
+      hide('stateLoading');
+      show('stateLookup');
+      return;
+    }
+    try {
+      var res  = await fetch('/api/booking/get?id=' + encodeURIComponent(queryId));
+      var data;
+      try { data = await res.json(); } catch (_) {
+        throw new Error(res.ok ? 'Unexpected response from server. Please try again.' : 'Service unavailable. Please try again in a moment.');
+      }
+      if (!res.ok) throw new Error(data.error || 'Booking not found.');
+      renderBooking(data);
+      tryClaimPanel(data);
+    } catch (e) {
+      showError(e.message);
+    }
+  }
+
+  window.lookupBooking = async function () {
+    var btn = document.getElementById('btnLookup');
+    var err = document.getElementById('lookupError');
+    var ref = (document.getElementById('lkRef').value || '').trim();
+    var phone = (document.getElementById('lkPhone').value || '').trim();
+    err.classList.add('hidden');
+    if (!ref || !phone) {
+      err.textContent = 'Enter both your booking reference and phone number.';
+      err.classList.remove('hidden');
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = 'Searching…';
+    try {
+      var res  = await fetch('/api/booking/lookup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ref: ref, phone: phone })
+      });
+      var data; try { data = await res.json(); } catch (_) { throw new Error('Service unavailable. Please try again.'); }
+      if (!res.ok || !data.id) throw new Error(data.error || 'No booking found.');
+      window.location.href = '/booking?id=' + data.id;
+    } catch (e) {
+      err.textContent = e.message;
+      err.classList.remove('hidden');
+      btn.disabled = false;
+      btn.textContent = 'Find My Booking';
+    }
+  };
+
+  // The cancellation policy this booking is held to (version 1 for bookings
+  // made before 16/10/2026), and the tick box for bookings made by phone or
+  // WhatsApp that haven't accepted it yet. Wording matches /terms.
+  var needsTerms = false;
+  function setupPolicy(b) {
+    if (b.policy_version === '2') {
+      document.getElementById('policySummary').innerHTML = 'Free more than 48 hours before pickup. 25% of the fare 24&ndash;48 hours before, 50% 2&ndash;24 hours before, and the full fare under 2 hours or if no one is there to be picked up. If we cancel, you get a full refund. <a class="gold" href="/terms-v2#cancellation">Full policy</a>';
+    }
+    if (b.policy_version === '1') {
+      document.getElementById('policySummary').innerHTML = 'Free more than 24 hours before pickup. 50% of the fare 2&ndash;24 hours before, and the full fare under 2 hours or a no-show. If we cancel, you get a full refund. <a class="gold" href="/terms-v1#cancellation">Full policy</a>';
+    }
+    needsTerms = !!b.needs_terms;
+    if (needsTerms) document.getElementById('policyAcceptRow').classList.remove('hidden');
+  }
+  // Returns the request body, or null (and shows the message) when the box
+  // must be ticked first.
+  function payBody() {
+    var body = { bookingId: bookingId };
+    if (!needsTerms) return body;
+    var ok = document.getElementById('policyAccept').checked;
+    document.getElementById('policyError').classList.toggle('hidden', ok);
+    if (!ok) { document.getElementById('policyAccept').focus(); return null; }
+    body.terms_accepted = true;
+    return body;
+  }
+
+  window.payByCard = async function () {
+    var btn = document.getElementById('btnCard');
+    var err = document.getElementById('cardError');
+    var body = payBody(); if (!body) return;
+    btn.disabled = true;
+    btn.textContent = 'Redirecting to payment…';
+    err.classList.add('hidden');
+    try {
+      var res  = await fetch('/api/payment/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      var data; try { data = await res.json(); } catch (_) { throw new Error('Payment service unavailable. Please try again.'); }
+      if (!res.ok) throw new Error(data.error || 'Payment setup failed.');
+      if (!data.url) throw new Error('Payment redirect unavailable. Please try again or contact us.');
+      window.location.href = data.url;
+    } catch (e) {
+      err.textContent = e.message;
+      err.classList.remove('hidden');
+      btn.disabled = false;
+      btn.textContent = 'Pay by Card Online';
+    }
+  };
+
+  window.payByCash = async function () {
+    var btn = document.getElementById('btnCash');
+    var err = document.getElementById('cashError');
+    var body = payBody(); if (!body) return;
+    if (!confirm('Confirm cash payment on the day of travel?')) return;
+    btn.disabled = true;
+    btn.textContent = 'Confirming…';
+    err.classList.add('hidden');
+    try {
+      var res  = await fetch('/api/payment/confirm-cash', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      var data; try { data = await res.json(); } catch (_) { throw new Error('Service unavailable. Please try again.'); }
+      if (!res.ok) throw new Error(data.error || 'Failed to confirm. Please try again.');
+      // Reload to show confirmed state
+      window.location.href = '/booking?id=' + bookingId;
+    } catch (e) {
+      err.textContent = e.message;
+      err.classList.remove('hidden');
+      btn.disabled = false;
+      btn.textContent = 'Pay Cash on the Day';
+    }
+  };
+
+  ['lkRef', 'lkPhone'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('keydown', function (e) { if (e.key === 'Enter') window.lookupBooking(); });
+  });
+
+  load();
+})();
+</script>
+<script defer src="/public/js/site.js"></script>
+</body>
+</html>
