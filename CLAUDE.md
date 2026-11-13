@@ -1,3 +1,7 @@
+# Project scope (owner decision, 13/11/2026)
+
+**EV Exec is no longer relevant to this project.** The product is Winjo Digital's own multi-tenant platform that other businesses sign up to. Do not prioritise EV Exec-specific work (its marketing and SEO pages, blog, reminders, legal text, domain, Stripe or Vercel accounts), do not treat it as a customer or as the default business in new work, and do not ask the owner about EV Exec's production. Sections below that describe EV Exec are history and constraints on code that still exists; the cost, legal, date-format, secrets and no-deploy-without-approval rules still apply. Code that still assumes EV Exec (the default business id, `EV_EXEC` in `lib/brand.js`, the built-in price list, the generated marketing pages) is tracked in `docs/TASKS.md` for removal once the owner confirms how.
+
 # Cost policy (hard constraint — read before doing anything)
 
 **We do not pay for any additional cost, under any circumstance, without explicit prior approval from the user.**

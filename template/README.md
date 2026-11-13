@@ -25,4 +25,4 @@ The EV Exec website, Operator app and Driver App are already one multi-tenant pl
 
 - A separate website design per business. Every business uses the same booking site, themed from its own colours, logo, prices and legal text. A custom design means changing `lib/tenantSite.js`.
 - Automatic domain routing (each domain still needs a redeploy), per-business sending domains, automatic monthly billing.
-- Any wording specific to the original business (its terms, licence, blog and SEO pages) is not part of a new business's site; its legal text comes from its own Settings, Legal.
+- Any wording specific to the original (now retired) business (its terms, licence, blog and SEO pages) is not part of a new business's site; its legal text comes from its own Settings, Legal.

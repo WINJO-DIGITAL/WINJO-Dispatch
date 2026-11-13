@@ -43,6 +43,12 @@ A multi-tenant booking, dispatch and payments platform. Winjo Digital owns the p
 - [ ] Create a Test Operator admin login (Supabase dashboard steps given; needs owner's platform role or the manual steps).
 - [ ] Complete Stripe test onboarding for Test Operator in the Operator app (Settings → Payments).
 
+### Decouple from EV Exec (owner decision 13/11/2026: EV Exec is no longer relevant)
+- [ ] Needs the owner's decision first: delete the EV Exec content (marketing/SEO pages, blog, `docs/seo`, terms versions, `scripts/site`) or archive it on a branch, and whether the live EV Exec site keeps running meanwhile.
+- [ ] Then: make the default business configurable (`DEFAULT_TENANT_ID`, `EV_EXEC` in `lib/brand.js`, `STRIPE_PLATFORM_TENANT_ID`, price `FALLBACK`), replace the EV Exec literals in 64 files, remove the hardcoded live Supabase address and anon key fallbacks, and neutralise email wordmark, licence and phone constants.
+- [ ] Same sweep in the Operator app (65 literals) and Driver App (19 literals), which are not in this repository yet.
+- [ ] Drop EV Exec-only items from the checklists below (the Vercel token for its account, the staff alert address, production redeploy).
+
 ### Outstanding (engineering, no owner input needed)
 - [ ] Run one test-mode card payment on the Test Operator's connected account, and confirm the booking is marked Paid on that account (needs Stripe, Supabase and Vercel connections back).
 - [ ] Give the owner's login the platform owner role so the Platform screen shows (needs Supabase).
