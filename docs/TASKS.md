@@ -43,6 +43,12 @@ A multi-tenant booking, dispatch and payments platform. Winjo Digital owns the p
 - [ ] Create a Test Operator admin login (Supabase dashboard steps given; needs owner's platform role or the manual steps).
 - [ ] Complete Stripe test onboarding for Test Operator in the Operator app (Settings → Payments).
 
+### Site builder (owner decision 13/11/2026; plan in `docs/site-builder.md`)
+- [x] Content format and validation (`lib/siteContent.js`, 7 tests).
+- [ ] Renderer in this repo using the first site's design from git `6b12d43`, served by `lib/tenantSite.js`.
+- [ ] Migration `update_tenant_site` plus publish switch (needs Postgres 17 + pgTAP to test; applying to live needs owner approval).
+- [ ] Operator app Settings, Website editor with photo upload (separate repository).
+
 ### Decouple from EV Exec (owner decision 13/11/2026: EV Exec is no longer relevant)
 - [x] Stage 1 done (owner: delete): EV Exec's marketing and SEO pages, blog, EV Exec terms and privacy pages, page generator (`scripts/site`, `scripts/legal`), SEO docs, sitemap, EV Exec images and routes are deleted (still in git history at `6b12d43`). The home page and 404 are neutral placeholders; `booking.html` has a neutral header. `CLAUDE.md` history cut to rules and platform facts.
 - [ ] Stage 2, still EV Exec-branded and kept only because code uses them: `booking.html` and `account.html` (customer booking/payment and account pages), their logo/icon files, `lib/cancellation.js` links to the deleted `/terms-v1..v3`, `public/js/consent.js` (analytics id), `public/js/invoice-pdf.js`, `public/css/chrome.css`, `public/js/site.js` (now unused), and the Tailwind `src/input.css`.
