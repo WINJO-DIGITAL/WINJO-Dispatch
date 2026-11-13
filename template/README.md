@@ -2,24 +2,17 @@
 
 The EV Exec website, Operator app and Driver App are already one multi-tenant platform. A new business is a row in `public.tenants`; the website serves it by its own domain (`lib/tenantSite.js`), the Operator app scopes staff, prices, branding and Stripe to it, and drivers sign in at `<driver-app>/login?b=<short name>`. This template is the repeatable way to start one. It does not copy code and it does not touch any database.
 
-## Two ways to use it
+## How to use it (route A, owner decision 13/11/2026)
 
-**A. A business on a platform you already run (the normal way).** Use this folder as is.
+Every business is a tenant on the one platform the owner runs. There is no separate copy of the platform per business.
 
-1. Copy `replica.config.example.json`, fill in the business's facts. No keys or passwords: the script refuses them.
-2. `npm run new:business -- my-business.json` writes three files to `template/out/<slug>/` (git-ignored).
-3. Run `01-provision.sql` once in the Supabase SQL editor (the platform owner only).
-4. Invite the business's first admin (Operator app, Settings, Platform), then they follow `02-operator-app-checklist.md`. Those screens save through the platform's checked functions (prices, branding, legal, Stripe), which need a signed-in admin, so they are not scripted.
-5. `03-website-and-links.md` has the website address, the optional own-domain steps and the driver sign-in link.
+1. Copy `replica.config.example.json` and fill in the business's facts. No keys or passwords: the script refuses them.
+2. `npm run new:business -- my-business.json` writes three files to `template/out/<slug>/` (git-ignored). Nothing is sent or changed anywhere.
+3. Run `01-provision.sql` once in the Supabase SQL editor (platform owner only).
+4. Invite the business's first admin (Operator app, Settings, Platform). They follow `02-operator-app-checklist.md`. Those screens save through the platform's checked functions (prices, branding, legal, Stripe), which need a signed-in admin, so they are not scripted.
+5. `03-website-and-links.md` has the website address, the optional own-domain steps (the business buys its own domain; adding it to hosting may cost money, so ask the owner first) and the driver sign-in link.
 
-**B. Your own separate copy of the whole platform (a replica you resell).** Needs your own accounts, so **every item below can cost money: ask the platform owner before creating any**.
-
-1. New Supabase project: build the database from `supabase/baseline/schema.sql` (structure only, no data), then newer files in `supabase/migrations/`. Run `bash scripts/db-test.sh` (Postgres 17 and pgTAP).
-2. Three Vercel projects (website, Operator app, Driver App) from the three repositories.
-3. Your own Stripe platform account, Resend sending domain and Google Maps key.
-4. Set the environment variables in `.env.example` (website) and each app's own list. Set **`SUPABASE_URL`** and **`SUPABASE_ANON_KEY`** explicitly: if they are missing the website falls back to the original live project.
-5. Give your owner login the `super_admin` role in `tenant_users`, then follow A for each business.
-6. Do not copy the original's keys, customer data, auth users, storage files or Stripe objects.
+A separate copy of the whole platform per business (its own database, hosting and payment accounts) is not supported and not planned.
 
 ## Not covered (needs decisions or accounts)
 
