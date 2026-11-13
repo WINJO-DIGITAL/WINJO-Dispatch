@@ -45,8 +45,9 @@ A multi-tenant booking, dispatch and payments platform. Winjo Digital owns the p
 
 ### Site builder (owner decision 13/11/2026; plan in `docs/site-builder.md`)
 - [x] Content format and validation (`lib/siteContent.js`, 7 tests).
-- [ ] Renderer in this repo using the first site's design from git `6b12d43`, served by `lib/tenantSite.js`.
-- [ ] Migration `update_tenant_site` plus publish switch (needs Postgres 17 + pgTAP to test; applying to live needs owner approval).
+- [x] Renderer (`lib/siteBuilder.js`, wired into `lib/tenantSite.js`): a business that has published its content gets its own headline, hero photo, services, about, fleet, areas, reviews, FAQs, contact and SEO title/description on its home page; an unpublished one keeps the plain page. Every value escaped; photos only from its own folder. 5 tests, including injection and cross-business checks. It reuses the tenant page's existing design (Jost, cards, colours), not yet the first site's full header and styles.
+- [ ] Not yet built: separate pages (`/about`, `/fleet`...), per-business `sitemap.xml`, the first site's mega-menu header and styles (in git `6b12d43`, only if wanted).
+- [x] Draft migration `supabase/pending/20261113190000_tenant_site_content.sql` (`update_tenant_site`, publish switch) and its pgTAP test `supabase/tests/database/update_tenant_site.test.sql`. **Written but not run** (no Postgres 17 + pgTAP here): run `bash scripts/db-test.sh` or the GitHub workflow first. Applying to live needs the owner's approval.
 - [ ] Operator app Settings, Website editor with photo upload (separate repository).
 
 ### Decouple from EV Exec (owner decision 13/11/2026: EV Exec is no longer relevant)
