@@ -14,7 +14,7 @@ The customer booking website, booking and payment API, and database migrations f
 
 | What | Command |
 |---|---|
-| Website unit tests (233) | `npm run test:unit` |
+| Website unit tests (236) | `npm run test:unit` |
 | Browser tests | `npm run test:browser` (needs Playwright and Chromium) |
 | Database tests (pgTAP, 12 files) | `bash scripts/db-test.sh` (needs Postgres 17 and pgTAP; see `docs/HANDOVER.md`) |
 

@@ -106,3 +106,36 @@ test('a published site drops the generic claims strip; the plain page keeps it',
   assert.doesNotMatch(body(site.homePage(row())), claim);
   assert.match(body(site.homePage(row({ brand: { site_url: 'https://x.test' } }))), claim);
 });
+
+test('each business gets its own sitemap and robots.txt, on its own address only', () => {
+  const t = row({ brand: { site_url: 'https://www.leedscars.test/' } });
+  assert.match(site.sitemapFor(t), /<loc>https:\/\/www\.leedscars\.test\/<\/loc>/);
+  assert.match(site.robotsFor(t), /Sitemap: https:\/\/www\.leedscars\.test\/sitemap\.xml/);
+  assert.doesNotMatch(site.sitemapFor(t), /evexec/);
+});
+
+test('no sitemap entry without a valid https address, and the address is escaped', () => {
+  for (const u of ['', 'http://plain.test', 'not a url', 'javascript:alert(1)']) {
+    const t = row({ brand: { site_url: u } });
+    assert.doesNotMatch(site.sitemapFor(t), /<loc>/, u);
+    assert.doesNotMatch(site.robotsFor(t), /Sitemap:/, u);
+  }
+  assert.doesNotMatch(site.sitemapFor(row({ brand: { site_url: 'https://a.test/?x=<b>' } })), /<b>/);
+});
+
+test('the request handler serves the sitemap for that business\'s host only', async () => {
+  site._setTenants([row({ brand: { site_url: 'https://www.leedscars.test' } })]);
+  const call = async (host, p) => {
+    const res = { headers: {}, setHeader(k, v) { this.headers[k] = v; }, end(b) { this.body = b; } };
+    await site.handle({ method: 'GET', headers: { host }, query: { p } }, res);
+    return res;
+  };
+  const ok = await call('www.leedscars.test', 'sitemap.xml');
+  assert.equal(ok.statusCode, 200);
+  assert.match(ok.headers['Content-Type'], /application\/xml/);
+  assert.match(ok.body, /leedscars\.test\/<\/loc>/);
+  const other = await call('someone-else.test', 'sitemap.xml');
+  assert.equal(other.statusCode, 404);
+  assert.doesNotMatch(String(other.body), /leedscars/);
+  site._setTenants(null);
+});

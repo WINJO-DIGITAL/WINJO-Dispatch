@@ -47,7 +47,8 @@ A multi-tenant booking, dispatch and payments platform. Winjo Digital owns the p
 - [x] Content format and validation (`lib/siteContent.js`, 7 tests).
 - [x] Renderer (`lib/siteBuilder.js`, wired into `lib/tenantSite.js`): a business that has published its content gets its own headline, hero photo, services, about, fleet, areas, reviews, FAQs, contact and SEO title/description on its home page; an unpublished one keeps the plain page. Every value escaped; photos only from its own folder. 5 tests, including injection and cross-business checks. It reuses the tenant page's existing design (Jost, cards, colours), not yet the first site's full header and styles.
 - [x] Design directions `classic`, `editorial`, `bold` (layout, type, order and shapes differ), checked in a real browser at desktop and phone width; skill added at `.claude/skills/anti-ai-design`. 11 renderer tests.
-- [ ] Not yet built: more directions, separate pages (`/about`, `/fleet`...), per-business `sitemap.xml`, the editor control for the direction (Operator app).
+- [x] Per-business `sitemap.xml` (home page, on the business's own https address) and a `Sitemap:` line in its `robots.txt`; 3 tests.
+- [ ] Not yet built: more directions, separate pages (`/about`, `/fleet`...), the editor control for the direction (Operator app).
 - [x] Draft migration `supabase/pending/20261113190000_tenant_site_content.sql` (`update_tenant_site`, publish switch) and its pgTAP test `supabase/tests/database/update_tenant_site.test.sql`. **Written but not run** (no Postgres 17 + pgTAP here): run `bash scripts/db-test.sh` or the GitHub workflow first. Applying to live needs the owner's approval.
 - [ ] Operator app Settings, Website editor with photo upload (separate repository).
 
