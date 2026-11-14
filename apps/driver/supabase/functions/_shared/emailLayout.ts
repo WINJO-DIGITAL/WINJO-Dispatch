@@ -1,6 +1,6 @@
 // The one email design: white card, navy header with the business's wordmark,
 // gold stripe, coloured status pill, navy footer. Matches
-// public.evexec_notification_email() in the database and evexec's
+// public.notification_email() in the database and the website's
 // lib/emailLayout.js. The business's name, contact details and colours come
 // from its Brand (see ./brand.ts), so every business's emails carry its own.
 

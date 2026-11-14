@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import { enablePush, pushState, type PushState } from '@/lib/push'
 import { BRAND } from '@/lib/brand'
 
-const HIDE_KEY = 'evexec_push_prompt_hidden'
+const HIDE_KEY = 'push_prompt_hidden'
 
 /** Banner shown until job notifications are switched on for this phone. */
 export function PushPrompt() {

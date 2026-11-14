@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { brandFromLookup, cleanSlug, type SigninBrand } from '@/lib/signin-brand'
 
-const KEY = 'evx_business'
+const KEY = 'business'
 
 function remembered(): string | null {
   try {

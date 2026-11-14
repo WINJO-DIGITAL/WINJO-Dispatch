@@ -18,7 +18,7 @@ export type PushState =
   | 'off'           // not asked yet
   | 'on'
 
-const PUSH_KEY_STORAGE = 'evexec_vapid_key'
+const PUSH_KEY_STORAGE = 'vapid_key'
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4)

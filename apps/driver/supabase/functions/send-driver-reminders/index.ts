@@ -25,7 +25,7 @@ import { loadBrand } from '../_shared/brand.ts'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? ''
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-const APP_URL = Deno.env.get('APP_URL') ?? 'https://evexecdriverapp.vercel.app'
+const APP_URL = Deno.env.get('APP_URL') ?? 'https://winjo-dispatch.vercel.app'
 
 // Booking statuses that can still have upcoming pickups
 const ACTIVE_STATUSES = [
@@ -152,7 +152,7 @@ Deno.serve(async (_req) => {
         ? (booking.travel_time as string).slice(0, 5)
         : formatTime(booking.pickup_time)
       const date       = formatDate(booking.travel_date ?? booking.pickup_time)
-      const bookingUrl = `${APP_URL}/jobs/${booking.id}`
+      const bookingUrl = `${APP_URL}/driver/jobs/${booking.id}`
       const reminderType = reminder.type === 'driver_reminder_24h' ? '24h' : '1h' as const
 
       // The stored addresses are the source of truth; the airport name only

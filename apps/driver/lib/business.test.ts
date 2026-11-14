@@ -6,8 +6,8 @@ const FALLBACK: Business = { name: 'Fallback Ltd', phone: '+441111111111', whats
 
 describe('telNumber', () => {
   it('gives an international number for tel: links', () => {
-    expect(telNumber('07721070370')).toBe('+447721070370')
-    expect(telNumber('07721 070370')).toBe('+447721070370')
+    expect(telNumber('07700900123')).toBe('+447700900123')
+    expect(telNumber('07700 900123')).toBe('+447700900123')
     expect(telNumber('+44 7123 456789')).toBe('+447123456789')
     expect(telNumber('0044 7123 456789')).toBe('+447123456789')
     expect(telNumber('01253 123456')).toBe('+441253123456')
@@ -25,9 +25,9 @@ describe('businessFromRow', () => {
       name: 'Coastal Cars', phone: '+447123456789', whatsapp: 'https://wa.me/447123456789',
     })
   })
-  it('EV Exec\'s row gives the numbers the app always used', () => {
-    expect(businessFromRow({ name: 'EV Exec', contact_phone: '07721070370' }, FALLBACK)).toEqual({
-      name: 'EV Exec', phone: '+447721070370', whatsapp: 'https://wa.me/447721070370',
+  it('Acme Cars\'s row gives the numbers the app always used', () => {
+    expect(businessFromRow({ name: 'Acme Cars', contact_phone: '07700900123' }, FALLBACK)).toEqual({
+      name: 'Acme Cars', phone: '+447700900123', whatsapp: 'https://wa.me/447700900123',
     })
   })
   it('a business with no number gets none, never the fallback\'s', () => {

@@ -66,7 +66,7 @@ export default function NotificationsPage() {
   const loadActivity = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
-    const key = `evexec_activity_cleared_${user.id}`
+    const key = `activity_cleared_${user.id}`
     setClearKey(key)
     try { setClearedAt(localStorage.getItem(key)) } catch { /* storage unavailable */ }
 

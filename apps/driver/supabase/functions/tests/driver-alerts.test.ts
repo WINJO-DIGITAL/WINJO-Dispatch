@@ -139,7 +139,7 @@ function jobDeps(booking: JobBooking | null) {
   return { deps, calls }
 }
 const activeJob: JobBooking = {
-  id: BOOKING_ID, ref: 'EVX-B1', status: 'Dispatched', assigned_driver_id: REAL_DRIVER, customer_name: 'Real Customer',
+  id: BOOKING_ID, ref: 'ACM-B1', status: 'Dispatched', assigned_driver_id: REAL_DRIVER, customer_name: 'Real Customer',
   travel_date: '2026-11-01', travel_time: '10:00', pickup_location: 'Lytham', airport: 'Manchester Airport', dropoff_address: null, notes: null,
 }
 
@@ -165,7 +165,7 @@ test('notify-job-update: real cancellation notifies the driver on the booking', 
   assert.equal(res.status, 200)
   assert.equal(calls.pushes.length, 1)
   assert.equal(calls.pushes[0].driverId, REAL_DRIVER)
-  assert.match(calls.pushes[0].title, /Job cancelled, EVX-B1/)
+  assert.match(calls.pushes[0].title, /Job cancelled, ACM-B1/)
 })
 
 test('notify-job-update: real time change notifies with the new time', async () => {

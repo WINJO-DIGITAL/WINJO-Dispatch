@@ -3,7 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 // The business a signed-in driver works for: the name and dispatch number used
 // in customer texts, receipts and the "call dispatch" buttons. It comes from the
 // driver's own business row, so another business's drivers never see (or send
-// customers) EV Exec's details. A detail the business has not set is blank and
+// customers) another business's details. A detail the business has not set is blank and
 // is left out, never filled in with another business's.
 
 export interface Business {

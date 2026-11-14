@@ -6,12 +6,12 @@ import {
 import type { Booking } from './types'
 
 const booking = (over: Partial<Booking> = {}): Booking => ({
-  id: 'abcdef12-0000-4000-8000-000000000000', ref: 'EVX-TEST1', customer_name: 'Jo Bloggs',
+  id: 'abcdef12-0000-4000-8000-000000000000', ref: 'ACM-TEST1', customer_name: 'Jo Bloggs',
   pickup_location: '1 Test Street, Southport', airport: 'Liverpool Airport', journey_type: 'To Airport',
   travel_date: '2026-11-12', travel_time: '09:30:00', flight_number: null,
   ...over,
 } as Booking)
-const EV = { name: 'EV Exec' }
+const EV = { name: 'Acme Cars' }
 const driver = { full_name: 'Sam Driver', vehicle_model: 'Tesla Model Y', vehicle_registration: 'ab12 cde' }
 
 afterEach(() => vi.useRealTimers())
@@ -32,10 +32,10 @@ describe('customer update texts', () => {
     vi.useFakeTimers(); vi.setSystemTime(new Date(2026, 10, 11, 8, 0))
     const t = customerUpdateSms('En Route', booking(), driver, EV)!
     expect(t).toContain('Good morning Jo,')
-    expect(t).toContain('This is Sam, your EV Exec driver')
+    expect(t).toContain('This is Sam, your Acme Cars driver')
     expect(t).toContain('on my way to 1 Test Street, Southport for your 09:30 pickup.')
     expect(t).toContain("I'll be in a Tesla Model Y, registration AB12 CDE.")
-    expect(t).toContain('Booking ref: EVX-TEST1.')
+    expect(t).toContain('Booking ref: ACM-TEST1.')
   })
   it('mentions the flight when there is one', () => {
     const t = customerUpdateSms('En Route', booking({ flight_number: 'ezy123' }), driver, EV)!
@@ -60,7 +60,7 @@ describe('customer update texts', () => {
   })
   it('copes with no driver, no name and no car', () => {
     const t = customerUpdateSms('En Route', booking({ customer_name: undefined, travel_time: undefined }), null, EV)!
-    expect(t).toContain('This is your driver, your EV Exec driver')
+    expect(t).toContain('This is your driver, your Acme Cars driver')
     expect(t).not.toContain('undefined')
     expect(t).not.toContain('null')
     expect(t).not.toContain('pickup.')   // no time given
@@ -130,19 +130,19 @@ describe('another business', () => {
     customerUpdateSms('Arrived', booking(), driver, b)!,
     customerReminderSms(booking(), b, '2026-11-11'),
   ]
-  it('texts use its own name and never mention EV Exec', () => {
-    for (const t of all(COASTAL)) { expect(t).toContain('Coastal Cars'); expect(t).not.toMatch(/EV Exec/i) }
+  it('texts use its own name and never mention Acme Cars', () => {
+    for (const t of all(COASTAL)) { expect(t).toContain('Coastal Cars'); expect(t).not.toMatch(/Acme Cars/i) }
     expect(customerUpdateSms('En Route', booking(), driver, COASTAL)).toContain('your Coastal Cars driver')
     expect(customerReminderSms(booking(), COASTAL, '2026-11-11')).toMatch(/your Coastal Cars journey[\s\S]*Many thanks,\nCoastal Cars$/)
   })
-  it('a business with no name gets clean wording, not blanks or EV Exec', () => {
-    for (const t of all(NONE)) { expect(t).not.toMatch(/EV Exec|undefined|null|  /i) }
+  it('a business with no name gets clean wording, not blanks or Acme Cars', () => {
+    for (const t of all(NONE)) { expect(t).not.toMatch(/Acme Cars|undefined|null|  /i) }
     expect(customerUpdateSms('En Route', booking(), driver, NONE)).toContain('your driver.')
     expect(customerUpdateSms('Arrived', booking(), driver, NONE)).toMatch(/Kind regards,\nSam$/)
     expect(customerReminderSms(booking(), NONE, '2026-11-11')).toMatch(/your journey is booked[\s\S]*Many thanks,$/)
   })
-  it('EV Exec\'s own texts are unchanged', () => {
-    expect(customerUpdateSms('Arrived', booking(), driver, EV)).toMatch(/Kind regards,\nSam, EV Exec$/)
-    expect(customerReminderSms(booking(), EV, '2026-11-11')).toContain('your EV Exec journey is booked for tomorrow (12/11/2026) at 09:30')
+  it('Acme Cars\'s own texts are unchanged', () => {
+    expect(customerUpdateSms('Arrived', booking(), driver, EV)).toMatch(/Kind regards,\nSam, Acme Cars$/)
+    expect(customerReminderSms(booking(), EV, '2026-11-11')).toContain('your Acme Cars journey is booked for tomorrow (12/11/2026) at 09:30')
   })
 })

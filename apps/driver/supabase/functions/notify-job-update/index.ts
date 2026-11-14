@@ -14,7 +14,7 @@ import { handleJobUpdate } from './handler.ts'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? ''
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-const APP_URL = Deno.env.get('APP_URL') ?? 'https://evexecdriverapp.vercel.app'
+const APP_URL = Deno.env.get('APP_URL') ?? 'https://winjo-dispatch.vercel.app'
 
 Deno.serve((req) => {
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)

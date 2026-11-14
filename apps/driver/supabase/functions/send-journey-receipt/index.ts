@@ -18,7 +18,7 @@
 
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
 import { createClient } from 'jsr:@supabase/supabase-js@2'
-import { CORS_HEADERS, corsPreflightResponse } from '../_shared/cors.ts'
+import { corsHeadersFor, corsPreflightResponse } from '../_shared/cors.ts'
 import { emailShell, pillHtml, helpLine, PILL } from '../_shared/emailLayout.ts'
 import { loadBrand, type Brand } from '../_shared/brand.ts'
 import { queueEmail } from '../_shared/notify.ts'
@@ -65,7 +65,7 @@ function fmtPrice(p: number | null): string {
   return `£${p.toFixed(2)}`
 }
 
-// Explicit payment wording, same rules as evexec/lib/format.js paymentLine().
+// Explicit payment wording, same rules as the website's lib/format.js paymentLine().
 function paymentLine(b: Record<string, unknown>): string {
   const notes = String(b.notes ?? '')
   if (/^Return leg created automatically/i.test(notes)) {
@@ -150,11 +150,11 @@ function corporateInvoiceHtml(
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return corsPreflightResponse()
+    return corsPreflightResponse(req)
   }
 
   const json = (body: unknown, init?: ResponseInit) =>
-    Response.json(body, { ...init, headers: { ...(init?.headers ?? {}), ...CORS_HEADERS } })
+    Response.json(body, { ...init, headers: { ...(init?.headers ?? {}), ...corsHeadersFor(req) } })
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 

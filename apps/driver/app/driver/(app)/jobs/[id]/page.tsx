@@ -180,25 +180,25 @@ function CompletionOverlay({ ref: bookingRef, price, onDone }: { ref: string; pr
   return (
     <>
       <style>{`
-        @keyframes evx-pop { 0%{transform:scale(0.4);opacity:0} 60%{transform:scale(1.1)} 100%{transform:scale(1);opacity:1} }
-        @keyframes evx-draw { 0%{stroke-dashoffset:80} 100%{stroke-dashoffset:0} }
-        @keyframes evx-fade { 0%{opacity:0;transform:translateY(12px)} 100%{opacity:1;transform:translateY(0)} }
-        @keyframes evx-ring { 0%,100%{box-shadow:0 0 0 0 rgba(52,211,153,0.5)} 50%{box-shadow:0 0 0 24px rgba(52,211,153,0)} }
-        .evx-pop { animation: evx-pop 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards }
-        .evx-draw { stroke-dasharray:80; stroke-dashoffset:80; animation: evx-draw 0.45s ease-out 0.45s forwards }
-        .evx-fade { opacity:0; animation: evx-fade 0.4s ease-out forwards }
-        .evx-ring { animation: evx-ring 1.5s ease-in-out 0.6s infinite }
+        @keyframes wd-pop { 0%{transform:scale(0.4);opacity:0} 60%{transform:scale(1.1)} 100%{transform:scale(1);opacity:1} }
+        @keyframes wd-draw { 0%{stroke-dashoffset:80} 100%{stroke-dashoffset:0} }
+        @keyframes wd-fade { 0%{opacity:0;transform:translateY(12px)} 100%{opacity:1;transform:translateY(0)} }
+        @keyframes wd-ring { 0%,100%{box-shadow:0 0 0 0 rgba(52,211,153,0.5)} 50%{box-shadow:0 0 0 24px rgba(52,211,153,0)} }
+        .wd-pop { animation: wd-pop 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards }
+        .wd-draw { stroke-dasharray:80; stroke-dashoffset:80; animation: wd-draw 0.45s ease-out 0.45s forwards }
+        .wd-fade { opacity:0; animation: wd-fade 0.4s ease-out forwards }
+        .wd-ring { animation: wd-ring 1.5s ease-in-out 0.6s infinite }
       `}</style>
       <div
         className="fixed inset-0 flex flex-col items-center justify-center"
         style={{ background: '#060C1A', zIndex: 9999 }}
       >
         {/* Animated circle + check */}
-        <div className="evx-pop evx-ring mb-8 flex items-center justify-center rounded-full"
+        <div className="wd-pop wd-ring mb-8 flex items-center justify-center rounded-full"
           style={{ width: 120, height: 120, background: 'rgba(52,211,153,0.12)', border: '3px solid #34d399' }}>
           <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
             <polyline
-              className="evx-draw"
+              className="wd-draw"
               points="14,29 24,39 42,18"
               stroke="#34d399"
               strokeWidth="4.5"
@@ -209,20 +209,20 @@ function CompletionOverlay({ ref: bookingRef, price, onDone }: { ref: string; pr
         </div>
 
         {/* Text */}
-        <p className="evx-fade text-white font-bold text-2xl tracking-tight mb-1" style={{ animationDelay: '0.6s' }}>
+        <p className="wd-fade text-white font-bold text-2xl tracking-tight mb-1" style={{ animationDelay: '0.6s' }}>
           Journey Complete
         </p>
-        <p className="evx-fade text-emerald-400 text-sm font-semibold mb-6" style={{ animationDelay: '0.75s' }}>
+        <p className="wd-fade text-emerald-400 text-sm font-semibold mb-6" style={{ animationDelay: '0.75s' }}>
           {bookingRef}
         </p>
         {price != null && price > 0 && (
-          <p className="evx-fade font-bold text-3xl" style={{ color: '#d5a538', animationDelay: '0.85s' }}>
+          <p className="wd-fade font-bold text-3xl" style={{ color: '#d5a538', animationDelay: '0.85s' }}>
             £{price.toFixed(2)}
           </p>
         )}
 
         {/* Business wordmark */}
-        <p className="evx-fade absolute bottom-14 text-[#d5a538] text-xs font-bold tracking-[4px] opacity-40"
+        <p className="wd-fade absolute bottom-14 text-[#d5a538] text-xs font-bold tracking-[4px] opacity-40"
           style={{ animationDelay: '1s' }}>{wordmark}</p>
       </div>
     </>

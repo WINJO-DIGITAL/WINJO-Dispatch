@@ -91,7 +91,7 @@ export async function handleJobUpdate(req: Request, deps: JobUpdateDeps): Promis
   const ref        = booking.ref ?? bookingId.slice(0, 8).toUpperCase()
   const customer   = booking.customer_name ?? 'your passenger'
   const isCancelled = CANCELLED_STATUSES.includes(booking.status ?? '')
-  const bookingUrl = `${deps.appUrl}/jobs/${bookingId}`
+  const bookingUrl = `${deps.appUrl}/driver/jobs/${bookingId}`
 
   let notifType: 'job_cancelled' | 'job_updated'
   let pushTitle: string

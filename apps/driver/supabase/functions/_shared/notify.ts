@@ -14,7 +14,7 @@ import { VAPID_SUBJECT } from './platform.ts'
 
 const VAPID_PUBLIC_KEY  = Deno.env.get('VAPID_PUBLIC_KEY') ?? ''
 const VAPID_PRIVATE_KEY = Deno.env.get('VAPID_PRIVATE_KEY') ?? ''
-const APP_URL           = Deno.env.get('APP_URL') ?? 'https://evexecdriverapp.vercel.app'
+const APP_URL           = Deno.env.get('APP_URL') ?? 'https://winjo-dispatch.vercel.app'
 
 if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
   webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY)
@@ -92,7 +92,7 @@ function driverEmailHtml(title: string, body: string, jobUrl: string, brand: Bra
     ${pillHtml('Driver notification', PILL.blue)}
     <h2 style="color:#0f1b33;font-size:17px;font-weight:700;margin:18px 0 10px">${escapeHtml(title)}</h2>
     <p style="color:#0f1b33;font-size:15px;margin:0 0 24px;line-height:1.6">${escapeHtml(body)}</p>
-    <a href="${APP_URL}${jobUrl}"
+    <a href="${APP_URL}/driver${jobUrl}"
        style="display:inline-block;background:#C9A550;color:#0B132B;font-weight:700;font-size:14px;padding:12px 24px;border-radius:8px;text-decoration:none">
       View Job
     </a>`, brand)

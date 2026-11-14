@@ -313,7 +313,7 @@ async function runOperatorAlert(supabase: SupabaseClient, now: Date, summary: Ru
     if (tenant?.contact_email) {
       // Same branded shell as every other notification email.
       // The shell carries THIS business's name, number, licence and website (the
-      // booking's tenant); there is deliberately no fallback to the EV Exec shell.
+      // booking's tenant); there is deliberately no fallback to a default business's shell.
       const { data: branded } = await supabase.rpc('tenant_notification_email', {
         p_tenant: b.tenant_id,
         p_pill: 'Pickup not confirmed', p_pill_bg: '#fde8e8', p_pill_fg: '#9b1c1c',

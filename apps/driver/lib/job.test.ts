@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { STATUS_FLOW, TIMESTAMP_FIELD, PROGRESS_STEPS, STEP_LABELS, getGraceMinutes, formatPref, isNoShowJob } from './job'
 
-// The statuses the database lets a driver-only login set (evexec hardening, 10/11/2026).
+// The statuses the database lets a driver-only login set (database hardening, 10/11/2026).
 const DRIVER_ALLOWED = ['En Route', 'Arrived', 'Passenger On Board', 'Completed', 'No Show']
 
 describe('status flow', () => {

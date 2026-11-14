@@ -3,7 +3,7 @@
 // Invoked every minute by pg_cron + pg_net (migration
 // 20260923000000_customer_sms_reminder_push_cron.sql).
 //
-// The website's reminder cron (evexec api/reminders/trigger.js) writes a
+// The website's reminder cron (api/reminders/trigger.js) writes a
 // driver_sms_reminders row (status 'pending') for every customer with a phone
 // number: '7day' 5-7 days before travel and '24hr' the day before. This
 // function notices new rows and push-notifies the assigned driver, opening the
@@ -14,7 +14,7 @@
 //
 // If the push can't reach the driver's phone:
 //   - '24hr': a backup email is queued. The website sends it in the shared
-//     email design (evexec lib/emailQueueRender.js, type customer_sms_reminder),
+//     email design (lib/emailQueueRender.js, type customer_sms_reminder),
 //     with the job's date and time and the exact text to send.
 //   - '7day' and anything else: no email (user decision, 14/10/2026). The
 //     reminder is still waiting in the app, and the day-before one follows.
@@ -41,7 +41,7 @@ if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
   webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY)
 }
 
-const OPERATOR_APP_URL = (Deno.env.get('OPERATOR_APP_URL') ?? 'https://evexecoperator.vercel.app').replace(/\/$/, '')
+const OPERATOR_APP_URL = (Deno.env.get('OPERATOR_APP_URL') ?? 'https://winjo-dispatch.vercel.app').replace(/\/$/, '')
 
 const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 

@@ -151,7 +151,7 @@ function EarningsContent() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `ev-exec-${monthPrefix}.csv`
+    a.download = `earnings-${monthPrefix}.csv`
     a.click()
     URL.revokeObjectURL(url)
   }

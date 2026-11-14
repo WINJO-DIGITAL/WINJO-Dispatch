@@ -5,16 +5,16 @@ import { emailShell, helpLine } from '../_shared/emailLayout.ts'
 import { reminderEmail, cancellationEmail, updateEmail } from '../_shared/email.ts'
 
 // A business shows only its own details in the driver app's emails, and the
-// old EV Exec header, number and address never appear for anyone else.
+// old Acme Cars header, number and address never appear for anyone else.
 
 const COASTAL = brandFromRow({
   name: 'Coastal Cars', contact_email: 'hello@coastal.test', contact_phone: '+44 7123 456789',
   brand: { licence: 'PHO1234', site_url: 'https://coastal.test/', tagline: 'Airport transfers from Southport', colors: { primary: '#123456', accent: '#FF8800' } },
 })
 const BARE = brandFromRow({ name: 'Bare Business', contact_email: null, contact_phone: null, brand: {} })
-const LEAKS = /EV Exec|EV EXEC|07721|PHO0079|evexec\.co\.uk|070370/i
+const LEAKS = /Acme Cars|ACME CARS|07700 900123|PHO0001|acme-cars\.test/i
 
-const base = { driverName: 'Sam', ref: 'EVX-1', customer: 'Jo', pickup: 'A', dropoff: 'B', date: '12/11/2026', time: '09:30', bookingUrl: 'https://driver.test/jobs/1' }
+const base = { driverName: 'Sam', ref: 'ACM-1', customer: 'Jo', pickup: 'A', dropoff: 'B', date: '12/11/2026', time: '09:30', bookingUrl: 'https://driver.test/jobs/1' }
 const all = (brand: ReturnType<typeof brandFromRow>) => [
   reminderEmail({ ...base, type: '24h', brand }).html,
   reminderEmail({ ...base, type: '1h', brand }).html,
@@ -24,8 +24,8 @@ const all = (brand: ReturnType<typeof brandFromRow>) => [
 ]
 
 test('brand: phone numbers read the house way', () => {
-  assert.equal(displayPhone('07721070370'), '07721 070370')
-  assert.equal(displayPhone('+44 7721 070370'), '07721 070370')
+  assert.equal(displayPhone('07700900123'), '07700 900123')
+  assert.equal(displayPhone('+44 7700 900123'), '07700 900123')
   assert.equal(displayPhone('01253 123456'), '01253 123456')
   assert.equal(displayPhone(null), '')
 })
@@ -49,7 +49,7 @@ test('emails: another business shows its own name, colours, contact details and 
   assert.match(helpLine(COASTAL), /Call or WhatsApp 07123 456789\./)
 })
 
-test('emails: no template shows EV Exec details for another business', () => {
+test('emails: no template shows Acme Cars details for another business', () => {
   for (const html of [...all(COASTAL), ...all(BARE), ...all(NO_BRAND)]) assert.doesNotMatch(html, LEAKS)
 })
 
@@ -60,15 +60,15 @@ test('emails: a business with no number, licence or site leaves them out cleanly
   assert.match(html, /Bare Business<\/td>/)
 })
 
-test('emails: EV Exec\'s own row still gives its header, number and licence', () => {
+test('emails: a business\'s own row gives its header, number and licence', () => {
   const ev = brandFromRow({
-    name: 'EV Exec', contact_email: 'book@evexec.co.uk', contact_phone: '07721070370',
-    brand: { licence: 'PHO0079', site_url: 'https://www.evexec.co.uk', tagline: 'Premium airport transfers from Blackpool & the Fylde Coast' },
+    name: 'Acme Cars', contact_email: 'bookings@acme-cars.test', contact_phone: '07700900123',
+    brand: { licence: 'PHO0001', site_url: 'https://www.acme-cars.test', tagline: 'Airport transfers from Exampleton' },
   })
   const html = reminderEmail({ ...base, type: '24h', brand: ev }).html
-  assert.match(html, />EV EXEC<\/div>/)
-  assert.match(html, /EV Exec · Premium airport transfers from Blackpool &amp; the Fylde Coast · 07721 070370 · book@evexec\.co\.uk · www\.evexec\.co\.uk/)
-  assert.match(html, /Private hire operator licence PHO0079/)
+  assert.match(html, />ACME CARS<\/div>/)
+  assert.match(html, /Acme Cars · Airport transfers from Exampleton · 07700 900123 · bookings@acme-cars\.test · www\.acme-cars\.test/)
+  assert.match(html, /Private hire operator licence PHO0001/)
 })
 
 test('emails: text from the business row is escaped', () => {

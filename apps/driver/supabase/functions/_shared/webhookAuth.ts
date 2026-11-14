@@ -4,7 +4,7 @@
 // x-webhook-secret header. The functions load the accepted values (current,
 // plus the previous one during a rotation) with the service-role-only RPC
 // public.driver_alert_webhook_secrets(); see migration
-// evexec/supabase/migrations/20261015031000_driver_alert_webhook_secret.sql.
+// supabase/migrations/20261015031000_driver_alert_webhook_secret.sql.
 // Plain TypeScript with no Deno or npm imports, so it can be unit-tested
 // with Node (supabase/functions/tests).
 

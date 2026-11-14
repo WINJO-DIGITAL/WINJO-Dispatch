@@ -11,7 +11,7 @@ export interface Brand {
   name: string
   /** Upper-case name for the email header. */
   wordmark: string
-  /** Phone as people read it ("07721 070370"). */
+  /** Phone as people read it ("07123 456789"). */
   phone: string
   email: string
   licence: string
@@ -29,7 +29,7 @@ export const NO_BRAND: Brand = Object.freeze({
 const HEX = /^#[0-9a-f]{6}$/i
 const clean = (v: unknown): string => (typeof v === 'string' ? v.trim() : '')
 
-/** "07721070370" and "+44 7721 070370" both read "07721 070370"; anything else as typed. */
+/** "07123456789" and "+44 7123 456789" both read "07123 456789"; anything else as typed. */
 export function displayPhone(raw: unknown): string {
   const s = clean(raw)
   if (!s) return ''
