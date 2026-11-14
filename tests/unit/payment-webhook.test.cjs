@@ -16,18 +16,19 @@ process.env.STRIPE_SECRET_KEY = 'sk_test_unit';
 process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-unit';
 process.env.SUPABASE_URL = 'https://db.test';
 process.env.RESEND_API_KEY = 're_unit';
-process.env.OPERATOR_EMAIL = 'ops@evexec.test';
 process.env.OPERATOR_APP_URL = 'https://operator.test';
-process.env.SITE_URL = 'https://www.evexec.test';
+process.env.SITE_URL = 'https://www.acme-cars.test';
 
 // ── fake backend ───────────────────────────────────────────────────────────
 const BOOKING_ID = 'ef25cc06-2339-4655-bd2c-3c5db47afada';
 let db; let stripe; let calls; let failEmail; let failBookingPatch; let patchDelayMs; let patchBarrier;
 
+const SAMPLE = require('../helpers/sample-tenant');
 function reset() {
+  SAMPLE.load();
   db = {
     bookings: [{
-      id: BOOKING_ID, ref: 'EVX-UNIT0001', status: 'Dispatched', operator_response: 'accepted',
+      id: BOOKING_ID, tenant_id: SAMPLE.ID, ref: 'ACM-UNIT0001', status: 'Dispatched', operator_response: 'accepted',
       payment_status: 'Unpaid', payment_method: null, stripe_session_id: 'cs_test_paid1',
       customer_name: 'Thomas Smith', customer_email: 'tom@example.test', customer_phone: '07700900000',
       airport: 'Manchester Airport', return_journey: false, travel_date: '2026-10-10', travel_time: '04:00',
@@ -183,14 +184,14 @@ const sendWebhook = (payload, sig = sign(payload)) => request('/api/payment/stri
 const verify = (extra = {}) => request('/api/payment/verify', { body: JSON.stringify({ bookingId: BOOKING_ID, ...extra }) });
 const booking = () => db.bookings[0];
 const customerEmails = () => calls.emails.filter(e => e.to.includes('tom@example.test'));
-const operatorEmails = () => calls.emails.filter(e => e.to.includes('ops@evexec.test'));
+const operatorEmails = () => calls.emails.filter(e => e.to.includes('bookings@acme-cars.test'));
 
 function assertNotifiedOnce() {
   assert.equal(calls.bookingPaidTransitions, 1, 'one Paid transition');
   assert.equal(customerEmails().length, 1, 'one customer email');
   assert.match(customerEmails()[0].subject, /^Payment received \(£90\.00\): Saturday 10\/10\/2026 at 04:00/);
   assert.equal(operatorEmails().length, 1, 'one operator email');
-  assert.match(operatorEmails()[0].subject, /^Paid £90\.00: EVX-UNIT0001/);
+  assert.match(operatorEmails()[0].subject, /^Paid £90\.00: ACM-UNIT0001/);
   assert.equal(calls.operatorPush.length, 1, 'one operator alert');
 }
 
@@ -382,7 +383,7 @@ test('email provider down: payment still recorded, webhook 200, failed emails qu
 });
 
 test('operator payment-link session (booking ref, no bookingId) is recorded too', async () => {
-  const s = session('cs_test_link', 'paid', 'complete', { metadata: { booking_ref: 'EVX-UNIT0001' }, client_reference_id: 'EVX-UNIT0001' });
+  const s = session('cs_test_link', 'paid', 'complete', { metadata: { booking_ref: 'ACM-UNIT0001' }, client_reference_id: 'ACM-UNIT0001' });
   assert.equal((await sendWebhook(stripeEvent(s, { id: 'evt_link' }))).status, 200);
   assert.equal(booking().payment_status, 'Paid');
   assert.equal(booking().stripe_session_id, 'cs_test_link');
@@ -424,7 +425,7 @@ test('checkout start reuses the open session instead of creating a second payabl
 
 test('checkout start for an already-paid session sends the customer to the success page', async () => {
   const res = await request('/api/payment/create-checkout-session', { body: JSON.stringify({ bookingId: BOOKING_ID }) });
-  assert.equal(JSON.parse(res.body).url, `https://www.evexec.test/booking?id=${BOOKING_ID}&payment=success&session_id=cs_test_paid1`);
+  assert.equal(JSON.parse(res.body).url, `https://www.acme-cars.test/booking?id=${BOOKING_ID}&payment=success&session_id=cs_test_paid1`);
   assert.equal(stripe.created, 0);
 });
 
@@ -495,7 +496,7 @@ test('website request rejected by the operator is refused', async () => {
 });
 
 test('the £0 return leg is never charged on its own', async () => {
-  operatorReturnBooking({ quoted_price: 0, return_journey: false, notes: 'Return leg created automatically from return booking. Original return fare: £160. Outbound ref: EVX-UNIT0000' });
+  operatorReturnBooking({ quoted_price: 0, return_journey: false, notes: 'Return leg created automatically from return booking. Original return fare: £160. Outbound ref: ACM-UNIT0000' });
   assert.equal((await checkout()).status, 400);
   assert.equal((await cash()).status, 400);
   assert.equal(stripe.created, 0);
@@ -503,7 +504,7 @@ test('the £0 return leg is never charged on its own', async () => {
 
 test('an open operator payment link is closed before the booking page makes its own checkout', async () => {
   operatorReturnBooking({ stripe_session_id: 'cs_test_link' });
-  stripe.sessions.cs_test_link = session('cs_test_link', 'unpaid', 'open', { amount_total: 16000, metadata: { booking_ref: 'EVX-UNIT0001' }, client_reference_id: 'EVX-UNIT0001' });
+  stripe.sessions.cs_test_link = session('cs_test_link', 'unpaid', 'open', { amount_total: 16000, metadata: { booking_ref: 'ACM-UNIT0001' }, client_reference_id: 'ACM-UNIT0001' });
   const res = await checkout();
   assert.equal(res.status, 200);
   assert.deepEqual(stripe.expired, ['cs_test_link']);
@@ -512,7 +513,7 @@ test('an open operator payment link is closed before the booking page makes its 
 
 test('a paid operator payment link stops a second payment on the booking page', async () => {
   operatorReturnBooking({ stripe_session_id: 'cs_test_linkpaid' });
-  stripe.sessions.cs_test_linkpaid = session('cs_test_linkpaid', 'paid', 'complete', { amount_total: 16000, metadata: { booking_ref: 'EVX-UNIT0001' } });
+  stripe.sessions.cs_test_linkpaid = session('cs_test_linkpaid', 'paid', 'complete', { amount_total: 16000, metadata: { booking_ref: 'ACM-UNIT0001' } });
   const res = await checkout();
   assert.equal(res.status, 400);
   assert.match(JSON.parse(res.body).error, /already been paid/);
@@ -521,14 +522,14 @@ test('a paid operator payment link stops a second payment on the booking page', 
 
 // ── end-to-end: an operator-made return (Manchester, £160) ─────────────────
 // The two rows exactly as the Operator app's createBooking() writes them
-// (evexecoperator src/hooks/operator/useBookings.js), then the customer's
+// (operator src/hooks/operator/useBookings.js), then the customer's
 // journey: booking page, confirmation email, card payment, receipt.
 const RETURN_ID = '7d1c2f6a-5b4e-4c3d-9a8b-0f1e2d3c4b5a';
 function seedOperatorReturn() {
-  const shared = { customer_name: 'Thomas Smith', customer_phone: '07700900000', customer_email: 'tom@example.test', payment_status: 'Unpaid', payment_method: null, source: 'operator', operator_response: 'accepted', operator_responded_at: '2026-10-17T10:00:00Z', airport: 'Manchester Airport (MAN)', driver_id: null, assigned_driver_id: null, status: 'Unassigned', stripe_session_id: null };
+  const shared = { tenant_id: SAMPLE.ID, customer_name: 'Thomas Smith', customer_phone: '07700900000', customer_email: 'tom@example.test', payment_status: 'Unpaid', payment_method: null, source: 'operator', operator_response: 'accepted', operator_responded_at: '2026-10-17T10:00:00Z', airport: 'Manchester Airport (MAN)', driver_id: null, assigned_driver_id: null, status: 'Unassigned', stripe_session_id: null };
   db.bookings = [
-    { ...shared, id: BOOKING_ID, ref: 'EVX-UNIT0001', quoted_price: 160, return_journey: true, return_pickup: 'Manchester Airport (MAN)', return_destination: 'Kirkham', return_airport: 'Manchester Airport (MAN)', return_flight: 'EK017', return_date: '2026-10-17', return_time: '18:30', pickup_location: 'Kirkham', dropoff_address: 'Manchester Airport (MAN)', travel_date: '2026-10-10', travel_time: '04:00', notes: null },
-    { ...shared, id: RETURN_ID, ref: 'EVX-UNIT0002', quoted_price: 0, return_journey: false, flight_number: 'EK017', pickup_location: 'Manchester Airport (MAN)', dropoff_address: 'Kirkham', travel_date: '2026-10-17', travel_time: '18:30', notes: 'Return leg created automatically from return booking. Original return fare: £160. Outbound ref: EVX-UNIT0001' },
+    { ...shared, id: BOOKING_ID, ref: 'ACM-UNIT0001', quoted_price: 160, return_journey: true, return_pickup: 'Manchester Airport (MAN)', return_destination: 'Kirkham', return_airport: 'Manchester Airport (MAN)', return_flight: 'EK017', return_date: '2026-10-17', return_time: '18:30', pickup_location: 'Kirkham', dropoff_address: 'Manchester Airport (MAN)', travel_date: '2026-10-10', travel_time: '04:00', notes: null },
+    { ...shared, id: RETURN_ID, ref: 'ACM-UNIT0002', quoted_price: 0, return_journey: false, flight_number: 'EK017', pickup_location: 'Manchester Airport (MAN)', dropoff_address: 'Kirkham', travel_date: '2026-10-17', travel_time: '18:30', notes: 'Return leg created automatically from return booking. Original return fare: £160. Outbound ref: ACM-UNIT0001' },
   ];
 }
 function bookingPageData(id) {
@@ -551,7 +552,7 @@ test('flow: operator-made return is confirmed, charged once at £160, return leg
   assert.equal(out.body.return_leg, false);
   const leg = await bookingPageData(RETURN_ID);
   assert.equal(leg.body.return_leg, true);
-  assert.equal(leg.body.outbound_ref, 'EVX-UNIT0001');
+  assert.equal(leg.body.outbound_ref, 'ACM-UNIT0001');
 
   // 2. The queued "is booked" email (from the DB trigger) is re-rendered as
   //    Booking Confirmed: both journeys, one £160 price, a pay button.
@@ -604,7 +605,7 @@ test('a booking with no business set alerts this site\'s own business', async ()
   delete booking().tenant_id;
   const res = await sendWebhook(stripeEvent(stripe.sessions.cs_test_paid1));
   assert.equal(res.status, 200);
-  assert.deepEqual(calls.operatorPushTenants, ['00000000-0000-0000-0000-000000000001']);
+  assert.deepEqual(calls.operatorPushTenants, ['a0000000-0000-4000-8000-000000000001']);
 });
 
 
@@ -616,7 +617,7 @@ function otherBusiness({ ready = true, site = 'https://other.example', platformK
   booking().tenant_id = OTHER_T;
   booking().stripe_session_id = null;
   brandLib._setBrands({ [OTHER_T]: { name: 'Other Co', contact_email: 'ops@other.test', brand: site ? { site_url: site } : {} } });
-  // This business sets its own prices (a business with none gets no fixed price, never EV Exec's).
+  // This business sets its own prices (a business with none gets no fixed price, never Acme Cars's).
   require('../../lib/pricing')._setPricing({ airports: [{ name: 'Manchester Airport', code: 'MAN', oneWay: 90, ret: 160 }], extraStop: 0 }, OTHER_T);
   if (platformKey) process.env.STRIPE_PLATFORM_SECRET_KEY = 'sk_test_platform';
   sa._setConnected(connected ? [{ id: OTHER_T, stripe_connect_account_id: 'acct_other1', stripe_connect_charges_enabled: ready }] : []);
@@ -633,9 +634,9 @@ test('connect: a business with a ready connected account is charged on ITS accou
   assert.match(stripe.sessions.cs_test_new1.success_url, /^https:\/\/other\.example\/booking\?id=/);
 });
 
-test('connect: EV Exec\'s own bookings still use EV Exec\'s own Stripe key and no connected account', async () => {
+test('connect: where one business holds the Stripe account (STRIPE_PLATFORM_TENANT_ID), its bookings use the deployment\'s own key and no connected account', async () => {
   booking().stripe_session_id = null;
-  delete booking().tenant_id;
+  booking().tenant_id = SAMPLE.ID;
   const r = await checkout();
   assert.equal(r.status, 200);
   assert.equal(created()[0].auth, 'Bearer sk_test_unit');
@@ -677,14 +678,14 @@ test('connect: a payment on one business\'s account can never mark another busin
   assert.equal(booking().payment_status, 'Unpaid');
   assert.equal(db.stripe_webhook_events[0].status, 'wrong_business');
   assert.equal(customerEmails().length, 0);
-  // The booking's own business is told so the money can be refunded (not EV Exec's address).
+  // The booking's own business is told so the money can be refunded (not Acme Cars's address).
   const otherStaff = calls.emails.filter(e => e.to.includes('ops@other.test'));
   assert.equal(otherStaff.length, 1);
   assert.match(otherStaff[0].subject, /^Check Stripe: payment on the wrong account/);
-  assert.equal(operatorEmails().length, 0, "EV Exec's staff address is not used for another business");
+  assert.equal(operatorEmails().length, 0, "Acme Cars's staff address is not used for another business");
 });
 
-test('connect: a payment on EV Exec\'s own account cannot mark another business\'s booking Paid', async () => {
+test('connect: a payment on Acme Cars\'s own account cannot mark another business\'s booking Paid', async () => {
   booking().tenant_id = OTHER_T;
   const res = await sendWebhook(stripeEvent(stripe.sessions.cs_test_paid1));
   assert.equal(res.status, 200);

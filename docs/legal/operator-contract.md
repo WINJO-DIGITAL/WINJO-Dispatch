@@ -134,24 +134,6 @@
 
 ## Order Details (completed for each Operator)
 
-### EV Exec (a customer like any other; details from the owner, its published terms and database)
-
-| | |
-|---|---|
-| Operator (legal name, status, company number, registered address) | Nitisat Sirisom, a sole trader trading as EV Exec. Address: Wheeler Hub Drive, Blackpool FY2 0FD. No company number (sole trader). (Owner's statement of business details.) |
-| Trading name | EV Exec |
-| Contact name and email for notices | Nitisat Sirisom; book@evexec.co.uk |
-| Start Date | First live job 02/06/2026; first booking 04/06/2026 (from the database). |
-| What is set up | Booking website (www.evexec.co.uk), Operator app, Driver App. |
-| Driver logins | 1 driver login (the owner, who is also the office login; see the 10/11/2026 note in the hardening plan). |
-| Support hours | 24 hours a day, every day (owner's statement). Contact: phone 07721 070370; WhatsApp; book@evexec.co.uk. |
-| Anything extra agreed in writing | None recorded in the repository. |
-| Operator's licensing authority and operator licence number | Blackpool Council; private hire operator licence **PHO0079** (owner's statement; also on the terms, privacy policy, emails and database). |
-| Signed for the Operator (name, date) | Signature: ____________________  Name: Nitisat Sirisom  Date: __/__/____ |
-| Signed for Winjo Digital (name, date) | Signature: ____________________  Name: ____________________  Date: __/__/____ |
-
-Also on record for EV Exec: ICO registration C2085772 (application, stored in the business details; not printed in its privacy policy); insurance and responsibilities confirmations recorded 12/11/2026 on the owner's instruction.
-
 ### Template (for each new Operator)
 
 | | |
@@ -187,7 +169,7 @@ No VAT is charged (clause 3.3). Changes to the monthly fee: clause 3.5.
 ## Fill in before first use
 
 1. **Winjo Digital:** all supplier details are now filled in from its terms. Company number: none (sole trader). VAT: not registered. Phone for notices is not in its terms (its website call link is +44 7474 144600); add it if you want it on the contract.
-2. **Each Operator:** complete its Order Details table (see EV Exec's above for what is still blank for EV Exec).
+2. **Each Operator:** complete its Order Details table (copy the template above).
 3. The same supplier name must be used in `operator-data-terms.md` section 1 and `brand.legal.platform_provider` for each business that publishes customer terms.
 
 ## Notes on how this was built (honest limits)

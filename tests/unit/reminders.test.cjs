@@ -7,7 +7,9 @@
 // day-before reminder. Run: npm run test:unit
 
 const test = require('node:test');
+const SAMPLE = require('../helpers/sample-tenant');
 const assert = require('node:assert/strict');
+test.beforeEach(() => SAMPLE.load());
 
 process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-unit';
 process.env.SUPABASE_URL = 'https://db.test';
@@ -29,7 +31,7 @@ let db; let emails; let failEmail;
 
 function booking(id, extra) {
   return {
-    id, ref: `EVX-${id.toUpperCase()}`, status: 'Dispatched', customer_name: 'Jane Customer',
+    id, ref: `ACM-${id.toUpperCase()}`, status: 'Dispatched', customer_name: 'Jane Customer',
     customer_email: 'jane@example.test', customer_phone: '07700900001', assigned_driver_id: DRIVER.id,
     journey_type: 'To Airport', pickup_location: 'Lytham St Annes', airport: 'Manchester Airport',
     travel_date: londonDate(1), travel_time: '23:30', payment_status: 'Unpaid', payment_method: 'Cash', ...extra
@@ -136,7 +138,7 @@ test('week ahead: email AND driver SMS handoff, with the real number of days', a
   const h = handoffs('week');
   assert.equal(h.length, 1);
   assert.equal(h[0].reminder_type, '7day');
-  assert.match(h[0].message, /your EV Exec transfer is in 6 days/);
+  assert.match(h[0].message, /your Acme Cars transfer is in 6 days/);
   assert.deepEqual(channels('week', 'reminder_7d'), ['driver_sms_handoff', 'email', 'push']);
 });
 

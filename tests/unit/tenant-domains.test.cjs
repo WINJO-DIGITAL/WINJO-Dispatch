@@ -1,7 +1,7 @@
 'use strict';
 
 // scripts/build-tenant-domains.js: one explicit route per business domain in vercel.json, so
-// EV Exec's own pages can never be affected. Run: npm run test:unit
+// Acme Cars's own pages can never be affected. Run: npm run test:unit
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
@@ -28,8 +28,8 @@ test('each domain gets one route that matches only that domain (with or without 
   assert.ok(!host(routes[0]).test('othercabs.co.uk.evil.test'));
   assert.ok(!host(routes[0]).test('southportcars.com'));
   for (const r of routes) {
-    assert.ok(!host(r).test('www.evexec.co.uk') && !host(r).test('evexec.co.uk'), 'never EV Exec\'s own domain');
-    assert.ok(!host(r).test('evexec.vercel.app'));
+    assert.ok(!host(r).test('www.winjodigital.co.uk') && !host(r).test('winjodigital.co.uk'), 'never the platform\'s own domain');
+    assert.ok(!host(r).test('winjo-dispatch.vercel.app'));
   }
 });
 
@@ -63,9 +63,9 @@ test('bad lists are refused: junk, duplicates and this website\'s own domains', 
   assert.throws(() => validate(['not a domain']), /not a domain/);
   assert.throws(() => validate(['https://']), /not a domain/);
   assert.throws(() => validate(['a.co.uk', 'www.A.co.uk']), /twice/);
-  assert.throws(() => validate(['www.evexec.co.uk']), /own domain/);
-  assert.throws(() => validate(['evexec.co.uk']), /own domain/);
-  assert.throws(() => validate(['evexec.vercel.app']), /own domain/);
+  assert.throws(() => validate(['www.winjodigital.co.uk']), /own domain/);
+  assert.throws(() => validate(['winjodigital.co.uk']), /own domain/);
+  assert.throws(() => validate(['winjo-dispatch.vercel.app']), /own domain/);
   assert.deepEqual(validate(['HTTPS://WWW.Example.co.uk/']), ['example.co.uk']);
   assert.equal(tidy(' www.X.com/ '), 'x.com');
 });

@@ -1,6 +1,6 @@
 'use strict';
-// A website deployed for a business other than EV Exec (TENANT_ID set) files
-// everything a customer creates under THAT business, never under EV Exec.
+// A website deployed for a business other than Acme Cars (TENANT_ID set) files
+// everything a customer creates under THAT business, never under Acme Cars.
 process.env.TENANT_ID = 'dddddddd-0000-4000-8000-000000000002';
 
 const test = require('node:test');
@@ -17,7 +17,7 @@ const booking = require('../../api/booking/index.js');
 const leads = require('../../api/leads.js');
 const tables = (name) => H.posts.filter((p) => p.table === name);
 
-test('a booking is filed under this site\'s business, not EV Exec', async () => {
+test('a booking is filed under this site\'s business, not Acme Cars', async () => {
   H.posts.length = 0;
   const r = await H.call(booking, '/api/booking/create', H.bookingBody());
   assert.ok(r.status < 400, `create failed: ${r.status} ${r.body}`);

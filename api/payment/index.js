@@ -9,7 +9,7 @@ const { sendConfirmations } = require('../../lib/notify');
 const { getPrice, journeyLine, isReturnLeg } = require('../../lib/format');
 const { parseBody, getRawBody } = require('../../lib/parse');
 const { reconcileCheckoutSession, getStripeSession, expireStripeSession, expectedPence, PAID_OUTCOMES } = require('../../lib/payments');
-const { stripeContext, contextForAccount, ownerTenant, isOwner } = require('../../lib/stripeAccount');
+const { stripeContext, contextForAccount, ownerTenant } = require('../../lib/stripeAccount');
 const stripeEvents = require('../../lib/stripeEvents');
 const policy = require('../../lib/cancellation');
 
@@ -103,8 +103,8 @@ async function handleCreateCheckoutSession(req, res) {
 
   const booking = await dbGet('bookings', bookingId);
   if (!booking) return json(res, 404, { error: 'Booking not found' });
-  // The business's own Stripe account: EV Exec's own, or an operator's connected account
-  // once Stripe says it can take card payments. Otherwise the payment is refused, so
+  // The business's own Stripe account (its connected account once Stripe says it can take
+  // card payments, or the deployment's own account where one business holds it). Otherwise the payment is refused, so
   // money never goes to a different business's account.
   const ctx = await stripeContext(booking.tenant_id);
   if (!ctx) {
@@ -113,8 +113,7 @@ async function handleCreateCheckoutSession(req, res) {
   const notAccepted = await ensurePolicyAccepted(booking, body);
   if (notAccepted) return json(res, 400, { error: notAccepted });
 
-  // EV Exec's SITE_URL override (previews) applies to EV Exec only.
-  const siteUrl = (isOwner(booking.tenant_id) && process.env.SITE_URL) || brandFor(booking.tenant_id).site;
+  const siteUrl = brandFor(booking.tenant_id).site;
   if (!siteUrl) return json(res, 400, { error: `${brandFor(booking.tenant_id).name || 'This business'} has no website address set up for card payments yet. Please pay in cash or by bank transfer, or contact them.` });
   const successUrl = `${siteUrl}/booking?id=${bookingId}&payment=success`;
 
@@ -249,7 +248,7 @@ function verifyStripeSignature(rawBody, sigHeader, secrets) {
   return JSON.parse(rawBody.toString('utf8'));
 }
 
-// EV Exec's own endpoint secret, plus the Connect endpoint's (events from operators'
+// The platform endpoint's secret, plus the Connect endpoint's (events from businesses'
 // connected accounts). Either may hold several comma-separated secrets while rotating.
 function webhookSecrets() {
   return [process.env.STRIPE_WEBHOOK_SECRET, process.env.STRIPE_CONNECT_WEBHOOK_SECRET]
@@ -324,10 +323,14 @@ async function handleStripeWebhook(req, res) {
     return json(res, 200, { received: true, duplicate: true });
   }
 
-  // Which Stripe account took the payment: EV Exec's own (no event.account), or an
-  // operator's connected account. A connected account we don't know is acknowledged and
-  // ignored; a payment only ever marks its own business's bookings Paid.
+  // Which Stripe account took the payment: the deployment's own (no event.account, only when
+  // one business holds it), or a business's connected account. A connected account we don't
+  // know is acknowledged and ignored; a payment only ever marks its own business's bookings Paid.
   let ctx;
+  if (!event.account && !ownerTenant()) {
+    await stripeEvents.eventResult(event.id, { status: 'ignored', detail: 'event from the platform account itself: no business holds it' });
+    return json(res, 200, { received: true, ignored: true });
+  }
   if (event.account) {
     ctx = await contextForAccount(event.account);
     if (!ctx) {

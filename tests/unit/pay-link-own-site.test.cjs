@@ -12,17 +12,17 @@ const booking = (overrides = {}) => ({
   passengers: 1, status: 'Dispatched', quoted_price: 90, payment_status: 'Unpaid', source: 'website', ...overrides,
 });
 
-test('a business with its own website gets pay links on its own site, never EV Exec\'s', () => {
+test('a business with its own website gets pay links on its own site, never Acme Cars\'s', () => {
   brand._setBrands({ [TID]: { name: 'Test Operator', contact_email: 'ops@test.invalid', brand: { site_url: 'https://testoperator.example' }, ref_prefix: 'TEST' } });
   const m = E.bookingConfirmed(booking(), { payUrl: 'https://testoperator.example/booking?id=b1111111-0000-4000-8000-000000000001' });
   assert.match(m.text, /https:\/\/testoperator\.example\/booking/);
-  assert.doesNotMatch(m.text + m.html, /evexec\.co\.uk/);
+  assert.doesNotMatch(m.text + m.html, /acme-cars\.test/);
 });
 
-test('a business with no website gets no Pay link and no link to EV Exec', () => {
+test('a business with no website gets no Pay link and no link to Acme Cars', () => {
   brand._setBrands({ [TID]: { name: 'Test Operator', contact_email: 'ops@test.invalid', brand: {}, ref_prefix: 'TEST' } });
   const m = E.bookingConfirmed(booking(), {});
   assert.doesNotMatch(m.text, /Pay now or choose cash/);
-  assert.doesNotMatch(m.text + m.html, /evexec\.co\.uk/);
+  assert.doesNotMatch(m.text + m.html, /acme-cars\.test/);
   assert.doesNotMatch(m.html, /href="\/booking/);
 });

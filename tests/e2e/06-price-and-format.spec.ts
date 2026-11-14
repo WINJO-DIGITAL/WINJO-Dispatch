@@ -78,6 +78,6 @@ test('10 sequential bookings all have unique ref values', async ({ request }) =>
   expect(uniqueRefs.size).toBe(10);
 
   for (const ref of refs) {
-    expect(ref).toMatch(/^EVX-[A-Z0-9]+$/);
+    expect(ref).toMatch(/^ACM-[A-Z0-9]+$/);
   }
 });

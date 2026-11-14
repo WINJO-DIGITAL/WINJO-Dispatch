@@ -44,7 +44,7 @@ function validate(c) {
   if (c.contact_phone && !/^\+?[0-9 ]{7,20}$/.test(String(c.contact_phone))) e.push('contact_phone: digits and spaces only, optionally starting with +.');
   if (c.website) {
     if (!/^https:\/\/[a-z0-9.-]+\.[a-z]{2,}\/?$/i.test(String(c.website))) e.push('website: must look like https://www.example.co.uk');
-    else if (/(^|\.)evexec\.co\.uk$/.test(host(c.website))) e.push('website: that domain belongs to another business.');
+    else if (/(^|\.)(winjodigital\.co\.uk|winjo-dispatch\.vercel\.app)$/.test(host(c.website))) e.push('website: that domain belongs to the platform.');
   }
   const b = c.branding || {};
   for (const k of ['primary', 'accent']) if (b[k] && !HEX.test(b[k])) e.push(`branding.${k}: must be a colour like #0B132B.`);

@@ -2,15 +2,14 @@
 <html lang="en-GB">
 <head>
 <meta charset="utf-8"/>
-<!-- evx:head -->
+<!-- head -->
 <link rel="icon" href="/favicon.ico" sizes="32x32 48x48">
-<link rel="icon" href="/public/images/ev-exec-icon-192.png" type="image/png" sizes="192x192">
-<link rel="apple-touch-icon" href="/public/images/ev-exec-icon-180.png">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="/public/fonts/jost-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/public/css/fonts.css">
-<!-- /evx:head -->
+<!-- /head -->
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Your Booking | EV Exec Premium Airport Transfers</title>
+<title>Your Booking</title>
 <meta name="robots" content="noindex"/>
 <link rel="stylesheet" href="./public/css/tw.min.css"/>
 <!-- Google Analytics loads only after cookie consent -->
@@ -99,7 +98,7 @@ body{
 <body>
 
 <header style="padding:16px 20px;border-bottom:1px solid #2F3742"><a href="/" style="color:inherit;text-decoration:none;font-weight:600">Your booking</a></header>
-<div class="evx-header-space"></div>
+<div class="header-space"></div>
 
 <main class="max-w-3xl mx-auto px-4 md:px-6 py-10">
 
@@ -130,7 +129,7 @@ body{
     <div class="flex flex-col gap-4">
       <div>
         <label for="lkRef" class="block text-xs uppercase tracking-[.12em] text-white/45 font-bold mb-2">Booking Reference</label>
-        <input id="lkRef" placeholder="EVX-XXXXXXXX" autocomplete="off" style="letter-spacing:.06em;text-transform:uppercase" class="w-full rounded-md px-4 py-3 text-white placeholder-white/30 bg-white/5 border border-white/15 focus:outline-none focus:border-[#d5a538]"/>
+        <input id="lkRef" placeholder="REF-XXXXXXXX" autocomplete="off" style="letter-spacing:.06em;text-transform:uppercase" class="w-full rounded-md px-4 py-3 text-white placeholder-white/30 bg-white/5 border border-white/15 focus:outline-none focus:border-[#d5a538]"/>
       </div>
       <div>
         <label for="lkPhone" class="block text-xs uppercase tracking-[.12em] text-white/45 font-bold mb-2">Phone Number</label>
@@ -140,7 +139,7 @@ body{
       <p id="lookupError" class="text-red-400 text-xs hidden"></p>
     </div>
   </div>
-  <p class="text-white/45 text-sm mt-5">Can't find your reference? <a class="gold" href="https://wa.me/447721070370">WhatsApp us</a> or <a class="gold" href="tel:07721070370">call 07721 070370</a></p>
+  <p class="text-white/45 text-sm mt-5">Can't find your reference? It is in your confirmation email, or ask the business you booked with.</p>
 </div>
 
 <!-- Booking content -->
@@ -156,7 +155,7 @@ body{
     <div class="mt-4 hidden" id="refBadge" style="background:rgba(213,165,56,.08);border:1px solid rgba(213,165,56,.35);border-radius:10px;padding:14px 16px;max-width:420px">
       <p class="text-xs uppercase tracking-[.1em] font-bold" style="color:#d5a538;margin:0 0 4px">Your Booking Reference</p>
       <p class="font-mono font-black" style="color:#fff;font-size:22px;letter-spacing:.05em;margin:0 0 6px" id="bookingRef"></p>
-      <p class="text-white/55" style="font-size:12px;line-height:1.5;margin:0">Save this. You'll need it, along with your phone number, to check your booking anytime at <a class="gold" href="/booking">evexec.co.uk/booking</a>.</p>
+      <p class="text-white/55" style="font-size:12px;line-height:1.5;margin:0">Save this. You'll need it, along with your phone number, to check your booking anytime on your booking page.</p>
     </div>
   </div>
 
@@ -179,8 +178,8 @@ body{
       <div class="w-10 h-10 rounded-full bg-yellow-500/15 border border-yellow-500/30 flex items-center justify-center flex-shrink-0 text-yellow-400 font-bold text-lg">!</div>
       <div>
         <h2 class="font-bold text-lg mb-1">Awaiting Confirmation</h2>
-        <p class="text-white/65 leading-relaxed">Your request has been received. EV Exec will review availability and get back to you shortly with confirmation and payment options.</p>
-        <p class="text-white/45 text-sm mt-3">Need to speak with us? <a class="gold" href="https://wa.me/447721070370">WhatsApp</a> or <a class="gold" href="tel:07721070370">call 07721 070370</a></p>
+        <p class="text-white/65 leading-relaxed">Your request has been received. <span data-biz-name>We</span> will review availability and get back to you shortly with confirmation and payment options.</p>
+        <p class="text-white/45 text-sm mt-3" data-biz-contact hidden>Need to speak with us? <a class="gold" data-biz-wa href="#">WhatsApp</a> or <a class="gold" data-biz-tel href="#"></a></p>
       </div>
     </div>
   </div>
@@ -239,7 +238,7 @@ body{
         <p class="text-white/65 leading-relaxed" id="confirmedMsg">Your transfer is confirmed. We'll see you on the day!</p>
         <button class="btn-outline rounded-md px-5 py-3 font-bold text-sm mt-3 hidden" id="btnCardInstead" type="button">Pay by card instead</button>
         <p class="text-white/45 text-sm mt-2 hidden" id="receiptNote">A payment confirmation has been sent to your phone and email. Need a receipt? <a class="gold" href="https://wa.me/447721070370">WhatsApp us</a> and we'll send one over.</p>
-        <p class="text-white/45 text-sm mt-3">Any questions? <a class="gold" href="https://wa.me/447721070370">WhatsApp</a> or <a class="gold" href="tel:07721070370">call 07721 070370</a></p>
+        <p class="text-white/45 text-sm mt-3" data-biz-contact hidden>Any questions? <a class="gold" data-biz-wa href="#">WhatsApp</a> or <a class="gold" data-biz-tel href="#"></a></p>
       </div>
     </div>
   </div>
@@ -255,7 +254,7 @@ body{
       <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-xl" style="background:rgba(213,165,56,.12);border:1px solid rgba(213,165,56,.3);color:#d5a538">★</div>
       <div style="flex:1">
         <h2 class="font-bold text-lg mb-1">Earn Privilege Points</h2>
-        <p class="text-white/65 text-sm leading-relaxed mb-3">Link this booking to your EV Exec account to earn Privilege Points and track your journey history.</p>
+        <p class="text-white/65 text-sm leading-relaxed mb-3">Link this booking to your account to earn Privilege Points and track your journey history.</p>
         <button class="btn-gold rounded-md px-5 py-3 font-bold text-sm" id="btnClaimBooking">Add to My Account</button>
         <p id="claimMsg" class="text-sm mt-2 hidden"></p>
       </div>
@@ -268,8 +267,8 @@ body{
       <div class="w-10 h-10 rounded-full bg-red-500/15 border border-red-500/30 flex items-center justify-center flex-shrink-0 text-red-400 font-bold text-lg">✕</div>
       <div>
         <h2 class="font-bold text-lg mb-1">Journey Unavailable</h2>
-        <p class="text-white/65 leading-relaxed">Sorry, EV Exec is unable to cover this journey. No payment has been taken. Please get in touch if you have any questions.</p>
-        <p class="text-white/45 text-sm mt-3"><a class="gold" href="https://wa.me/447721070370">WhatsApp</a> or <a class="gold" href="tel:07721070370">07721 070370</a> · <a class="gold" href="/">Request another transfer</a></p>
+        <p class="text-white/65 leading-relaxed">Sorry, <span data-biz-name>we</span> cannot cover this journey. No payment has been taken. Please get in touch if you have any questions.</p>
+        <p class="text-white/45 text-sm mt-3"><span data-biz-contact hidden><a class="gold" data-biz-wa href="#">WhatsApp</a> or <a class="gold" data-biz-tel href="#"></a> · </span><a class="gold" href="/">Request another transfer</a></p>
       </div>
     </div>
   </div>
@@ -473,7 +472,7 @@ body{
               var h2 = pendingEl.querySelector('h2');
               var p  = pendingEl.querySelector('p');
               if (h2) h2.textContent = 'Payment is taking longer than expected';
-              if (p)  p.innerHTML = 'Your payment was received but confirmation is taking a moment. Please <a style="color:#d5a538" href="https://wa.me/447721070370">WhatsApp us</a> or call <a style="color:#d5a538" href="tel:07721070370">07721 070370</a> to confirm.';
+              if (p)  p.innerHTML = 'Your payment was received but confirmation is taking a moment. Please ' + (BIZ.tel ? '<a style="color:#d5a538" href="https://wa.me/' + BIZ.tel + '">WhatsApp us</a> or call <a style="color:#d5a538" href="tel:+' + BIZ.tel + '">' + BIZ.phone + '</a>' : 'contact the business') + ' to confirm.';
             }
             return;
           }
@@ -499,7 +498,7 @@ body{
     if (b.status === 'Completed') {
       show('panelConfirmed');
       document.querySelector('#panelConfirmed h2').textContent = 'Journey Complete';
-      document.getElementById('confirmedMsg').textContent = 'Thank you for travelling with EV Exec.';
+      document.getElementById('confirmedMsg').textContent = 'Thank you for travelling with ' + (BIZ.name || 'us') + '.';
       return;
     }
 
@@ -588,6 +587,20 @@ body{
     document.getElementById('errorMsg').textContent = msg || 'We couldn\'t load your booking details.';
   }
 
+  // The business of the booking being shown (name and phone come from the booking itself).
+  var BIZ = { name: '', phone: '', tel: '' };
+  function applyBusiness(biz) {
+    BIZ = { name: (biz && biz.name) || '', phone: (biz && biz.phone) || '', tel: (biz && biz.tel) || '' };
+    document.querySelectorAll('[data-biz-name]').forEach(function (el) { el.textContent = BIZ.name || el.textContent; });
+    document.querySelectorAll('[data-biz-contact]').forEach(function (el) {
+      if (!BIZ.tel) { el.hidden = true; return; }
+      el.hidden = false;
+      var wa = el.querySelector('[data-biz-wa]'), tel = el.querySelector('[data-biz-tel]');
+      if (wa) wa.href = 'https://wa.me/' + BIZ.tel;
+      if (tel) { tel.href = 'tel:+' + BIZ.tel; tel.textContent = 'call ' + BIZ.phone; }
+    });
+  }
+
   async function load() {
     if (!queryId) {
       hide('stateLoading');
@@ -601,6 +614,7 @@ body{
         throw new Error(res.ok ? 'Unexpected response from server. Please try again.' : 'Service unavailable. Please try again in a moment.');
       }
       if (!res.ok) throw new Error(data.error || 'Booking not found.');
+      applyBusiness(data.business);
       renderBooking(data);
       tryClaimPanel(data);
     } catch (e) {

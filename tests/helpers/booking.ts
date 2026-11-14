@@ -1,5 +1,5 @@
 /**
- * Shared helpers used across the EV Exec test suite.
+ * Shared helpers used across the Acme Cars test suite.
  */
 import type { Page, APIRequestContext } from '@playwright/test';
 
@@ -49,7 +49,7 @@ export function sampleBooking(overrides: Partial<BookingPayload> = {}): BookingP
     passengers: 2,
     customer_name: 'QA Test Customer',
     customer_phone: '07700900123',
-    customer_email: 'qa@evexec-test.invalid',
+    customer_email: 'qa@qa-test.invalid',
     contact_method: 'WhatsApp',
     terms_accepted: true,
     ...overrides,

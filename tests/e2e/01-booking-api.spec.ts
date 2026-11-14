@@ -8,7 +8,7 @@ import { sampleBooking, submitBookingViaApi, AIRPORTS, PRICES } from '../helpers
 
 const BASE = process.env.BASE_URL ?? 'http://localhost:3000';
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const REF_RE  = /^EVX-[A-Z0-9]+$/;
+const REF_RE  = /^ACM-[A-Z0-9]+$/;
 
 // ── Happy path ────────────────────────────────────────────────────────────────
 
@@ -38,7 +38,7 @@ test('Booking is written to Supabase with status Unassigned', async ({ request }
   expect(booking.customer_name).toBe('QA Test Customer');
 });
 
-test('Booking ref matches pattern EVX-[A-Z0-9]+', async ({ request }) => {
+test('Booking ref matches pattern ACM-[A-Z0-9]+', async ({ request }) => {
   const bookingId = await submitBookingViaApi(request, sampleBooking(), BASE);
   const get = await request.get(`${BASE}/api/booking/get?id=${bookingId}`);
   const booking = await get.json();

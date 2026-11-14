@@ -1,9 +1,8 @@
 'use strict';
 // Whose emails these are (lib/brand.js): the business name, phone, licence,
-// website and colours come from the booking's own business. EV Exec's emails
-// must read exactly as before; another business must never show EV Exec's.
+// website and colours come from the booking's own business. Acme Cars's emails
+// must read exactly as before; another business must never show Acme Cars's.
 
-process.env.SITE_URL = 'https://www.evexec.co.uk';
 process.env.SUPABASE_URL = 'https://db.test';
 process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-key';
 
@@ -14,12 +13,12 @@ const brand = require('../../lib/brand');
 const C = require('../../lib/emailContent');
 const R = require('../../lib/emailQueueRender');
 
-const EV = '00000000-0000-0000-0000-000000000001';
+const EV = 'a0000000-0000-4000-8000-000000000001';
 const COASTAL = 'dddddddd-0000-4000-8000-000000000002';
 const BARE = 'eeeeeeee-0000-4000-8000-000000000003';
 
-// EV Exec exactly as its row is in the live database (10/11/2026): the phone has no space.
-const EV_ROW = { name: 'EV Exec', contact_email: 'book@evexec.co.uk', contact_phone: '07721070370', brand: { invoice: { business_name: 'EV Exec' } } };
+// Acme Cars exactly as its row is in the live database (10/11/2026): the phone has no space.
+const EV_ROW = { name: 'Acme Cars', contact_email: 'bookings@acme-cars.test', contact_phone: '07700900123', brand: { licence: 'PHO0001', site_url: 'https://www.acme-cars.test', tagline: 'Airport transfers from Exampleton', invoice: { business_name: 'Acme Cars' } } };
 const COASTAL_ROW = {
   name: 'Coastal Cars', contact_email: 'hello@coastal.test', contact_phone: '+44 7123 456789',
   brand: { licence: 'PHO1234', site_url: 'https://coastal.test/', tagline: 'Airport transfers from Southport', colors: { primary: '#123456', accent: '#FF8800' } },
@@ -27,7 +26,7 @@ const COASTAL_ROW = {
 const BARE_ROW = { name: 'Bare Business', contact_email: null, contact_phone: null, brand: {} };
 
 const booking = (tenant_id) => ({
-  id: '11111111-1111-4111-8111-111111111111', ref: 'EVX-BRAND1', customer_name: 'Jo Bloggs', customer_phone: '07000000001', customer_email: 'jo@example.test',
+  id: '11111111-1111-4111-8111-111111111111', ref: 'ACM-BRAND1', customer_name: 'Jo Bloggs', customer_phone: '07000000001', customer_email: 'jo@example.test',
   travel_date: '2099-03-14', travel_time: '09:30:00', pickup_location: '1 Test Street, Southport', dropoff_address: 'Liverpool Airport', airport: 'Liverpool Airport',
   status: 'Dispatched', payment_status: 'Unpaid', quoted_price: 90, passengers: 2, luggage: '2 bags', flight_number: 'EZY123', journey_type: 'To Airport',
   notes: '', return_journey: false, driver_notes: '', tenant_id,
@@ -40,27 +39,28 @@ test.beforeEach(() => {
 
 // ── details ─────────────────────────────────────────────────────────────────
 test('phone numbers are shown the house way, and tel: links are international', () => {
-  assert.equal(brand.displayPhone('07721070370'), '07721 070370');
-  assert.equal(brand.displayPhone('07721 070370'), '07721 070370');
-  assert.equal(brand.displayPhone('+44 7721 070370'), '07721 070370');
-  assert.equal(brand.displayPhone('+447721070370'), '07721 070370');
+  assert.equal(brand.displayPhone('07700900123'), '07700 900123');
+  assert.equal(brand.displayPhone('07700 900123'), '07700 900123');
+  assert.equal(brand.displayPhone('+44 7700 900123'), '07700 900123');
+  assert.equal(brand.displayPhone('+447700900123'), '07700 900123');
   assert.equal(brand.displayPhone('01253 123456'), '01253 123456'); // landline: as typed
   assert.equal(brand.displayPhone(null), '');
-  assert.equal(brand.telNumber('07721 070370'), '+447721070370');
+  assert.equal(brand.telNumber('07700 900123'), '+447700900123');
   assert.equal(brand.telNumber('+44 7123 456789'), '+447123456789');
   assert.equal(brand.telNumber('01253 123456'), '+441253123456');
   assert.equal(brand.telNumber(''), '');
   assert.equal(brand.telNumber('abc'), '');
 });
 
-test('EV Exec\'s live database row gives exactly the built-in EV Exec details', () => {
+test('a business\'s row gives exactly its own details', () => {
   const b = brand.fromRow({ id: EV, ...EV_ROW });
-  for (const k of ['name', 'wordmark', 'phone', 'email', 'licence', 'site', 'tagline', 'primary', 'accent']) {
-    assert.equal(b[k], brand.EV_EXEC[k], k);
-  }
+  assert.deepEqual({ ...b }, {
+    name: 'Acme Cars', wordmark: 'ACME CARS', phone: '07700 900123', email: 'bookings@acme-cars.test', licence: 'PHO0001',
+    site: 'https://www.acme-cars.test', tagline: 'Airport transfers from Exampleton', primary: null, accent: null, policy: null,
+  });
 });
 
-test('another business gets only what its own row holds, never EV Exec\'s', () => {
+test('another business gets only what its own row holds, never Acme Cars\'s', () => {
   const b = brand.fromRow({ id: COASTAL, ...COASTAL_ROW });
   assert.deepEqual({ ...b }, {
     name: 'Coastal Cars', wordmark: 'COASTAL CARS', phone: '07123 456789', email: 'hello@coastal.test', licence: 'PHO1234',
@@ -79,33 +79,33 @@ test('colours must be six-digit hex, otherwise they are ignored', () => {
   assert.equal(b.accent, null);
 });
 
-test('a business that is not loaded gets blank details, not EV Exec\'s; no business means this site\'s own', () => {
+test('a business that is not loaded gets blank details, not Acme Cars\'s; no business means this site\'s own', () => {
   assert.equal(brand.brandFor('ffffffff-0000-4000-8000-0000000000ff').phone, '');
-  assert.equal(brand.brandFor(undefined).phone, '07721 070370');
-  assert.equal(brand.brandFor(EV).licence, 'PHO0079');
+  assert.equal(brand.brandFor(undefined).phone, '07700 900123');
+  assert.equal(brand.brandFor(EV).licence, 'PHO0001');
 });
 
-// ── EV Exec's emails ────────────────────────────────────────────────────────
-test('EV Exec\'s emails still carry its wordmark, phone, licence and footer', () => {
+// ── Acme Cars's emails ────────────────────────────────────────────────────────
+test('a business\'s emails carry its wordmark, phone, licence and footer', () => {
   const m = C.requestReceived(booking(EV));
-  assert.match(m.html, />EV EXEC<\/a>/);
-  assert.match(m.html, /tel:\+447721070370/);
-  assert.match(m.html, />07721 070370<\/a>/);
-  assert.match(m.html, /Premium airport transfers from Blackpool &amp; the Fylde Coast/);
-  assert.match(m.html, /Private hire operator licence PHO0079/);
-  assert.match(m.text, /EV Exec · evexec\.co\.uk · 07721 070370/);
-  assert.match(m.text, /Private hire operator licence PHO0079/);
+  assert.match(m.html, />ACME CARS<\/a>/);
+  assert.match(m.html, /tel:\+447700900123/);
+  assert.match(m.html, />07700 900123<\/a>/);
+  assert.match(m.html, /Airport transfers from Exampleton/);
+  assert.match(m.html, /Private hire operator licence PHO0001/);
+  assert.match(m.text, /Acme Cars · acme-cars\.test · 07700 900123/);
+  assert.match(m.text, /Private hire operator licence PHO0001/);
 });
 
 test('a booking with no business set is built for this site\'s own business', () => {
   const b = booking(undefined); delete b.tenant_id;
-  assert.match(C.requestReceived(b).html, /EV EXEC/);
+  assert.match(C.requestReceived(b).html, /ACME CARS/);
 });
 
 // ── another business's emails ───────────────────────────────────────────────
-const LEAKS = /EV Exec|EV EXEC|07721|PHO0079|book@evexec|070370/i;
+const LEAKS = /Acme Cars|ACME CARS|07700|PHO0001|bookings@acme-cars|900123/i;
 
-test('no email type shows EV Exec\'s details when sent for another business', () => {
+test('no email type shows Acme Cars\'s details when sent for another business', () => {
   const b = booking(COASTAL);
   const names = Object.keys(R._SAMPLES);
   assert.ok(names.length >= 29, 'all sample emails are covered');
@@ -113,7 +113,7 @@ test('no email type shows EV Exec\'s details when sent for another business', ()
     const m = R._SAMPLES[name](b, ctx);
     if (!m) continue;
     const text = `${m.subject}\n${m.html}\n${m.text}`;
-    assert.doesNotMatch(text, LEAKS, `${name} leaks EV Exec details`);
+    assert.doesNotMatch(text, LEAKS, `${name} leaks Acme Cars details`);
   }
 });
 
@@ -146,7 +146,7 @@ test('invoice and quote emails use the business on the record', () => {
   assert.equal(quote.subject, 'Your Coastal Cars quote request');
 });
 
-test('a business with no phone, licence or website leaves them out instead of showing blanks or EV Exec\'s', () => {
+test('a business with no phone, licence or website leaves them out instead of showing blanks or Acme Cars\'s', () => {
   const cancelled = C.cancelledByUs(booking(BARE));
   assert.doesNotMatch(cancelled.html, /Call 07|tel:|undefined|null/);
   assert.match(cancelled.html, /please contact us straight away/);
@@ -165,14 +165,14 @@ test('a business with no phone, licence or website leaves them out instead of sh
 test('the WhatsApp and call buttons use the business\'s own number', () => {
   assert.match(C.bookingUnavailable(booking(COASTAL)).html, /href="https:\/\/wa\.me\/447123456789"/);
   assert.match(C.cancelledByUs(booking(COASTAL)).html, /href="tel:\+447123456789"/);
-  assert.match(C.bookingUnavailable(booking(EV)).html, /href="https:\/\/wa\.me\/447721070370"/);
+  assert.match(C.bookingUnavailable(booking(EV)).html, /href="https:\/\/wa\.me\/447700900123"/);
 });
 
 test('a builder called inside another builder keeps its own business afterwards', () => {
   // Building for one business must not change the one used by the next call.
   C.requestReceived(booking(COASTAL));
   const after = C.requestReceived(booking(EV));
-  assert.match(after.html, /EV EXEC/);
+  assert.match(after.html, /ACME CARS/);
   assert.doesNotMatch(after.html, /COASTAL/);
 });
 
@@ -207,9 +207,9 @@ const bookingHandler = require('../../api/booking/index.js');
 
 test('accept/decline pages carry the business\'s own name and website', () => {
   const ev = operatorPage('Booking Confirmed', '<p>x</p>', true, brand.brandFor(EV));
-  assert.match(ev, /<title>Booking Confirmed \| EV Exec<\/title>/);
-  assert.match(ev, /class="logo" href="\/">EV <span>EXEC<\/span><\/a>/);
-  assert.match(ev, /← Back to www\.evexec\.co\.uk/);
+  assert.match(ev, /<title>Booking Confirmed \| Acme Cars<\/title>/);
+  assert.match(ev, /class="logo" href="\/">ACME <span>CARS<\/span><\/a>/);
+  assert.match(ev, /← Back to www\.acme-cars\.test/);
   const co = operatorPage('Booking Confirmed', '<p>x</p>', true, brand.brandFor(COASTAL));
   assert.match(co, /<title>Booking Confirmed \| Coastal Cars<\/title>/);
   assert.match(co, /EXEC|COASTAL/);
@@ -229,21 +229,21 @@ test('the self-cancel page shows the right help line for each business', () => {
   assert.match(co, /tel:\+447123456789">07123 456789</);
   assert.doesNotMatch(co, LEAKS);
   const ev = cancelPage('Booking Cancelled', 'Done.', true, '', brand.brandFor(EV));
-  assert.match(ev, /wa\.me\/447721070370/);
-  assert.match(ev, />07721 070370</);
+  assert.match(ev, /wa\.me\/447700900123/);
+  assert.match(ev, />07700 900123</);
   const bare = cancelPage('Error', 'Oops', false, '', brand.brandFor(BARE));
   assert.match(bare, /Reply to your booking email/);
   assert.doesNotMatch(bare, LEAKS);
   assert.doesNotMatch(bare, /wa\.me|tel:/);
 });
 
-// Guard: the website's own code must not grow new hardcoded EV Exec details.
+// Guard: the website's own code must not grow new hardcoded Acme Cars details.
 // Business details come from the business's row (lib/brand.js). The few
 // allowed spots are platform settings read from the environment first.
-test('no hardcoded EV Exec name, number or licence in the website code', () => {
+test('no hardcoded Acme Cars name, number or licence in the website code', () => {
   const fs = require('node:fs'); const path = require('node:path');
   const ALLOWED = new Set([
-    'lib/brand.js',            // EV Exec's built-in details (this deployment's own business)
+    'lib/brand.js',            // Acme Cars's built-in details (this deployment's own business)
     'lib/channels.js',         // sender / reply-to defaults (RESEND_FROM, REPLY_TO env)
     'lib/push.js',             // push contact default (VAPID_EMAIL env)
     'api/notifications/index.js', // same env defaults, admin diagnostic
@@ -256,8 +256,8 @@ test('no hardcoded EV Exec name, number or licence in the website code', () => {
     if (ALLOWED.has(rel)) continue;
     fs.readFileSync(file, 'utf8').split('\n').forEach((line, i) => {
       if (/^\s*(\/\/|\*)/.test(line)) return;
-      if (/07721|070370|EV Exec|EV EXEC|PHO0079|evexec\.co\.uk/.test(line)) bad.push(`${rel}:${i + 1}: ${line.trim().slice(0, 90)}`);
+      if (/07700|900123|Acme Cars|ACME CARS|PHO0001|acme-cars\.test/.test(line)) bad.push(`${rel}:${i + 1}: ${line.trim().slice(0, 90)}`);
     });
   }
-  assert.deepEqual(bad, [], 'hardcoded EV Exec details:\n' + bad.join('\n'));
+  assert.deepEqual(bad, [], 'hardcoded Acme Cars details:\n' + bad.join('\n'));
 });

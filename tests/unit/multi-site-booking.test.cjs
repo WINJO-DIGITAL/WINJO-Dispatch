@@ -9,7 +9,6 @@ const assert = require('node:assert/strict');
 
 process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-unit';
 process.env.SUPABASE_URL = 'https://db.test';
-process.env.OPERATOR_EMAIL = 'ops@evexec.test';
 process.env.RESEND_API_KEY = 're_unit';
 delete process.env.SITE_URL;
 delete process.env.TENANT_ID;
@@ -17,7 +16,7 @@ delete process.env.TENANT_ID;
 const brand = require('../../lib/brand');
 const pricing = require('../../lib/pricing');
 
-const EV = '00000000-0000-0000-0000-000000000001';
+const EV = 'a0000000-0000-4000-8000-000000000001';
 const OTHER = 'cccccccc-0000-4000-8000-000000000002';
 
 const inserts = [];
@@ -39,7 +38,7 @@ global.fetch = async (url, opts = {}) => {
 test.beforeEach(() => {
   inserts.length = 0; emails.length = 0;
   brand._setBrands({
-    [EV]: { name: 'EV Exec', contact_email: 'book@evexec.test', brand: { site_url: 'https://www.evexec.co.uk' }, ref_prefix: 'EVX' },
+    [EV]: { name: 'Acme Cars', contact_email: 'book@acme-cars.test', brand: { site_url: 'https://www.acme-cars.test' }, ref_prefix: 'ACM' },
     [OTHER]: { name: 'Other Cabs', contact_email: 'desk@othercabs.test', brand: { site_url: 'https://www.othercabs.co.uk' }, ref_prefix: 'OCB' },
   });
   pricing._setPricing({ airports: [{ name: 'Manchester Airport', code: 'MAN', oneWay: 90, ret: 160 }], extraStop: 5 }, EV);
@@ -76,25 +75,34 @@ test('extra stops are charged at that business\'s own rate', async () => {
   assert.equal(inserts[0].quoted_price, 70 + 2 * 8);
 });
 
-test('another business\'s airport has no fixed price here (never EV Exec\'s list)', async () => {
+test('another business\'s airport has no fixed price here (never Acme Cars\'s list)', async () => {
   const r = await create('www.othercabs.co.uk', base({ airport: 'Manchester Airport' }));
   assert.equal(r.status, 200, JSON.stringify(r.body));
   assert.equal(inserts[0].tenant_id, OTHER);
   assert.equal(inserts[0].quoted_price, null);
 });
 
-test('EV Exec\'s own domain still files under EV Exec at EV Exec\'s price', async () => {
-  const r = await create('www.evexec.co.uk', base({ airport: 'Manchester Airport' }));
+test('Acme Cars\'s own domain still files under Acme Cars at Acme Cars\'s price', async () => {
+  const r = await create('www.acme-cars.test', base({ airport: 'Manchester Airport' }));
   assert.equal(r.status, 200, JSON.stringify(r.body));
   assert.equal(inserts[0].tenant_id, EV);
   assert.equal(inserts[0].quoted_price, 90);
-  assert.match(inserts[0].ref, /^EVX-/);
+  assert.match(inserts[0].ref, /^ACM-/);
 });
 
-test('a preview address files under this deployment\'s own business', async () => {
-  const r = await create('evexec-git-x.vercel.app', base({ airport: 'Manchester Airport' }));
-  assert.equal(r.status, 200, JSON.stringify(r.body));
-  assert.equal(inserts[0].tenant_id, EV);
+test('on the shared platform an address that is no business\'s own files nothing', async () => {
+  const r = await create('acme-git-x.vercel.app', base({ airport: 'Manchester Airport' }));
+  assert.equal(r.status, 404, JSON.stringify(r.body));
+  assert.equal(inserts.length, 0);
+});
+
+test('a dedicated deployment (TENANT_ID) files a preview address under its own business', async () => {
+  process.env.TENANT_ID = EV;
+  try {
+    const r = await create('acme-git-x.vercel.app', base({ airport: 'Manchester Airport' }));
+    assert.equal(r.status, 200, JSON.stringify(r.body));
+    assert.equal(inserts[0].tenant_id, EV);
+  } finally { delete process.env.TENANT_ID; }
 });
 
 // ── references from any business ─────────────────────────────────────────────

@@ -17,16 +17,8 @@ const read = (f) => fs.readFileSync(path.join(ROOT, 'docs', 'legal', f), 'utf8')
 
 const OMIT_TOP = [/^Fill in before first use$/i, /^Notes on how this was built/i, /^What the owner must fill in or check before use/i];
 
-/** The agreement as published: without the worked example and the internal notes. */
-function contractForPage(md) {
-  const secs = sections(md).filter((s) => !OMIT_TOP.some((re) => re.test(s.title)));
-  return secs.map((s) => {
-    if (!/^Order Details/i.test(s.title)) return s.body;
-    // Keep the heading and the blank template; drop the "### EV Exec ..." worked example.
-    const parts = s.body.split(/^(?=### )/m);
-    return parts.filter((p) => !/^### EV Exec/i.test(p)).join('');
-  }).join('\n');
-}
+/** The agreement as published: without the internal notes. */
+function contractForPage(md) { return omitInternal(md); }
 
 /** A document without its internal-only sections. */
 function omitInternal(md) { return sections(md).filter((s) => !OMIT_TOP.some((re) => re.test(s.title))).map((s) => s.body).join('\n'); }

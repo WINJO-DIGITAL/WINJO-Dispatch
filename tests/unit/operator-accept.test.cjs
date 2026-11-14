@@ -11,7 +11,7 @@ process.env.SUPABASE_URL = 'https://db.test';
 process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-unit';
 process.env.RESEND_API_KEY = 're_unit';
 process.env.OPERATOR_ACTION_SECRET = 'unit-secret';
-process.env.SITE_URL = 'https://www.evexec.test';
+process.env.SITE_URL = 'https://www.acme-cars.test';
 
 const OUT = 'a1b2c3d4-0000-4000-8000-000000000001';
 const LEG = 'a1b2c3d4-0000-4000-8000-000000000002';
@@ -21,9 +21,9 @@ let db; let emails;
 function reset() {
   const base = { source: 'website', operator_response: null, status: 'Unassigned', customer_name: 'Web Customer', customer_email: 'web@example.test', customer_phone: '07700900000', airport: 'Manchester Airport', travel_date: '2026-12-01', travel_time: '04:30', payment_status: 'Unpaid' };
   db = [
-    { ...base, id: OUT, ref: 'EVX-WEBOUT1', return_journey: true, return_date: '2026-12-08', return_time: '18:30', quoted_price: 160, pickup_location: 'Kirkham', dropoff_address: 'Manchester Airport', notes: null },
-    { ...base, id: LEG, ref: 'EVX-WEBRET1', return_journey: false, quoted_price: 0, travel_date: '2026-12-08', travel_time: '18:30', pickup_location: 'Manchester Airport', dropoff_address: 'Kirkham', notes: 'Return leg created automatically from return booking. Original return fare: £160. Outbound ref: EVX-WEBOUT1' },
-    { ...base, id: OTHER, ref: 'EVX-WEBRET2', return_journey: false, quoted_price: 0, notes: 'Return leg created automatically from return booking. Outbound ref: EVX-SOMEONEELSE' },
+    { ...base, id: OUT, ref: 'ACM-WEBOUT1', return_journey: true, return_date: '2026-12-08', return_time: '18:30', quoted_price: 160, pickup_location: 'Kirkham', dropoff_address: 'Manchester Airport', notes: null },
+    { ...base, id: LEG, ref: 'ACM-WEBRET1', return_journey: false, quoted_price: 0, travel_date: '2026-12-08', travel_time: '18:30', pickup_location: 'Manchester Airport', dropoff_address: 'Kirkham', notes: 'Return leg created automatically from return booking. Original return fare: £160. Outbound ref: ACM-WEBOUT1' },
+    { ...base, id: OTHER, ref: 'ACM-WEBRET2', return_journey: false, quoted_price: 0, notes: 'Return leg created automatically from return booking. Outbound ref: ACM-SOMEONEELSE' },
   ];
   emails = [];
 }

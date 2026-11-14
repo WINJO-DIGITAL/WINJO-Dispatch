@@ -6,14 +6,15 @@
 // Run: npm run test:unit
 
 const test = require('node:test');
+const SAMPLE = require('../helpers/sample-tenant');
 const assert = require('node:assert/strict');
+test.beforeEach(() => SAMPLE.load());
 
 process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-unit';
 process.env.SUPABASE_URL = 'https://db.test';
 process.env.RESEND_API_KEY = 're_unit';
-process.env.OPERATOR_EMAIL = 'ops@evexec.test';
 process.env.OPERATOR_ACTION_SECRET = 'unit-secret';
-process.env.SITE_URL = 'https://www.evexec.test';
+process.env.SITE_URL = 'https://www.acme-cars.test';
 
 const P = require('../../lib/cancellation');
 const { generateToken } = require('../../lib/token');
@@ -25,7 +26,7 @@ const hoursBefore = (h) => new Date(PICKUP - h * 3600000);
 
 function booking(extra = {}) {
   return {
-    id: ID, ref: 'EVX-CANCEL01', status: 'Dispatched', operator_response: 'accepted', payment_status: 'Unpaid',
+    id: ID, ref: 'ACM-CANCEL01', status: 'Dispatched', operator_response: 'accepted', payment_status: 'Unpaid',
     customer_name: 'Ann Lee', customer_email: 'ann@example.test', customer_phone: '07700900111',
     journey_type: 'To Airport', pickup_location: 'Lytham', airport: 'Manchester Airport', dropoff_address: 'Manchester Airport',
     travel_date: '2026-11-20', travel_time: '06:00', quoted_price: 90, return_journey: false,
@@ -75,9 +76,9 @@ test('confirmation email lists the booking\'s own cancellation deadlines', () =>
   assert.match(early, /Free cancellation until: 06:00 on 18\/11\/2026/);
   assert.match(early, /50% of the fare from: 06:00 on 19\/11\/2026/);
   assert.match(early, /Full fare from: 04:00 on 20\/11\/2026, or once your driver sets off/);
-  assert.match(early, /Terms: Version 4: https:\/\/www\.evexec\.test\/terms#cancellation/);
+  assert.match(early, /Terms: Version 4: https:\/\/www\.acme-cars\.test\/terms#cancellation/);
   const v3 = E.bookingConfirmed(booking({ terms_version: '3' }), { now: new Date('2026-10-20T10:00:00Z') }).text;
-  assert.match(v3, /Terms: Version 3: https:\/\/www\.evexec\.test\/terms-v3#cancellation/);
+  assert.match(v3, /Terms: Version 3: https:\/\/www\.acme-cars\.test\/terms-v3#cancellation/);
   const late = E.bookingConfirmed(booking({ terms_version: '4' }), { now: hoursBefore(10) }).text;
   assert.match(late, /If you cancel now: 50% of the fare/);
   assert.doesNotMatch(late, /Free cancellation until/);

@@ -1,4 +1,4 @@
-/* EV Exec Service Worker — push notifications */
+/* Service worker: push notifications */
 'use strict';
 
 self.addEventListener('push', function(event) {
@@ -6,14 +6,14 @@ self.addEventListener('push', function(event) {
 
   let payload;
   try { payload = event.data.json(); }
-  catch { payload = { title: 'EV Exec', body: event.data.text() }; }
+  catch { payload = { title: 'Notification', body: event.data.text() }; }
 
-  const title = payload.title || 'EV Exec';
+  const title = payload.title || 'Notification';
   const options = {
-    body:    payload.body  || 'Update from EV Exec',
+    body:    payload.body  || 'You have an update',
     icon:    '/public/favicon.svg',
     badge:   '/public/favicon.svg',
-    tag:     payload.tag   || 'evexec',
+    tag:     payload.tag   || 'update',
     data:    payload.data  || {},
     vibrate: [200, 100, 200],
     actions: payload.actions || []

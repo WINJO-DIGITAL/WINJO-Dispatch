@@ -5,7 +5,9 @@
 // alone) correctly. Run: npm run test:unit
 
 const test = require('node:test');
+const SAMPLE = require('../helpers/sample-tenant');
 const assert = require('node:assert/strict');
+test.beforeEach(() => SAMPLE.load());
 
 process.env.SUPABASE_URL = 'https://db.test';
 process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-unit';
@@ -16,7 +18,7 @@ const { relativeDay, when } = require('../../lib/emailTemplate.js');
 
 const NOW = new Date('2026-10-14T08:00:00Z');
 const B = {
-  id: 'b-1', ref: 'EVX-TEST0001', status: 'Dispatched', source: 'website', customer_name: 'Tom Smith', customer_phone: '07700 900123',
+  id: 'b-1', ref: 'ACM-TEST0001', status: 'Dispatched', source: 'website', customer_name: 'Tom Smith', customer_phone: '07700 900123',
   customer_email: 'tom@example.com', journey_type: 'To Airport', pickup_location: '12 Clifton Drive, Lytham St Annes, FY8 5RE',
   dropoff_address: 'Manchester Airport, Terminal 2', airport: 'Manchester Airport', travel_date: '2026-10-15', travel_time: '07:00:00',
   passengers: 2, luggage: '2 cases', quoted_price: 90, payment_method: 'Cash', payment_status: 'Unpaid', assigned_driver_id: 'd-1',
@@ -64,7 +66,7 @@ test('dates: weekday + DD/MM/YYYY + HH:MM, relative days from UK date', () => {
 
 test('driver reminder email says who, what day and time, and shows the text', () => {
   const e = C.driverCustomerReminderDue(B, { message: 'Hi Tom, see you tomorrow.' });
-  assert.match(e.subject, /^Text Tom Smith their reminder: .*Thursday 15\/10\/2026 at 07:00 \(Ref EVX-TEST0001\)$/);
+  assert.match(e.subject, /^Text Tom Smith their reminder: .*Thursday 15\/10\/2026 at 07:00 \(Ref ACM-TEST0001\)$/);
   assert.match(e.text, /Hi Tom, see you tomorrow\./);
   assert.match(e.html, /\?reminder=24hr/);
 });
@@ -88,9 +90,9 @@ test('queued database and driver-app emails are re-rendered in the new design', 
   const cases = [
     [{ type: 'driver_allocated' }, /^New job: Thursday 15\/10\/2026 at 07:00, Lytham St Annes → Manchester Airport/],
     [{ type: 'driver_reminder_24h' }, /^Job tomorrow: /],
-    [{ type: 'status_update', body: 'EV Exec: your driver is on the way. Ref EVX-TEST0001.' }, /^Your driver is on the way/],
-    [{ type: 'status_update', body: 'EV Exec: your driver has arrived at the pickup point.' }, /^Your driver has arrived/],
-    [{ type: 'status_update', body: 'EV Exec: your booking EVX-TEST0001 has been cancelled.' }, /^Cancelled: your transfer on Thursday 15\/10\/2026/],
+    [{ type: 'status_update', body: 'Acme Cars: your driver is on the way. Ref ACM-TEST0001.' }, /^Your driver is on the way/],
+    [{ type: 'status_update', body: 'Acme Cars: your driver has arrived at the pickup point.' }, /^Your driver has arrived/],
+    [{ type: 'status_update', body: 'Acme Cars: your booking ACM-TEST0001 has been cancelled.' }, /^Cancelled: your transfer on Thursday 15\/10\/2026/],
     [{ type: 'customer_sms_reminder' }, /^Text Tom Smith their reminder/],
   ];
   for (const [row, re] of cases) {
@@ -115,7 +117,7 @@ test('test sends: email_sample renders the named email from a real booking', asy
   assert.equal(SAMPLE_BUILDERS.length, 29);
   for (const builder of SAMPLE_BUILDERS) {
     const out = await renderQueued({ channel: 'email', booking_id: 'b-1', type: 'email_sample', meta: { builder, n: '1/29' } });
-    assert.ok(out, builder); assert.match(out.subject, /^\[EV Exec sample 1\/29\] /);
+    assert.ok(out, builder); assert.match(out.subject, /^\[Acme Cars sample 1\/29\] /);
   }
   assert.equal(await renderQueued({ channel: 'email', booking_id: 'b-1', type: 'email_sample', meta: { builder: 'nope' } }), null);
 });
@@ -128,7 +130,7 @@ test('operator-made return booking: one confirmation with both journeys, one £1
   assert.match(e.text, /Return journey/);
   assert.match(e.html, /Pay now or choose cash/);
   // The £0 return leg's own confirmation has no price and nothing to pay.
-  const leg = C.bookingConfirmed({ ...B, source: 'operator', payment_method: null, quoted_price: 0, travel_date: '2026-10-22', notes: 'Return leg created automatically from return booking. Original return fare: £160. Outbound ref: EVX-TEST0001' }, { now: NOW });
+  const leg = C.bookingConfirmed({ ...B, source: 'operator', payment_method: null, quoted_price: 0, travel_date: '2026-10-22', notes: 'Return leg created automatically from return booking. Original return fare: £160. Outbound ref: ACM-TEST0001' }, { now: NOW });
   assert.doesNotMatch(leg.html, /Pay now/);
   assert.doesNotMatch(leg.text, /£\d/);
 });

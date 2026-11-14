@@ -13,7 +13,7 @@ process.env.SUPABASE_URL = 'https://db.test';
 const pricing = require('../../lib/pricing');
 const { lookupPrice, getPrice } = require('../../lib/format');
 
-const EV = '00000000-0000-0000-0000-000000000001';
+const EV = 'a0000000-0000-4000-8000-000000000001';
 const ROW = {
   airports: [
     { name: 'Manchester Airport', code: 'MAN', one_way: 99, return_fare: 180 },
@@ -31,9 +31,9 @@ const ok = (body) => ({ ok: true, status: 200, json: async () => body, text: asy
 
 test.afterEach(() => { pricing._setPricing(null); delete global.fetch; });
 
-test('built-in prices are used until the operator list is loaded', () => {
-  assert.equal(lookupPrice('Manchester Airport', false), 90);
-  assert.equal(lookupPrice('Manchester Airport', true), 160);
+test('there is no built-in price list: nothing is priced until the operator list is loaded', () => {
+  assert.equal(lookupPrice('Manchester Airport', false), null);
+  assert.equal(lookupPrice('Manchester Airport', true), null);
   assert.equal(lookupPrice('Nowhere', false), null);
 });
 
@@ -58,18 +58,18 @@ test('loads at most once a minute', async () => {
   assert.equal(calls.length, 1);
 });
 
-test('falls back to the built-in list when the database fails or has no prices', async () => {
+test('a failed lookup or a business with no usable prices gets no prices, never a built-in list', async () => {
   fakeFetch(() => ({ ok: false, status: 500, json: async () => ({}), text: async () => 'down' }));
   await pricing.refreshPricing({ force: true });
-  assert.equal(lookupPrice('Manchester Airport', false), 90);
+  assert.equal(lookupPrice('Manchester Airport', false), null);
 
   fakeFetch(() => ok([{ id: EV, pricing: null }]));
   await pricing.refreshPricing({ force: true });
-  assert.equal(lookupPrice('Leeds Bradford Airport', false), 135);
+  assert.equal(lookupPrice('Leeds Bradford Airport', false), null);
 
   fakeFetch(() => ok([{ id: EV, pricing: { airports: [{ name: 'Bad', one_way: '90', return_fare: 1 }] } }]));
   await pricing.refreshPricing({ force: true });
-  assert.equal(lookupPrice('Manchester Airport', false), 90, 'unusable rows are ignored');
+  assert.equal(lookupPrice('Manchester Airport', false), null, 'unusable rows are ignored');
 });
 
 test('/api/config gives the booking form the operator prices', async () => {
@@ -84,7 +84,7 @@ test('/api/config gives the booking form the operator prices', async () => {
   });
 });
 
-test('a business other than EV Exec never falls back to EV Exec\'s prices', () => {
+test('a business other than Acme Cars never falls back to Acme Cars\'s prices', () => {
   const saved = process.env.TENANT_ID;
   process.env.TENANT_ID = 'dddddddd-0000-4000-8000-000000000002';
   const path = require.resolve('../../lib/pricing');

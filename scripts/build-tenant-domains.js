@@ -2,7 +2,7 @@
 
 // Writes one route per business domain into vercel.json, so a business's own domain is served by
 // lib/tenantSite.js (its home page and booking page). Only the domains listed in
-// config/tenant-domains.json get a route, so EV Exec's own pages can never be affected: with an
+// config/tenant-domains.json get a route, so the platform's own pages can never be affected: with an
 // empty list nothing changes. Safe to run again: it replaces its own routes (those that point at
 // /api/booking/index.js?r=site) and leaves every other route as it is.
 //
@@ -14,7 +14,7 @@ const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
 const DOMAIN = /^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/;
-const OWN = /^(www\.)?evexec\.co\.uk$/;
+const OWN = /^(www\.)?(winjodigital\.co\.uk|winjo-dispatch\.vercel\.app|winjo-driver\.vercel\.app)$/;
 const MARK = 'r=site&p=';
 
 function tidy(d) { return String(d || '').trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/+$/, ''); }

@@ -1,7 +1,7 @@
 'use strict';
-// The legal templates. With EV Exec's own details they must reproduce EV Exec's
+// The legal templates. With Acme Cars's own details they must reproduce Acme Cars's
 // published terms.html and privacy.html section by section; for any other
-// business they must never show EV Exec's details, and they must say what is
+// business they must never show Acme Cars's details, and they must say what is
 // still missing.
 const test = require('node:test');
 const assert = require('node:assert/strict');
@@ -44,12 +44,12 @@ const COASTAL = {
   },
   pricing: { extra_stop: 8 },
 };
-const LEAK = /ev exec|evexec|07721|070370|PHO0079|Blackpool|Fylde|Tesla|Enyaq|Privilege/i;
+const LEAK = /ev exec|evexec|07700|900123|PHO0001|Blackpool|Fylde|Tesla|Enyaq|Privilege/i;
 
-test('another business\'s documents carry its own details and none of EV Exec\'s', () => {
+test('another business\'s documents carry its own details and none of Acme Cars\'s', () => {
   for (const doc of [termsDocument(COASTAL), privacyDocument(COASTAL)]) {
     assert.equal(doc.ready, true, JSON.stringify(doc.gaps));
-    assert.doesNotMatch(doc.html + doc.text, LEAK, `${doc.kind} mentions EV Exec`);
+    assert.doesNotMatch(doc.html + doc.text, LEAK, `${doc.kind} mentions Acme Cars`);
     assert.doesNotMatch(doc.html, /legal-gap/, 'no placeholder left when every detail is set');
   }
   const t = termsDocument(COASTAL);

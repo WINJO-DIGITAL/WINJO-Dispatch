@@ -19,7 +19,7 @@ test('a complete business gets its terms and privacy pages with its own name and
     assert.match(out.html, /#112233/);
     assert.match(out.html, /Last updated 12\/11\/2026/);
     assert.match(out.html, /noindex/);
-    assert.doesNotMatch(out.html, /EV Exec|PHO0079|Blackpool/i);
+    assert.doesNotMatch(out.html, /Acme Cars|PHO0001|Blackpool/i);
   }
 });
 test('terms are not published until the responsibilities statement is confirmed', () => {

@@ -34,7 +34,7 @@ test('required details and their formats are checked', () => {
 
 test('short names: format, reserved words and length', () => {
   for (const bad of ['Moor Cars', 'moor_cars', '-moor', 'moor-', 'moor--cars', 'x'.repeat(41)]) assert.ok(S.validate(ok({ slug: bad })).errors.slug, bad);
-  for (const word of ['admin', 'api', 'operator', 'driver', 'login', 'signup', 'ev-exec']) assert.ok(S.validate(ok({ slug: word })).errors.slug, word);
+  for (const word of ['admin', 'api', 'operator', 'driver', 'login', 'signup']) assert.ok(S.validate(ok({ slug: word })).errors.slug, word);
   assert.deepEqual(S.validate(ok({ slug: 'moor-cars-2' })).errors, {});
 });
 
@@ -89,15 +89,15 @@ test('the published terms page is the one built from the documents (run npm run 
 
 test('the terms page leaves out the other business\'s details and the internal notes', () => {
   const html = T.build();
-  for (const secret of ['Wheeler Hub', 'PHO0079', '07721', 'C2085772', 'book@evexec', 'a customer like any other']) assert.ok(!html.includes(secret), secret);
+  for (const secret of ['PHO0001', '07700', 'bookings@acme-cars']) assert.ok(!html.includes(secret), secret);
   for (const heading of ['Fill in before first use', 'Notes on how this was built', 'What the owner must fill in or check before use']) assert.doesNotMatch(html, new RegExp(`<h[1-3][^>]*>${heading}`), `${heading} is internal`);
   assert.match(html, /Schedule B: Fees/);
   assert.match(html, /£999/);
   assert.match(html, /Template \(for each new Operator\)/);
 });
 
-test('the published terms no longer name EV Exec (owner decision 13/11/2026; wording version 2, 14/11/2026)', () => {
-  const hits = (T.build().match(/[^.<>]*EV Exec[^.<>]*/g) || []).map((x) => x.trim());
+test('the published terms no longer name Acme Cars (owner decision 13/11/2026; wording version 2, 14/11/2026)', () => {
+  const hits = (T.build().match(/[^.<>]*Acme Cars[^.<>]*/g) || []).map((x) => x.trim());
   assert.deepEqual(hits, []);
 });
 

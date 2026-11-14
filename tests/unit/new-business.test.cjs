@@ -43,9 +43,9 @@ test('keys, tokens and passwords are refused anywhere in the file', () => {
   assert.match(validate(c).join('\n'), /key or token/);
 });
 
-test('another business domain cannot be claimed', () => {
-  const c = example(); c.website = 'https://www.evexec.co.uk';
-  assert.match(validate(c).join('\n'), /belongs to another business/);
+test('the platform\'s own domain cannot be claimed', () => {
+  const c = example(); c.website = 'https://www.winjodigital.co.uk';
+  assert.match(validate(c).join('\n'), /belongs to the platform/);
 });
 
 test('the domain step is only written when a website is given', () => {

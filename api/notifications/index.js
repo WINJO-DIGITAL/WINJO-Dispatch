@@ -78,7 +78,7 @@ function envStatus() {
     },
     resend: {
       apiKey: Boolean(process.env.RESEND_API_KEY),
-      from: process.env.RESEND_FROM || 'EV Exec <bookings@evexec.co.uk>',
+      from: process.env.RESEND_FROM || process.env.PLATFORM_FROM || 'Winjo Dispatch <hello@winjodigital.co.uk>',
       ready: Boolean(process.env.RESEND_API_KEY)
     },
     operator: {
@@ -87,7 +87,7 @@ function envStatus() {
       phonePreview: mask(normaliseUkPhone(process.env.OPERATOR_PHONE || '')),
       emailPreview: process.env.OPERATOR_EMAIL ? mask(process.env.OPERATOR_EMAIL) : null
     },
-    site: { siteUrl: process.env.SITE_URL || 'https://evexec.co.uk' }
+    site: { siteUrl: process.env.SITE_URL || require('../../lib/platform').PLATFORM_URL() }
   };
 }
 
@@ -144,14 +144,14 @@ async function handleSend(req, res) {
   const subscriptions = await getSubscriptions(user_id, email, phone);
   if (!subscriptions.length) return ok(res, { sent: 0, message: 'No subscriptions found' });
 
-  const payload = JSON.stringify({ title, body: message, tag: tag || 'evexec', data: { url: actionUrl || '/' } });
+  const payload = JSON.stringify({ title, body: message, tag: tag || 'notification', data: { url: actionUrl || '/' } });
   const results = await Promise.allSettled(
     subscriptions.map(sub => sendWebPush(
       sub,
       payload,
       process.env.VAPID_PUBLIC_KEY,
       process.env.VAPID_PRIVATE_KEY,
-      process.env.VAPID_EMAIL || 'mailto:book@evexec.co.uk'
+      process.env.VAPID_EMAIL || 'mailto:hello@winjodigital.co.uk'
     ).catch(async err => {
       if (err.statusCode === 410) await deleteExpiredSubscription(sub.endpoint);
       throw err;

@@ -1,6 +1,6 @@
 'use strict';
 
-// The public website of a business other than EV Exec: its home page with a booking form and its
+// The public website of a business other than Acme Cars: its home page with a booking form and its
 // booking page. Pure builders plus the request handler. Run: npm run test:unit
 
 const test = require('node:test');
@@ -26,7 +26,7 @@ function scriptsOf(html) { return [...html.matchAll(/<script>([\s\S]*?)<\/script
 test('finds a business by its own domain (www, case and port ignored)', () => {
   assert.equal(site.findByHost('www.othercabs.co.uk').slug, 'other-cabs');
   assert.equal(site.findByHost('OtherCabs.co.uk:443').slug, 'other-cabs');
-  assert.equal(site.findByHost('evexec.co.uk'), null);
+  assert.equal(site.findByHost('acme-cars.test'), null);
   assert.equal(site.findByHost(''), null);
 });
 
@@ -40,7 +40,7 @@ test('the home page is that business\'s own: name, tagline, prices, colours and 
   assert.match(h, /licence PHO9999/);
   assert.match(h, /tel:\+447700900123/);
   assert.match(h, /desk@othercabs\.test/);
-  assert.doesNotMatch(h, /EV Exec|EV EXEC|07721|evexec/i, 'nothing of EV Exec\'s');
+  assert.doesNotMatch(h, /Acme Cars|ACME CARS|acme-cars|PHO0001/i, 'nothing of Acme Cars\'s');
   assert.doesNotMatch(h, /Manchester Airport/, 'no other business\'s airports');
 });
 
@@ -107,7 +107,7 @@ test('the booking page is noindex, branded, and has the business\'s contact deta
   assert.match(b, /<title>Your booking \| Other Cabs<\/title>/);
   assert.match(b, /Call 07700 900123/);
   assert.match(b, /Pay by card online/);
-  assert.doesNotMatch(b, /EV Exec|07721|evexec/i);
+  assert.doesNotMatch(b, /Acme Cars|acme-cars|PHO0001/i);
 });
 
 // ── handler ──────────────────────────────────────────────────────────────────
@@ -126,11 +126,11 @@ test('the handler serves the home and booking pages on the business\'s own domai
   assert.equal(booking.headers['Cache-Control'], 'no-store');
 });
 
-test('an unknown domain gets a plain "not set up" page, never EV Exec\'s or another business\'s', async () => {
+test('an unknown domain gets a plain "not set up" page, never Acme Cars\'s or another business\'s', async () => {
   const r = await call('nobody.example', '');
   assert.equal(r.statusCode, 404);
   assert.match(r.body, /not set up yet/);
-  assert.doesNotMatch(r.body, /Other Cabs|EV Exec/);
+  assert.doesNotMatch(r.body, /Other Cabs|Acme Cars/);
 });
 
 test('terms and privacy go to the business\'s published pages; robots.txt hides the booking page', async () => {

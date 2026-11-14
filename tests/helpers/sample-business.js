@@ -1,16 +1,17 @@
 'use strict';
 
-// Sample business record used as test data only (the retired first business, kept as a realistic example).
+// A neutral sample business used as test data only. The phone number is in the range Ofcom
+// reserves for drama use, and the email and website use the reserved ".test" domain.
 // It is not published anywhere and not used by any build.
 
 module.exports = {
-  name: 'EV Exec', contact_email: 'book@evexec.co.uk', contact_phone: '07721070370',
+  name: 'Acme Cars', contact_email: 'bookings@acme-cars.test', contact_phone: '07700900123',
   brand: {
-    licence: 'PHO0079',
+    licence: 'PHO0001',
     legal: {
-      status: 'sole trader', base: 'Blackpool, Lancashire', area: 'Blackpool and the Fylde Coast',
-      service: 'premium airport transfers and private hire',
-      fleet: 'a fleet of electric vehicles (currently a Tesla Model Y, a Tesla Model Y Juniper and a Škoda Enyaq)',
+      status: 'sole trader', base: 'Exampleton, Lancashire', area: 'Exampleton and the surrounding area',
+      service: 'airport transfers and private hire',
+      fleet: 'a fleet of three electric saloon cars',
       price_includes: ['Up to 4 passengers', 'Standard luggage (see section 13)', 'Live flight monitoring on all inbound transfers', 'Airport drop-off and pickup charges', 'All charging and running costs', 'Any extra stops you booked'],
       points_name: 'Privilege Points',
       insurance_confirmed: true,

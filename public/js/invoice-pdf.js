@@ -1,37 +1,35 @@
 /*
- * EV Exec customer invoice: A4 sheet + PDF.
+ * Customer invoice: A4 sheet + PDF.
  *
- * This is the customer's copy of the official EV Exec invoice. The layout is
- * a faithful copy of the operator app's invoice (evexecoperator
+ * This is the customer's copy of the business's invoice. The layout is
+ * a faithful copy of the Operator app's invoice (apps/operator
  * src/app/operator/invoices/page.jsx, InvoicePreview): navy header band with
- * the badge and tagline, gold "INVOICE", Invoice-to / Date / Invoice number,
+ * the logo (or business name) and tagline, gold "INVOICE", Invoice-to / Date / Invoice number,
  * the gold-bordered charges table with Subtotal / Tax / navy Total rows,
  * Payment terms + Thank you, the watermark flourish and the navy contact
  * footer. The PDF is produced the same way too: the sheet is rendered at A4
  * width (794px) with html2canvas and placed on an A4 page with jsPDF.
  * Operator-only controls and internal data are not part of this sheet.
  *
- * window.EvxInvoice.download({ invoice, business }) -> builds and saves the PDF
+ * window.InvoicePdf.download({ invoice, business }) -> builds and saves the PDF
  */
 (function () {
   'use strict';
 
   // The business's branding (Operator app, Settings → Branding) arrives with
   // the invoice as business.logoUrl / primary / accent; these are the
-  // defaults (EV Exec navy, gold and badge). Set per sheet in applyBrand().
+  // defaults (navy and gold, and the business name as a wordmark). Set per sheet in applyBrand().
   var DEFAULT_NAVY = '#0B132B';
   var DEFAULT_GOLD = '#d7a23f';
-  var DEFAULT_LOGO = '/public/images/ev-exec-invoice-logo.png';
   var NAVY = DEFAULT_NAVY;
   var GOLD = DEFAULT_GOLD;
-  var LOGO = DEFAULT_LOGO;
+  var LOGO = null;
   function isHex(v) { return /^#[0-9A-Fa-f]{6}$/.test(String(v || '')); }
   function applyBrand(biz) {
     NAVY = isHex(biz.primary) ? biz.primary : DEFAULT_NAVY;
     GOLD = isHex(biz.accent) ? biz.accent : DEFAULT_GOLD;
     var url = String(biz.logoUrl || '');
-    LOGO = /^https:\/\/[a-z0-9-]+\.supabase\.co\/storage\/v1\/object\/public\/brand-assets\//.test(url) ? url
-      : (biz.useBuiltInLogo === false ? null : DEFAULT_LOGO);
+    LOGO = /^https:\/\/[a-z0-9-]+\.supabase\.co\/storage\/v1\/object\/public\/brand-assets\//.test(url) ? url : null;
   }
   // Logo image, or the business name as a wordmark when there is none.
   function logoHtml(biz, style) {
@@ -179,7 +177,7 @@
         // Flourish + watermark
         '<div style="position:relative;flex:1;display:flex;align-items:center;justify-content:center;padding:32px">' +
           (LOGO ? '<img src="' + esc(LOGO) + '" alt="" crossorigin="anonymous" style="position:absolute;left:50%;top:50%;width:320px;max-width:70%;transform:translate(-50%,-50%);opacity:.06">' : '') +
-          '<div style="position:relative;text-align:center"><div style="font-size:16px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:' + NAVY + '">Thank you for choosing ' + esc(biz.name || 'EV Exec') + '</div>' +
+          '<div style="position:relative;text-align:center"><div style="font-size:16px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:' + NAVY + '">Thank you for choosing ' + esc(biz.name || '') + '</div>' +
           '<div style="margin:10px auto 0;height:1px;width:80px;background:' + GOLD + '"></div></div>' +
         '</div>' +
       '</div>' +
@@ -227,7 +225,7 @@
         el.remove();
         var jsPDF = window.jspdf.jsPDF;
         var pdf = new jsPDF({ unit: 'pt', format: 'a4' });
-        pdf.setProperties({ title: 'EV Exec Invoice ' + data.invoice.number, author: (data.business && data.business.name) || 'EV Exec' });
+        pdf.setProperties({ title: 'Invoice ' + data.invoice.number, author: (data.business && data.business.name) || '' });
         var pageW = pdf.internal.pageSize.getWidth();
         var pageH = pdf.internal.pageSize.getHeight();
         var imgH = (canvas.height * pageW) / canvas.width;
@@ -242,7 +240,7 @@
   }
 
   function fileName(number) {
-    return 'EV-EXEC-Invoice-' + String(number || 'invoice').replace(/[^A-Za-z0-9_-]+/g, '-') + '.pdf';
+    return 'Invoice-' + String(number || 'invoice').replace(/[^A-Za-z0-9_-]+/g, '-') + '.pdf';
   }
 
   // iPhone Safari won't reliably download a blob, so phones get the share
@@ -262,5 +260,5 @@
     });
   }
 
-  window.EvxInvoice = { download: download, buildPdf: buildPdf, buildSheet: buildSheet, fileName: fileName };
+  window.InvoicePdf = { download: download, buildPdf: buildPdf, buildSheet: buildSheet, fileName: fileName };
 })();

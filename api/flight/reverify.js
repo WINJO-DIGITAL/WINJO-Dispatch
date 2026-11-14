@@ -4,7 +4,7 @@
 //
 // Runs once a day via Vercel Cron (see vercel.json), finds every airport
 // booking travelling tomorrow that has a flight number, and asks the
-// evexecoperator Supabase Edge Function (verify-flight) to re-check it
+// Supabase Edge Function (verify-flight) to re-check it
 // against AeroDataBox. That function is the single place flight-checking
 // logic lives -- this endpoint is only the "which bookings are due today"
 // scheduler, calling it once per booking, the same way this file's sibling

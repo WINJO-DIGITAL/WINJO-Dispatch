@@ -1,17 +1,17 @@
 'use strict';
 // Each operator's own cancellation bands (brand.legal.policy) decide the charge
 // for its bookings on the current terms version. Older versions keep their fixed
-// bands, and EV Exec's charges do not change.
+// bands, and Acme Cars's charges do not change.
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-const EV = '00000000-0000-0000-0000-000000000001';
+const EV = 'a0000000-0000-4000-8000-000000000001';
 const COASTAL = 'dddddddd-0000-4000-8000-000000000002';
 const brand = require('../../lib/brand');
 const P = require('../../lib/cancellation');
 
 brand._setBrands({
-  [EV]: { name: 'EV Exec', brand: {} },
+  [EV]: { name: 'Acme Cars', brand: {} },
   [COASTAL]: { name: 'Coastal Cars', brand: { legal: { policy: { standard: [
     { hours: 72, pct: 0 }, { hours: 24, pct: 50 }, { hours: 4, pct: 75 },
   ] } } } },
@@ -43,7 +43,7 @@ test('a booking on an older terms version keeps that version\'s fixed bands', ()
   assert.equal(P.cancellationQuote(booking({ terms_version: '3' }), at(30)).pct, 25);
 });
 
-test('EV Exec, and any business that has not set its own bands, keep the standard bands', () => {
+test('Acme Cars, and any business that has not set its own bands, keep the standard bands', () => {
   const ev = booking({ tenant_id: EV });
   assert.equal(P.cancellationQuote(ev, at(30)).pct, 25);
   assert.equal(P.cancellationQuote(ev, at(100)).pct, 0);

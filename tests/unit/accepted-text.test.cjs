@@ -85,12 +85,12 @@ test('accepting sends the email AND queues the text when the customer has an ema
     }
     return json([]);
   };
-  const b = { id: 'b0000000-0000-4000-8000-000000000002', ref: 'EVX-TEST', customer_name: 'Sam Smith', customer_email: 'sam@example.invalid', customer_phone: '07123456789',
-    pickup_location: 'Blackpool', airport: 'Manchester Airport', travel_date: '2027-01-05', travel_time: '10:30', quoted_price: 90, tenant_id: '00000000-0000-0000-0000-000000000001' };
+  const b = { id: 'b0000000-0000-4000-8000-000000000002', ref: 'ACM-TEST', customer_name: 'Sam Smith', customer_email: 'sam@example.invalid', customer_phone: '07123456789',
+    pickup_location: 'Blackpool', airport: 'Manchester Airport', travel_date: '2027-01-05', travel_time: '10:30', quoted_price: 90, tenant_id: 'a0000000-0000-4000-8000-000000000001' };
   await sendBookingConfirmed(b);
   assert.ok(seen.some((c) => c === 'POST /emails'), 'email sent');
   assert.equal(rows.length, 1, 'text queued');
-  assert.match(rows[0].message, /EVX-TEST/);
+  assert.match(rows[0].message, /ACM-TEST/);
   assert.match(rows[0].message, /confirmed/);
 });
 
@@ -109,7 +109,7 @@ test('accepting with a phone but no email queues only the text', async () => {
     }
     return json([]);
   };
-  await sendBookingConfirmed({ id: 'b0000000-0000-4000-8000-000000000003', ref: 'EVX-TEST2', customer_name: 'Sam', customer_email: '', customer_phone: '07123456789',
+  await sendBookingConfirmed({ id: 'b0000000-0000-4000-8000-000000000003', ref: 'ACM-TEST2', customer_name: 'Sam', customer_email: '', customer_phone: '07123456789',
     pickup_location: 'Blackpool', airport: 'Manchester Airport', travel_date: '2027-01-05', travel_time: '10:30', quoted_price: 90 });
   assert.equal(rows.length, 1);
   assert.ok(!seen.some((u) => u.includes('api.resend.com')), 'no email');

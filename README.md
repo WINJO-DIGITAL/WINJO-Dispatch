@@ -26,6 +26,3 @@ The customer booking website, booking and payment API, and database migrations f
 
 Production deploys are manual and need the owner's approval (`.github/workflows/deploy.yml`). Merging to `main` does not deploy through GitHub Actions.
 
-## Leftover EV Exec code
-
-EV Exec is no longer part of this project (owner decision, 13/11/2026). The canonical host `www.evexec.co.uk`, the first business's id (`00000000-0000-0000-0000-000000000001`, used when a domain matches no other business), the built-in price list and the generated marketing pages are leftovers from it, not designs to copy. Removal is tracked in `docs/TASKS.md`.

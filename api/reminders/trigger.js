@@ -211,7 +211,7 @@ async function sendReminders(due, type, driversById) {
     await Promise.allSettled([
       // Both channels, independently: the email whenever there's an email on
       // file, and the SMS whenever there's a phone number, handed off to the
-      // assigned driver to send from their own phone -- EV Exec no longer
+      // assigned driver to send from their own phone -- the platform no longer
       // sends customer reminder SMS via Twilio (see handOffSmsToDriver above).
       hasEmail
         ? sendOrQueue(() => sendEmail({ to: booking.customer_email, subject: emailSubject, html: emailHtml, text: mail.text, tenantId: booking.tenant_id }), { booking_id: booking.id, type: logType, channel: 'email', recipient: booking.customer_email, subject: emailSubject, html: emailHtml, body: mail.text, meta: { label: 'customer_reminder' } })
