@@ -13,7 +13,7 @@ export const DEFAULT_PRIMARY = "#0B132B";
 export const DEFAULT_ACCENT = "#D7A23F";
 export const EV_EXEC_TENANT_ID = "00000000-0000-0000-0000-000000000001";
 /** The built-in EV Exec badge as a static file (same image as lib/operator/brandLogo.js). */
-export const BUILT_IN_LOGO_SRC = "/ev-exec-badge.png";
+export const BUILT_IN_LOGO_SRC = "/operator/ev-exec-badge.png";
 
 const HEX = /^#[0-9A-Fa-f]{6}$/;
 export const isHexColour = (v) => HEX.test(String(v || ""));

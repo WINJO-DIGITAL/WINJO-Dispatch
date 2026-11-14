@@ -40,7 +40,7 @@ export async function enableOperatorPush() {
   const perm = await Notification.requestPermission();
   if (perm !== "granted") throw new Error("Notifications were not allowed. Enable them in your browser/app settings.");
 
-  const reg = await navigator.serviceWorker.register("/sw.js");
+  const reg = await navigator.serviceWorker.register("/operator/sw.js", { scope: "/operator/" });
   await navigator.serviceWorker.ready;
 
   // The VAPID public key isn't secret; read it straight from the DB (no server
