@@ -5,7 +5,7 @@ import { freeCancellationLine, chargeStarts, bandsFor, pickupInstant } from "./c
 // The Operator app's copy of the charge rules must match the website's: an
 // operator's own bands on the current terms, fixed bands otherwise.
 const COASTAL = "dddddddd-0000-4000-8000-000000000002";
-const EV = "00000000-0000-0000-0000-000000000001";
+const EV = "a0000000-0000-4000-8000-000000000001";
 const booking = (over = {}) => ({
   travel_date: "2026-12-01", travel_time: "12:00", status: "Dispatched", operator_response: "accepted",
   source: "website", quoted_price: 100, payment_status: "Unpaid", terms_version: "4", tenant_id: COASTAL, ...over,
@@ -20,7 +20,7 @@ const OWN = { standard: [{ hours: 72, pct: 0 }, { hours: 24, pct: 50 }, { hours:
 
 beforeEach(() => {
   _setBrands({
-    [EV]: { name: "EV Exec", brand: {} },
+    [EV]: { name: "Acme Cars", brand: {} },
     [COASTAL]: { name: "Coastal Cars", brand: { legal: { policy: OWN } } },
   });
 });
@@ -38,7 +38,7 @@ describe("an operator's own bands", () => {
     expect(schedule(booking({ terms_version: "3" }), "3")).toEqual([25, 50, 100]);
   });
 
-  it("are not used for EV Exec, or for a booking with no business", () => {
+  it("are not used for Acme Cars, or for a booking with no business", () => {
     expect(schedule(booking({ tenant_id: EV }))).toEqual([25, 50, 100]);
     expect(schedule(booking({ tenant_id: null }))).toEqual([25, 50, 100]);
   });

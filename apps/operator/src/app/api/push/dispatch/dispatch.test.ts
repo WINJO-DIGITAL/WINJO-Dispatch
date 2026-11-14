@@ -2,7 +2,7 @@
 // Fix 1 (audit C-1): after the database change, office staff still get the
 // new-booking alert. The database (get_push_dispatch_bundle_for_tenant)
 // decides WHICH devices are returned (only that business's current office
-// staff; tested in evexec/supabase/tests/database/tenant_scoping.test.sql);
+// staff; tested in supabase/tests/database/tenant_scoping.test.sql);
 // this checks the route asks for the right business, sends to every device it
 // is given, refuses a wrong secret and keeps working before the database
 // change is applied.
@@ -72,7 +72,7 @@ const rpcNames = () => state.rpcCalls.map(([fn]) => fn);
 
 describe("POST /api/push/dispatch — which business", () => {
   it("asks for the booking's own business devices", async () => {
-    await call("right-secret", { record: { customer_name: "Jo", ref: "EVX-1", tenant_id: T2 } });
+    await call("right-secret", { record: { customer_name: "Jo", ref: "ACM-1", tenant_id: T2 } });
     expect(state.rpcCalls[0]).toEqual(["get_push_dispatch_bundle_for_tenant", { p_secret: "right-secret", p_tenant_id: T2 }]);
     expect(rpcNames()).not.toContain("get_push_dispatch_bundle");
   });
@@ -117,7 +117,7 @@ describe("POST /api/push/dispatch — which business", () => {
 
 describe("POST /api/push/dispatch", () => {
   it("sends the new-booking alert to every staff device in the bundle", async () => {
-    const res = await call("right-secret", { record: { customer_name: "Jo Bloggs", ref: "EVX-1", pickup_location: "Lytham", airport: "Manchester", travel_date: "2026-11-01", travel_time: "09:30" } });
+    const res = await call("right-secret", { record: { customer_name: "Jo Bloggs", ref: "ACM-1", pickup_location: "Lytham", airport: "Manchester", travel_date: "2026-11-01", travel_time: "09:30" } });
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true, sent: 2, removed: 0 });
     expect(state.sent.map((s) => s.endpoint)).toEqual(staffDevices.map((d) => d.endpoint));
@@ -127,9 +127,9 @@ describe("POST /api/push/dispatch", () => {
   });
 
   it("sends website staff notices (e.g. payment received)", async () => {
-    const res = await call("right-secret", { tenant_id: T1, notification: { title: "EV Exec Payment Received", body: "EVX-1 £90.00", url: "/operator/bookings?q=EVX-1" } });
+    const res = await call("right-secret", { tenant_id: T1, notification: { title: "Acme Cars Payment Received", body: "ACM-1 £90.00", url: "/operator/bookings?q=ACM-1" } });
     expect(await res.json()).toMatchObject({ sent: 2 });
-    expect(JSON.parse(state.sent[1].payload).title).toBe("EV Exec Payment Received");
+    expect(JSON.parse(state.sent[1].payload).title).toBe("Acme Cars Payment Received");
   });
 
   it("refuses a wrong or missing secret and sends nothing", async () => {

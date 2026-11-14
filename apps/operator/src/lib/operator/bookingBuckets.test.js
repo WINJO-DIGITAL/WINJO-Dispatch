@@ -29,7 +29,7 @@ describe("booking buckets", () => {
     expect(unpaidCompleted(b({ status: "Dispatched" }))).toBe(false);
   });
   it("a return leg is paid with its outbound booking, so it is never chased as unpaid", () => {
-    const leg = b({ status: "Completed", notes: "Return leg created automatically from return booking. Outbound ref: EVX-1" });
+    const leg = b({ status: "Completed", notes: "Return leg created automatically from return booking. Outbound ref: ACM-1" });
     expect(unpaidCompleted(leg)).toBe(false);
   });
   it("an operator-made booking never waits for a reply", () => {

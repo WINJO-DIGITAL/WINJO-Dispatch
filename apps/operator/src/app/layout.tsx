@@ -4,8 +4,8 @@ import { ToastProvider } from "@/hooks/useToast";
 import { DEPLOYMENT_BRAND } from "@/lib/deploymentBrand";
 
 export const metadata: Metadata = {
-  title: `${DEPLOYMENT_BRAND.name} | Airport Transfer Calendar`,
-  description: `Premium airport transfer management for ${DEPLOYMENT_BRAND.name} operators.`,
+  title: `${DEPLOYMENT_BRAND.name} | Operator`,
+  description: `Booking and dispatch management for ${DEPLOYMENT_BRAND.name} operators.`,
   applicationName: `${DEPLOYMENT_BRAND.name} Operator`,
   manifest: "/manifest.webmanifest",
   appleWebApp: {

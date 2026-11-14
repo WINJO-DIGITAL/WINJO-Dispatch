@@ -21,7 +21,7 @@ function chain(table: string) {
     eq: (col: string, v: unknown) => { filters.push([col, v]); return q; },
     delete: () => { op = "delete"; return q; },
     upsert: async (row: Record<string, unknown>) => { state.upserts.push(row); return { error: null }; },
-    maybeSingle: async () => ({ data: table === "tenants" ? { id: "t1", name: "EV Exec" } : null, error: null }),
+    maybeSingle: async () => ({ data: table === "tenants" ? { id: "t1", name: "Acme Cars" } : null, error: null }),
     then: (res: (v: unknown) => unknown) => {
       if (op === "delete") { state.deletes.push(filters); return res({ error: null }); }
       return res({ data: table === "tenant_users" ? state.roles : [], error: null });

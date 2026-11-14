@@ -8,7 +8,7 @@ import { when } from "@/lib/email/template.js";
 
 // Generates a Stripe payment link for a booking and sends it to the customer.
 //
-// - Email (Resend), in the shared EV Exec email design, when the booking has
+// - Email (Resend), in the shared email design, when the booking has
 //   an email address.
 // - A two-tap text: the response carries an `sms:` link with the message
 //   already written, which the operator opens from their own phone and sends.
@@ -20,7 +20,7 @@ import { when } from "@/lib/email/template.js";
 // anything chargeable.
 //
 // Required env (set in Vercel project settings):
-//   STRIPE_SECRET_KEY            — the account owner's (EV Exec) own Stripe key
+//   STRIPE_SECRET_KEY            — only where one business holds the deployment's Stripe account
 //   STRIPE_PLATFORM_SECRET_KEY   — the platform key for operators' connected accounts (see stripeAccount.ts)
 //   SUPABASE_SERVICE_ROLE_KEY    — service role key (server only, never NEXT_PUBLIC)
 //   NEXT_PUBLIC_SUPABASE_URL     — already configured for the client
@@ -34,7 +34,7 @@ export const dynamic = "force-dynamic";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://evexecoperator.vercel.app";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://winjo-dispatch.vercel.app";
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 import { senderFor } from "@/lib/server/sender";
 
@@ -165,8 +165,8 @@ export async function POST(req: Request) {
   if (!isSuper && !staffTenants.has(booking.tenant_id)) return json({ error: "Booking not found." }, 404);
   await loadBrand(admin, booking.tenant_id); // this business's name and number for the email and text
   const brand = brandFor(booking.tenant_id);
-  // The business's own Stripe account (EV Exec's own, or an operator's connected account once
-  // Stripe says it can take card payments). Otherwise refused: money never goes to another
+  // The business's own Stripe account (its connected account once Stripe says it can take
+  // card payments, or the deployment's own where one business holds it). Otherwise refused: money never goes to another
   // business's account.
   // Reading or closing a checkout that already exists only needs the account to be known,
   // so an operator whose account has since become unready can still close an open link.

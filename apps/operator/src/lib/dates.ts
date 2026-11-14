@@ -1,4 +1,4 @@
-// House date style for every EV Exec screen and message (user decision,
+// House date style for every screen and message (user decision,
 // 2026-10-04): dates DD/MM/YYYY, times 24-hour HH:MM, UK time.
 
 const UK = "Europe/London";

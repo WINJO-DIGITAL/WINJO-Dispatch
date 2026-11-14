@@ -1,10 +1,11 @@
 // Which Stripe account a business's card payments use (design:
-// evexec/docs/payments/stripe-connect-design.md, phase 2). Same rules as the
+// docs/payments/stripe-connect-design.md, phase 2). Same rules as the
 // website's lib/stripeAccount.js.
 //
-//  - The account OWNER (STRIPE_PLATFORM_TENANT_ID, EV Exec): its own Stripe
-//    account (STRIPE_SECRET_KEY), no Stripe-Account header, as before.
-//  - Any OTHER business: its own CONNECTED account, reached with the platform key
+//  - Optionally, one business that holds the Stripe account itself (a dedicated
+//    deployment, STRIPE_PLATFORM_TENANT_ID, unset on the shared platform): its own
+//    Stripe account (STRIPE_SECRET_KEY), no Stripe-Account header.
+//  - Every other business: its own CONNECTED account, reached with the platform key
 //    (STRIPE_PLATFORM_SECRET_KEY) and a Stripe-Account header, so the payment is
 //    made directly on the operator's account. Only once Stripe says that account
 //    can take card payments.
@@ -30,7 +31,8 @@ export async function stripeContext(
 ): Promise<StripeContext | null> {
   const requireReady = opts.requireReady !== false;
   const owner = stripeOwnerTenant();
-  if (!tenantId || tenantId === owner) {
+  if (!tenantId) return null;
+  if (owner && tenantId === owner) {
     if (!ownKey()) return null;
     return { kind: "own", tenantId: owner, accountId: null, headers: { Authorization: `Bearer ${ownKey()}` } };
   }

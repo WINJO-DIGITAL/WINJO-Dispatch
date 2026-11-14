@@ -2,9 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { bookingConfirmed } from './content.js';
 import { freeCancellationLine, policyVersion, chargeStarts, pickupInstant, ukStamp } from './cancellation.js';
 
-// Same rules as evexec/lib/cancellation.js; these mirror its unit tests.
+// Same rules as lib/cancellation.js; these mirror its unit tests.
 const booking = (extra = {}) => ({
-  id: 'x', ref: 'EVX-1', customer_name: 'Ann Lee', journey_type: 'To Airport', pickup_location: 'Lytham',
+  id: 'x', ref: 'ACM-1', customer_name: 'Ann Lee', journey_type: 'To Airport', pickup_location: 'Lytham',
   airport: 'Manchester Airport', dropoff_address: 'Manchester Airport', travel_date: '2026-11-03', travel_time: '03:30',
   quoted_price: 90, operator_response: 'accepted', status: 'Dispatched', payment_status: 'Unpaid',
   created_at: '2026-10-17T09:00:00Z', ...extra,

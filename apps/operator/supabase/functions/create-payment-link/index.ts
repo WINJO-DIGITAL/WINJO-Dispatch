@@ -82,7 +82,7 @@ serve(async (req) => {
       "line_items[0][quantity]": "1",
       "metadata[booking_ref]": bookingRef,
       "after_completion[type]": "redirect",
-      "after_completion[redirect][url]": "https://evexec.co.uk/booking-confirmed",
+      "after_completion[redirect][url]": (Deno.env.get("PLATFORM_URL") ?? "https://winjo-dispatch.vercel.app") + "/booking",
     });
 
     if (customerEmail) {

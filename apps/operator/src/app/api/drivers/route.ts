@@ -21,7 +21,7 @@ type Access = { status: "partner" | "none" | "invited" | "active"; lastSignIn: s
 
 /** Where the emailed link points: the Driver App's set-password screen. */
 function driverAppOrigin() {
-  return (process.env.DRIVER_APP_URL || process.env.NEXT_PUBLIC_DRIVER_APP_URL || "https://evexecdriverapp.vercel.app").replace(/\/$/, "");
+  return (process.env.DRIVER_APP_URL || process.env.NEXT_PUBLIC_DRIVER_APP_URL || "https://winjo-dispatch.vercel.app/driver").replace(/\/$/, "");
 }
 
 function driverSetPasswordUrl(origin: string, hashedToken: string) {

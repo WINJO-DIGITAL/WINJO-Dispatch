@@ -33,7 +33,7 @@
  * Called with a staff member's own JWT (operator UI, "Verify Flight" button),
  * the assigned driver's own JWT (driver app, refresh button on their own
  * job), or the service-role key directly (the daily day-before re-verify
- * job in evexec's cron) -- any of these is accepted; a plain anon-key call
+ * job in the website's cron) -- any of these is accepted; a plain anon-key call
  * with no staff/driver relationship to the booking is rejected.
  *
  * Response: { ok: boolean, verification?: {...}, cached?: boolean, error?: string }
@@ -214,7 +214,7 @@ Deno.serve(async (req) => {
   const booking = await getBooking(bookingId);
   if (!booking) return json({ ok: false, error: "Booking not found" }, 404);
 
-  // Auth: accept the service-role key directly (the evexec cron job calling
+  // Auth: accept the service-role key directly (the website's cron job calling
   // server-to-server), a staff member's own JWT, or the driver actually
   // assigned to this booking (so they can re-check their own job). Reject
   // everyone else -- this writes to the DB and calls a metered third-party API.

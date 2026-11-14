@@ -7,7 +7,7 @@ import BookingDetailDrawer from "./BookingDetailDrawer";
 afterEach(cleanup);
 
 const booking = {
-  id: "EVX-DEL1", customer: "Test Customer", phone: "", email: "", route: "Blackpool → Manchester Airport",
+  id: "ACM-DEL1", customer: "Test Customer", phone: "", email: "", route: "Blackpool → Manchester Airport",
   pickup: "Blackpool", dropoff: "Manchester Airport", date: "2026-10-20", time: "10:00",
   status: "Unassigned", paymentStatus: "Unpaid", price: 90, notes: "",
 };
@@ -34,7 +34,7 @@ describe("BookingDetailDrawer — delete dialog", () => {
     fireEvent.change(password, { target: { value: "secret" } });
     const buttons = screen.getAllByRole("button", { name: "Delete Job" });
     fireEvent.click(buttons[buttons.length - 1]);
-    expect(onDelete).toHaveBeenCalledWith("EVX-DEL1", "secret");
+    expect(onDelete).toHaveBeenCalledWith("ACM-DEL1", "secret");
   });
 
   it("Escape closes only the dialog", () => {

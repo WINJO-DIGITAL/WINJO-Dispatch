@@ -9,7 +9,6 @@ import {
 import { useInvoices, computeTotals } from "@/hooks/operator/useInvoices";
 import { shapedBooking, ukDateDaysAgo } from "@/hooks/operator/useBookings";
 import { useOperatorToast } from "@/components/operator/Toast";
-import { EV_EXEC_LOGO } from "@/lib/operator/brandLogo";
 import { supabase } from "@/lib/supabase";
 import { fmtDate } from "@/lib/dates";
 import { useTenantProfile } from "@/hooks/operator/useTenantProfile";
@@ -79,7 +78,7 @@ function shortDate(d) {
 }
 
 // Journey → the muted description sub-lines shown under a charge (mirrors how
-// EV Exec write transfers: "Pick up 08.30 4/11/26", "Return MAN T2 17.05 …").
+// Operators write transfers: "Pick up 08.30 4/11/26", "Return MAN T2 17.05 …").
 function journeyLines(j) {
   if (!j) return [];
   const lines = [];
@@ -102,11 +101,10 @@ const inputCls =
   "w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-[#0F1B33] placeholder:text-slate-400 outline-none transition focus:border-amber-400/40";
 const labelCls = "mb-1.5 text-[10px] uppercase tracking-[0.2em] text-slate-500";
 
-// The business's logo (Settings → Branding); EV Exec's built-in badge for EV
-// Exec; otherwise the business name as a wordmark. Uploaded logos load with
-// CORS so they appear in the downloaded PDF too.
+// The business's logo (Settings → Branding); otherwise the business name as a
+// wordmark. Uploaded logos load with CORS so they appear in the downloaded PDF too.
 function logoSrcFor(brand) {
-  return brand.logoUrl || (brand.useBuiltInLogo ? EV_EXEC_LOGO : null);
+  return brand.logoUrl || null;
 }
 
 function InvoiceLogo({ company = COMPANY, brand }) {
@@ -316,7 +314,7 @@ function InvoiceModal({ open, onClose, onCreate, bookings, jobsLoading, invoiceF
 
   const totals = useMemo(() => computeTotals(items, vatRate), [items, vatRate]);
 
-  // Opened for a specific job (invoices?ref=EVX-…): prefill it once loaded.
+  // Opened for a specific job (invoices?ref=ABC-…): prefill it once loaded.
   // Done while rendering (once the job has loaded), not in an effect.
   const [appliedRef, setAppliedRef] = useState(null);
   if (open && initialRef && appliedRef !== initialRef && bookings.some((b) => b.id === initialRef)) {
@@ -510,7 +508,7 @@ function InvoiceModal({ open, onClose, onCreate, bookings, jobsLoading, invoiceF
   );
 }
 
-/* ─── Printable invoice — EV Exec navy & gold template ──────────────────── */
+/* ─── Printable invoice — navy & gold template ──────────────────── */
 function InvoicePreview({ invoice, onClose, onStatus, onDelete, onEmailed }) {
   const inv = invoice;
   const jLines = journeyLines(inv.journey);
@@ -935,7 +933,7 @@ export default function InvoicesPage() {
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
 
-  // invoices?ref=EVX-… opens the new-invoice form for that job. The address is
+  // invoices?ref=ABC-… opens the new-invoice form for that job. The address is
   // read as an external value (nothing on the server, so no mismatch), and the
   // form opens once when it first appears.
   const urlRef = useSyncExternalStore(

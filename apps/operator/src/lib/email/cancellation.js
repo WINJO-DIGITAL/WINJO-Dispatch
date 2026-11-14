@@ -1,6 +1,6 @@
 // Cancellation policy deadlines for customer emails and texts. Same rules as
-// evexec/lib/cancellation.js (the website's source of truth, wording on
-// https://www.evexec.co.uk/terms sections 4 and 5); keep the two in step.
+// lib/cancellation.js (the website's source of truth, wording on
+// the business's own /terms page, sections 4 and 5); keep the two in step.
 
 import { brandFor } from './brand.js';
 

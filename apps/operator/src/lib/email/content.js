@@ -1,7 +1,7 @@
-// Copied from evexec/lib/emailContent.js (the website). Keep the two in sync so the
+// Copied from lib/emailContent.js (the website). Keep the two in sync so the
 // website and the Operator app send identical emails.
 
-// Wording for every EV Exec email, built on lib/emailTemplate.js. Each builder
+// Wording for every email, built on lib/emailTemplate.js. Each builder
 // returns { subject, html, spec }. Subjects always say what happened and, for
 // anything tied to a journey, the day, date and time, so the inbox line alone
 // is enough. Dates DD/MM/YYYY, times HH:MM (UK).
@@ -11,14 +11,9 @@ import { getStops, getPrice, onPriceList, paymentLine, needsPayment } from './fo
 import * as P from './cancellation.js';
 import { withBrandOf, currentBrand, telNumber } from './brand.js';
 
-// The business's own website. EV Exec's EVEXEC_SITE_URL override applies to EV Exec only;
-// a business with no website gets '' so no link to another business's site is ever written.
-const SITE = () => {
-  const s = currentBrand().site || '';
-  if (!s) return '';
-  const override = s === 'https://www.evexec.co.uk' ? process.env.EVEXEC_SITE_URL : '';
-  return (override || s).replace(/\/$/, '');
-};
+// The business's own website. A business with no website gets '' so no link to
+// another business's site is ever written.
+const SITE = () => (currentBrand().site || '').replace(/\/$/, '');
 const first = (n) => String(n || '').trim().split(/\s+/)[0] || 'there';
 const oneLine = (s) => String(s == null ? '' : s).replace(/[\r\n]+/g, ', ').replace(/\s+/g, ' ').trim();
 const money = (n) => (n == null || n === '' || isNaN(Number(n)) ? null : `£${Number(n).toFixed(2)}`);
@@ -360,7 +355,7 @@ function staffDuplicatePayment(b, { amount, stripeId } = {}) {
 
 // ═════════════════════════════ DRIVER ═════════════════════════════
 
-const DRIVER_APP = () => (process.env.DRIVER_APP_URL || 'https://evexecdriverapp.vercel.app').replace(/\/$/, '');
+const DRIVER_APP = () => (process.env.DRIVER_APP_URL || 'https://winjo-dispatch.vercel.app/driver').replace(/\/$/, '');
 const jobUrl = (b, q = '') => `${DRIVER_APP()}/jobs/${encodeURIComponent(b.id)}${q}`;
 
 function fareText(b) {
@@ -489,7 +484,7 @@ const builders = {
 };
 
 // Each email builder is built for the business on its first argument (the
-// booking, quote or invoice row's tenant_id); no tenant_id means EV Exec. The
+// booking, quote or invoice row's tenant_id); no tenant_id means the deployment's own business (TENANT_ID), if any. The
 // three helpers are not emails and are left as they are.
 const HELPERS = new Set(['fareText', 'route', 'shortRoute']);
 const wrapped = Object.fromEntries(

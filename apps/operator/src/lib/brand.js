@@ -5,20 +5,16 @@ import { DEPLOYMENT_BRAND } from "@/lib/deploymentBrand";
 //
 // - primary: the dark band behind the logo (invoice header/footer)
 // - accent:  headings, rules and icons on that band
-// A business that hasn't chosen colours gets EV Exec's navy and gold. Only the
-// EV Exec business falls back to the built-in EV Exec badge; any other
-// business without a logo shows its name instead.
+// A business that hasn't chosen colours gets the standard navy and gold. A
+// business without a logo shows its name as a wordmark instead.
 
 export const DEFAULT_PRIMARY = "#0B132B";
 export const DEFAULT_ACCENT = "#D7A23F";
-export const EV_EXEC_TENANT_ID = "00000000-0000-0000-0000-000000000001";
-/** The built-in EV Exec badge as a static file (same image as lib/operator/brandLogo.js). */
-export const BUILT_IN_LOGO_SRC = "/operator/ev-exec-badge.png";
 
 const HEX = /^#[0-9A-Fa-f]{6}$/;
 export const isHexColour = (v) => HEX.test(String(v || ""));
 
-/** { name, logoUrl, useBuiltInLogo, primary, accent } for a tenants row. */
+/** { name, logoUrl, primary, accent } for a tenants row. */
 export function brandFrom(tenant) {
   const b = tenant?.brand || {};
   const colors = b.colors || {};
@@ -26,7 +22,6 @@ export function brandFrom(tenant) {
   return {
     name: tenant?.name || DEPLOYMENT_BRAND.name,
     logoUrl,
-    useBuiltInLogo: !logoUrl && (!tenant || tenant.id === EV_EXEC_TENANT_ID),
     primary: isHexColour(colors.primary) ? colors.primary.toUpperCase() : DEFAULT_PRIMARY,
     accent: isHexColour(colors.accent) ? colors.accent.toUpperCase() : DEFAULT_ACCENT,
   };

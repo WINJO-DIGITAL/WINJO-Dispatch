@@ -1,12 +1,9 @@
-// Booking helpers the emails need (same rules as evexec/lib/format.js).
+// Booking helpers the emails need (same rules as lib/format.js). Prices come from the booking's own
+// business (tenants.pricing, loaded with its brand); there is no built-in price list.
 
-const PRICES = {
-  'Manchester Airport': { oneWay: 90, return: 160 },
-  'Liverpool Airport': { oneWay: 95, return: 170 },
-  'Leeds Bradford Airport': { oneWay: 135, return: 250 },
-  'Birmingham Airport': { oneWay: 215, return: 410 },
-  'Newcastle Airport': { oneWay: 250, return: 480 },
-};
+import { brandFor } from './brand.js';
+
+const listed = (b) => brandFor(b.tenant_id).prices[String(b.airport || '').trim().toLowerCase()] || null;
 const isReturnLeg = (b) => /^Return leg created automatically/i.test(String(b.notes || ''));
 
 export function getStops(b) {
@@ -17,14 +14,14 @@ export function getStops(b) {
 
 // True when the airport is on the published price list (not a quoted job).
 export function onPriceList(b) {
-  return Boolean(PRICES[b.airport]);
+  return Boolean(listed(b));
 }
 
 export function getPrice(b) {
   const p = Number(b.price ?? b.quoted_price);
   if (Number.isFinite(p) && p > 0) return p;
-  const t = PRICES[b.airport];
-  return t ? (b.return_journey ? t.return : t.oneWay) : null;
+  const t = listed(b);
+  return t ? (b.return_journey ? t.ret : t.oneWay) : null;
 }
 
 export function paymentLine(b) {

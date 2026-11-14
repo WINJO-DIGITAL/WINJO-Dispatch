@@ -317,9 +317,9 @@ describe("sanitizeText", () => {
 // ─── generateBookingRef ───────────────────────────────────────────────────────
 
 describe("generateBookingRef", () => {
-  it("returns a string matching EVX-XXXXXXXXX format", () => {
+  it("returns a string matching WJD-XXXXXXXXX format", () => {
     const ref = generateBookingRef();
-    expect(ref).toMatch(/^EVX-[A-Z0-9]{7,12}$/);
+    expect(ref).toMatch(/^WJD-[A-Z0-9]{7,12}$/);
   });
 
   it("generates unique refs on successive calls", () => {

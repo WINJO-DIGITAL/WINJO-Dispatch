@@ -1,4 +1,4 @@
-// Stripe Connect for operators (design: evexec/docs/payments/stripe-connect-design.md).
+// Stripe Connect for operators (design: docs/payments/stripe-connect-design.md).
 //
 // Each operator connects its OWN Stripe account (a connected account) through
 // Stripe-hosted onboarding. Payments are taken directly on that account and the
@@ -6,7 +6,7 @@
 // application fee is taken (owner decision 12/11/2026).
 //
 // Uses the PLATFORM's secret key (STRIPE_PLATFORM_SECRET_KEY, the Winjo Digital
-// Stripe account) and nothing else; never the EV Exec account's STRIPE_SECRET_KEY.
+// Stripe account) and nothing else; never a business's own STRIPE_SECRET_KEY.
 // Server only: the key is never stored in the database or sent to the browser.
 // Without the key, every function here refuses ("not configured") and nothing
 // is called.

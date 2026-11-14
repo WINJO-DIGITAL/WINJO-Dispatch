@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { textTasksFrom, smsHref } from "./textTasks";
 
-const booking = (o = {}) => ({ ref: "EVX-1", travel_date: "2026-10-20", travel_time: "09:30", status: "Dispatched", ...o });
+const booking = (o = {}) => ({ ref: "ACM-1", travel_date: "2026-10-20", travel_time: "09:30", status: "Dispatched", ...o });
 
 describe("textTasksFrom", () => {
   it("merges office tasks and partner reminders, oldest first", () => {

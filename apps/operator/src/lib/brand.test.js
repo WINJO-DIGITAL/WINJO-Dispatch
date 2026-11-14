@@ -1,21 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_ACCENT, DEFAULT_PRIMARY, EV_EXEC_TENANT_ID, brandFrom, brandWarning, contrastRatio, logoFileProblem, textOn } from "./brand";
+import { DEFAULT_ACCENT, DEFAULT_PRIMARY, brandFrom, brandWarning, contrastRatio, logoFileProblem, textOn } from "./brand";
 
 describe("brandFrom", () => {
-  it("uses EV Exec's colours and built-in logo when nothing is set", () => {
-    expect(brandFrom({ id: EV_EXEC_TENANT_ID, name: "EV Exec", brand: {} })).toEqual({
-      name: "EV Exec", logoUrl: null, useBuiltInLogo: true, primary: DEFAULT_PRIMARY, accent: DEFAULT_ACCENT,
+  it("uses the standard colours and no logo when nothing is set", () => {
+    expect(brandFrom({ id: "t1", name: "Acme Cars", brand: {} })).toEqual({
+      name: "Acme Cars", logoUrl: null, primary: DEFAULT_PRIMARY, accent: DEFAULT_ACCENT,
     });
-  });
-
-  it("never gives another business the EV Exec logo", () => {
-    expect(brandFrom({ id: "other", name: "Acme Cars", brand: {} }).useBuiltInLogo).toBe(false);
   });
 
   it("reads the saved logo and colours, ignoring bad values", () => {
     const b = brandFrom({ id: "other", name: "Acme", brand: { logo_url: "https://x.supabase.co/l.png", colors: { primary: "#112233", accent: "red" } } });
     expect(b.logoUrl).toBe("https://x.supabase.co/l.png");
-    expect(b.useBuiltInLogo).toBe(false);
     expect(b.primary).toBe("#112233");
     expect(b.accent).toBe(DEFAULT_ACCENT);
   });

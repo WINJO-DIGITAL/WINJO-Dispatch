@@ -1,16 +1,15 @@
 // Whose emails these are (brand.js): each email carries the booking's own
-// business. EV Exec's must read exactly as before; another business must never
-// show EV Exec's name, number or licence.
+// business, and never another business's name, number or licence.
 import { describe, it, expect, beforeEach } from "vitest";
 import * as C from "./content.js";
 import * as S from "./staff.js";
-import { _setBrands, fromRow, displayPhone, telNumber, brandFor, EV_EXEC } from "./brand.js";
+import { _setBrands, fromRow, displayPhone, telNumber, brandFor } from "./brand.js";
 
-const EV = "00000000-0000-0000-0000-000000000001";
+const EV = "a0000000-0000-4000-8000-000000000001";
 const COASTAL = "dddddddd-0000-4000-8000-000000000002";
 const BARE = "eeeeeeee-0000-4000-8000-000000000003";
-// EV Exec exactly as its live row is: the phone has no space.
-const EV_ROW = { name: "EV Exec", contact_email: "book@evexec.co.uk", contact_phone: "07721070370", brand: { invoice: { business_name: "EV Exec" } } };
+// A sample business as its row is in the database: the phone has no space.
+const EV_ROW = { name: "Acme Cars", contact_email: "bookings@acme-cars.test", contact_phone: "07700900123", brand: { licence: "PHO0001", site_url: "https://www.acme-cars.test", tagline: "Airport transfers from Exampleton", invoice: { business_name: "Acme Cars" } } };
 const COASTAL_ROW = {
   name: "Coastal Cars", contact_email: "hello@coastal.test", contact_phone: "+44 7123 456789",
   brand: { licence: "PHO1234", site_url: "https://coastal.test/", tagline: "Airport transfers from Southport", colors: { primary: "#123456", accent: "#FF8800" } },
@@ -18,7 +17,7 @@ const COASTAL_ROW = {
 const BARE_ROW = { name: "Bare Business", contact_email: null, contact_phone: null, brand: {} };
 
 const booking = (tenant_id) => ({
-  id: "11111111-1111-4111-8111-111111111111", ref: "EVX-BRAND1", customer_name: "Jo Bloggs", customer_phone: "07000000001", customer_email: "jo@example.test",
+  id: "11111111-1111-4111-8111-111111111111", ref: "ACM-BRAND1", customer_name: "Jo Bloggs", customer_phone: "07000000001", customer_email: "jo@example.test",
   travel_date: "2099-03-14", travel_time: "09:30:00", pickup_location: "1 Test Street, Southport", dropoff_address: "Liverpool Airport", airport: "Liverpool Airport",
   status: "Dispatched", payment_status: "Unpaid", quoted_price: 90, passengers: 2, luggage: "2 bags", flight_number: "EZY123", journey_type: "To Airport",
   notes: "", return_journey: false, driver_notes: "", tenant_id,
@@ -60,48 +59,56 @@ const everyEmail = (b) => ({
 
 describe("business details", () => {
   it("formats phone numbers the house way and builds tel: numbers", () => {
-    expect(displayPhone("07721070370")).toBe("07721 070370");
-    expect(displayPhone("+44 7721 070370")).toBe("07721 070370");
+    expect(displayPhone("07700900123")).toBe("07700 900123");
+    expect(displayPhone("+44 7700 900123")).toBe("07700 900123");
     expect(displayPhone("01253 123456")).toBe("01253 123456");
-    expect(telNumber("07721 070370")).toBe("+447721070370");
+    expect(telNumber("07700 900123")).toBe("+447700900123");
     expect(telNumber("")).toBe("");
   });
 
-  it("EV Exec's live database row gives exactly the built-in EV Exec details", () => {
+  it("a business's row gives exactly its own details", () => {
     const b = fromRow({ id: EV, ...EV_ROW });
-    for (const k of ["name", "wordmark", "phone", "email", "licence", "site", "tagline", "primary", "accent"]) expect(b[k]).toBe(EV_EXEC[k]);
+    expect({ ...b }).toEqual({
+      name: "Acme Cars", wordmark: "ACME CARS", phone: "07700 900123", email: "bookings@acme-cars.test", licence: "PHO0001",
+      site: "https://www.acme-cars.test", tagline: "Airport transfers from Exampleton", primary: null, accent: null, policy: null, prices: {},
+    });
   });
 
   it("another business gets only what its own row holds", () => {
     expect({ ...fromRow({ id: COASTAL, ...COASTAL_ROW }) }).toEqual({
       name: "Coastal Cars", wordmark: "COASTAL CARS", phone: "07123 456789", email: "hello@coastal.test", licence: "PHO1234",
-      site: "https://coastal.test", tagline: "Airport transfers from Southport", primary: "#123456", accent: "#FF8800", policy: null,
+      site: "https://coastal.test", tagline: "Airport transfers from Southport", primary: "#123456", accent: "#FF8800", policy: null, prices: {},
     });
     const bare = fromRow({ id: BARE, ...BARE_ROW });
     expect([bare.phone, bare.licence, bare.site, bare.tagline]).toEqual(["", "", "", ""]);
   });
 
-  it("a business not read yet gets blank details, never EV Exec's", () => {
+  it("a business not read yet gets blank details, never another business's; no business means none", () => {
     expect(brandFor("ffffffff-0000-4000-8000-0000000000ff").phone).toBe("");
-    expect(brandFor(undefined).phone).toBe("07721 070370");
+    expect(brandFor(undefined).phone).toBe("");
+  });
+
+  it("reads the business's own price list (tenants.pricing), by lower-case name", () => {
+    const b = fromRow({ id: EV, ...EV_ROW, pricing: { airports: [{ name: "Manchester Airport", one_way: 90, return_fare: 160 }, { name: "Bad", one_way: "x", return_fare: 1 }], extra_stop: 5 } });
+    expect({ ...b.prices }).toEqual({ "manchester airport": { oneWay: 90, ret: 160 } });
   });
 });
 
-describe("EV Exec's emails", () => {
-  it("still carry its wordmark, phone, licence and footer", () => {
+describe("a business's emails", () => {
+  it("carry its wordmark, phone, licence and footer", () => {
     const m = C.requestReceived(booking(EV));
-    expect(m.html).toMatch(/>EV EXEC<\/a>/);
-    expect(m.html).toMatch(/tel:\+447721070370/);
-    expect(m.html).toMatch(/Premium airport transfers from Blackpool &amp; the Fylde Coast/);
-    expect(m.html).toMatch(/Private hire operator licence PHO0079/);
-    expect(m.text).toMatch(/EV Exec · evexec\.co\.uk · 07721 070370/);
+    expect(m.html).toMatch(/>ACME CARS<\/a>/);
+    expect(m.html).toMatch(/tel:\+447700900123/);
+    expect(m.html).toMatch(/Airport transfers from Exampleton/);
+    expect(m.html).toMatch(/Private hire operator licence PHO0001/);
+    expect(m.text).toMatch(/Acme Cars · acme-cars\.test · 07700 900123/);
   });
 });
 
 describe("another business's emails", () => {
-  const LEAKS = /EV Exec|EV EXEC|07721|PHO0079|book@evexec|070370/i;
+  const LEAKS = /Acme Cars|ACME CARS|07700 900123|PHO0001|acme-cars/i;
 
-  it("no email type shows EV Exec's details", () => {
+  it("no email type shows Acme Cars's details", () => {
     const all = everyEmail(booking(COASTAL));
     expect(Object.keys(all).length).toBeGreaterThanOrEqual(28);
     for (const [name, m] of Object.entries(all)) {
@@ -141,7 +148,7 @@ describe("another business's emails", () => {
   it("building for one business does not change the next", () => {
     C.requestReceived(booking(COASTAL));
     const after = C.requestReceived(booking(EV));
-    expect(after.html).toMatch(/EV EXEC/);
+    expect(after.html).toMatch(/ACME CARS/);
     expect(after.html).not.toMatch(/COASTAL/);
   });
 });

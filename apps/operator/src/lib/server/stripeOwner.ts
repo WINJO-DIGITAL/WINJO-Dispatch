@@ -1,12 +1,6 @@
-// The platform's Stripe account (STRIPE_SECRET_KEY) is one business's own
-// account (EV Exec's). Card payments for any OTHER business must never be taken
-// into it: the money would land with the wrong business. Until a business has its
-// own connected Stripe account, only the account owner's business sends card
-// payment links; the others take cash or bank transfer.
-// Same rule as the website (evexec lib/payments.js cardPaymentsAllowed).
+// Where one business holds the deployment's Stripe account itself (a dedicated deployment:
+// STRIPE_PLATFORM_TENANT_ID), that business is the account owner and uses the deployment's own
+// key. On the shared platform there is no owner (unset): every business takes card payments on
+// its own connected account. Same rule as the website (lib/stripeAccount.js).
 
-export const stripeOwnerTenant = (): string =>
-  process.env.STRIPE_PLATFORM_TENANT_ID || "00000000-0000-0000-0000-000000000001";
-
-export const cardPaymentsAllowed = (tenantId: string | null | undefined): boolean =>
-  !tenantId || tenantId === stripeOwnerTenant();
+export const stripeOwnerTenant = (): string => (process.env.STRIPE_PLATFORM_TENANT_ID ?? "").trim();

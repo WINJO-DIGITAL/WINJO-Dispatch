@@ -1,26 +1,35 @@
 import { describe, expect, it } from "vitest";
-import { AIRPORT_PRICES, DEFAULT_PRICING, fixedTripPrice, fixedOneWayPrice, pricingForSave, pricingFromTenant, pricingProblem } from "./prices";
+import { DEFAULT_PRICING, fixedTripPrice, fixedOneWayPrice, pricingForSave, pricingFromTenant, pricingProblem } from "./prices";
+
+// A sample business's price list (test data only).
+const AIRPORT_PRICES = [
+  { name: "Manchester Airport", code: "MAN", oneWay: 90, ret: 160 },
+  { name: "Liverpool Airport", code: "LPL", oneWay: 95, ret: 170 },
+  { name: "Leeds Bradford Airport", code: "LBA", oneWay: 135, ret: 250 },
+  { name: "Birmingham Airport", code: "BHX", oneWay: 215, ret: 410 },
+  { name: "Newcastle Airport", code: "NCL", oneWay: 250, ret: 480 },
+];
 
 describe("fixedOneWayPrice", () => {
-  it("matches the website's one-way prices", () => {
-    expect(fixedOneWayPrice("Manchester Airport (MAN)")).toBe(90);
-    expect(fixedOneWayPrice("Liverpool Airport (LPL)")).toBe(95);
-    expect(fixedOneWayPrice("Leeds Bradford Airport (LBA)")).toBe(135);
-    expect(fixedOneWayPrice("Birmingham Airport (BHX)")).toBe(215);
-    expect(fixedOneWayPrice("Newcastle Airport (NCL)")).toBe(250);
+  it("finds the listed one-way prices", () => {
+    expect(fixedOneWayPrice("Manchester Airport (MAN)", AIRPORT_PRICES)).toBe(90);
+    expect(fixedOneWayPrice("Liverpool Airport (LPL)", AIRPORT_PRICES)).toBe(95);
+    expect(fixedOneWayPrice("Leeds Bradford Airport (LBA)", AIRPORT_PRICES)).toBe(135);
+    expect(fixedOneWayPrice("Birmingham Airport (BHX)", AIRPORT_PRICES)).toBe(215);
+    expect(fixedOneWayPrice("Newcastle Airport (NCL)", AIRPORT_PRICES)).toBe(250);
   });
 
   it("matches free-typed names and codes", () => {
-    expect(fixedOneWayPrice("manchester airport T2")).toBe(90);
-    expect(fixedOneWayPrice("LPL")).toBe(95);
+    expect(fixedOneWayPrice("manchester airport T2", AIRPORT_PRICES)).toBe(90);
+    expect(fixedOneWayPrice("LPL", AIRPORT_PRICES)).toBe(95);
   });
 
   it("has no fixed price for other airports or places", () => {
-    expect(fixedOneWayPrice("London Heathrow (LHR)")).toBeNull();
-    expect(fixedOneWayPrice("Blackpool Airport (BLK)")).toBeNull();
-    expect(fixedOneWayPrice("Lytham St Annes")).toBeNull();
-    expect(fixedOneWayPrice("")).toBeNull();
-    expect(fixedOneWayPrice(null)).toBeNull();
+    expect(fixedOneWayPrice("London Heathrow (LHR)", AIRPORT_PRICES)).toBeNull();
+    expect(fixedOneWayPrice("Blackpool Airport (BLK)", AIRPORT_PRICES)).toBeNull();
+    expect(fixedOneWayPrice("Lytham St Annes", AIRPORT_PRICES)).toBeNull();
+    expect(fixedOneWayPrice("", AIRPORT_PRICES)).toBeNull();
+    expect(fixedOneWayPrice(null, AIRPORT_PRICES)).toBeNull();
   });
 
   it("keeps return prices above one-way", () => {
@@ -30,18 +39,18 @@ describe("fixedOneWayPrice", () => {
 
 describe("fixedTripPrice", () => {
   it("charges the one-way fare for a single journey", () => {
-    expect(fixedTripPrice("Manchester Airport (MAN)", false)).toBe(90);
+    expect(fixedTripPrice("Manchester Airport (MAN)", false, AIRPORT_PRICES)).toBe(90);
   });
 
   it("charges the whole return fare once, not half per leg", () => {
-    expect(fixedTripPrice("Manchester Airport (MAN)", true)).toBe(160);
+    expect(fixedTripPrice("Manchester Airport (MAN)", true, AIRPORT_PRICES)).toBe(160);
     for (const a of AIRPORT_PRICES) {
-      expect(fixedTripPrice(a.name, true)).toBe(a.ret);
+      expect(fixedTripPrice(a.name, true, AIRPORT_PRICES)).toBe(a.ret);
     }
   });
 
   it("has no fixed price off the price list", () => {
-    expect(fixedTripPrice("London Heathrow (LHR)", true)).toBeNull();
+    expect(fixedTripPrice("London Heathrow (LHR)", true, AIRPORT_PRICES)).toBeNull();
   });
 });
 

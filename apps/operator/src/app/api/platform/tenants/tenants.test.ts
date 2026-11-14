@@ -92,7 +92,7 @@ beforeEach(() => {
     { tenant_id: T1, user_id: "admin1", role: "operator_admin" },
   ];
   db.tenants = [
-    { id: T1, name: "EV Exec", slug: "ev-exec", status: "active", contact_email: "book@evexec.co.uk", contact_phone: null, created_at: "2026-09-07", brand: { site_url: "https://www.evexec.co.uk", licence: "PHO0079", invoice: { business_name: "EV Exec" } } },
+    { id: T1, name: "Acme Cars", slug: "acme-cars", status: "active", contact_email: "bookings@acme-cars.test", contact_phone: null, created_at: "2026-09-07", brand: { site_url: "https://www.acme-cars.test", licence: "PHO0001", invoice: { business_name: "Acme Cars" } } },
     { id: T2, name: "Coastal Cars", slug: "coastal", status: "active", contact_email: null, contact_phone: null, created_at: "2026-11-01" },
   ];
   sent.length = 0;
@@ -121,12 +121,12 @@ describe("list", () => {
   it("lists every business with its admin count", async () => {
     const r = await call("GET");
     expect(r.status).toBe(200);
-    expect(r.body.tenants.map((t: { slug: string; admins: number }) => [t.slug, t.admins])).toEqual([["ev-exec", 1], ["coastal", 0]]);
+    expect(r.body.tenants.map((t: { slug: string; admins: number }) => [t.slug, t.admins])).toEqual([["acme-cars", 1], ["coastal", 0]]);
   });
   it("returns each business's website address, and nothing else from its brand record", async () => {
     const r = await call("GET");
-    const [evExec, coastal] = r.body.tenants;
-    expect(evExec.site_url).toBe("https://www.evexec.co.uk");
+    const [acme, coastal] = r.body.tenants;
+    expect(acme.site_url).toBe("https://www.acme-cars.test");
     expect(coastal.site_url).toBe(""); // a business with no address returns blank
     for (const t of r.body.tenants) expect(t).not.toHaveProperty("brand");
   });
@@ -168,7 +168,7 @@ describe("invite the first admin", () => {
     expect(sent[0].html).toContain("Coastal Cars");
     expect(sent[0].html).toContain("/set-password?token_hash=tok123&amp;type=invite");
     expect(sent[0].html).toContain("COASTAL CARS");
-    expect(sent[0].html + sent[0].subject).not.toMatch(/ev exec|evexec|07721|PHO0079/i);
+    expect(sent[0].html + sent[0].subject).not.toMatch(/Acme Cars|07700|PHO0001/i);
   });
   it("can be run again to resend (an existing account gets a reset link, not a second role)", async () => {
     await call("POST", { action: "invite", tenantId: T2, email: "boss@coastal.test" });

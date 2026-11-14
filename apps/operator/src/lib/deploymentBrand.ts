@@ -7,16 +7,16 @@
 // and contact details from public.tenants (see lib/brand.js). To run a
 // separate branded copy of this app, set these in the deployment's
 // environment; nothing else needs editing:
-//   NEXT_PUBLIC_BRAND_NAME     business name   (default "EV Exec")
-//   NEXT_PUBLIC_WEBSITE_URL    its website     (default https://www.evexec.co.uk)
+//   NEXT_PUBLIC_BRAND_NAME     business name   (default "Winjo Dispatch")
+//   NEXT_PUBLIC_WEBSITE_URL    its website     (default https://winjo-dispatch.vercel.app)
 
 const pick = (value: string | undefined, fallback: string) => (value && value.trim() ? value.trim() : fallback);
 
-const site = pick(process.env.NEXT_PUBLIC_WEBSITE_URL, "https://www.evexec.co.uk").replace(/\/$/, "");
+const site = pick(process.env.NEXT_PUBLIC_WEBSITE_URL, "https://winjo-dispatch.vercel.app").replace(/\/$/, "");
 
 export const DEPLOYMENT_BRAND = {
-  name: pick(process.env.NEXT_PUBLIC_BRAND_NAME, "EV Exec"),
+  name: pick(process.env.NEXT_PUBLIC_BRAND_NAME, "Winjo Dispatch"),
   site,
-  /** Sign-in placeholder, e.g. "you@evexec.co.uk". */
+  /** Sign-in placeholder, e.g. "you@example.co.uk". */
   loginPlaceholder: `you@${site.replace(/^https?:\/\//i, "").replace(/^www\./i, "")}`,
 };

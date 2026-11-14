@@ -80,7 +80,7 @@ describe("POST /api/auth/email-link", () => {
     expect(db.sent).toHaveLength(1);
     expect(db.sent[0].from).toBe("Winjo Digital <hello@platform.test>");
     expect(db.sent[0].html).toContain("type=magiclink");
-    expect(JSON.stringify(db.sent[0])).not.toMatch(/EV Exec|evexec/i);
+    expect(JSON.stringify(db.sent[0])).not.toMatch(/Acme Cars/i);
   });
 
   it("gives an unknown address the same reply, sends nothing and creates no account", async () => {

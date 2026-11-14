@@ -1,7 +1,7 @@
 // Settings → Payments: connect this business's own Stripe account.
 //   GET  -> { configured, canManage, connected, ready, detailsSubmitted, requirementsDue }
 //   POST -> { url }  a Stripe-hosted onboarding link (admins only)
-// Design: evexec/docs/payments/stripe-connect-design.md. Server only; the
+// Design: docs/payments/stripe-connect-design.md. Server only; the
 // platform key (STRIPE_PLATFORM_SECRET_KEY) never reaches the browser.
 import { connectState, startOnboarding } from "@/lib/server/connectFlow";
 import { ConnectError } from "@/lib/server/stripeConnect";

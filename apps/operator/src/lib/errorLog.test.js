@@ -22,7 +22,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   mockChain.insert.mockResolvedValue({ error: null });
   mockSupabase.auth.getSession.mockResolvedValue({
-    data: { session: { user: { id: "user-1", email: "ops@evexec.co.uk" } } },
+    data: { session: { user: { id: "user-1", email: "ops@acme-cars.test" } } },
   });
 });
 
@@ -41,7 +41,7 @@ describe("logError", () => {
       stack: "TypeError: Cannot read properties of undefined\n    at Foo",
       component_stack: "in Foo\n    in App",
       url: expect.any(String),
-      user_email: "ops@evexec.co.uk",
+      user_email: "ops@acme-cars.test",
       context: { page: "dispatch" },
     });
   });

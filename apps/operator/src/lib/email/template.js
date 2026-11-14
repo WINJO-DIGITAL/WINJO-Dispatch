@@ -1,7 +1,7 @@
-// Copied from evexec/lib/emailTemplate.js (the website). Keep the two in sync so the
+// Copied from lib/emailTemplate.js (the website). Keep the two in sync so the
 // website and the Operator app send identical emails.
 
-// The one EV Exec email template. Every email answers three things in its
+// The one email template. Every email answers three things in its
 // first screen, in this order:
 //   1. What is happening   (status label + headline)
 //   2. When                 (relative day, then the time large, then the full date)
@@ -18,7 +18,7 @@
 // structure is reproduced in the driver app, the Operator app and the
 // database, so every system sends the same layout.
 
-import { currentBrand, telNumber, EV_EXEC } from './brand.js';
+import { currentBrand, telNumber } from './brand.js';
 
 const BRAND = { navy: '#0B132B', gold: '#C9A550', goldText: '#7A5A14', ink: '#0f1b33', body: '#334155', muted: '#5b6475', line: '#e3e6ee', page: '#EEF0F5', soft: '#F5F6FA' };
 
@@ -179,11 +179,8 @@ function helpFor(audience, brand) {
     : { html: 'Questions or changes? Just reply to this email.', text: 'Questions or changes? Just reply to this email.' };
 }
 
-// The website address as shown ("evexec.co.uk"), and the link target. EV Exec's
-// own link can be overridden by EVEXEC_SITE_URL (preview deployments).
-const siteOf = (brand) => (brand.site === EV_EXEC.site && process.env.EVEXEC_SITE_URL)
-  ? process.env.EVEXEC_SITE_URL.replace(/\/$/, '')
-  : brand.site;
+// The website address as shown ("example.co.uk"), and the link target.
+const siteOf = (brand) => brand.site;
 const hostOf = (url) => String(url || '').replace(/^https?:\/\/(www\.)?/i, '').replace(/\/.*$/, '');
 
 function footerLines(brand) {

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { supabase, isConfigured } from "@/lib/supabase";
 import { wasBookingJustCreated } from "@/lib/operator/recentBookingRefs";
 
-const SEEN_KEY = "evexec:newBookingsSeenAt";
+const SEEN_KEY = "newBookingsSeenAt";
 
 function compact(v) {
   return v ? String(v).split(",")[0] : null;

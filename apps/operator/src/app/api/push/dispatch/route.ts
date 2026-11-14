@@ -5,7 +5,7 @@ import webpush from "web-push";
 // shared secret, then sends a Web Push notification to the office devices of
 // the business the alert is for. The website also calls it with
 // { tenant_id, notification: { title, body, url, tag } } for other staff
-// notices (e.g. "EV Exec Payment Received").
+// notices (e.g. "Payment Received").
 //
 // The business comes from body.tenant_id or the booking record's tenant_id.
 // Without one (an older caller) it falls back to the all-business list, so no
@@ -90,7 +90,7 @@ export async function POST(req: Request) {
         tag: r.ref ? `booking-${r.ref}` : undefined,
       });
 
-  webpush.setVapidDetails(cfg.vapid_subject || "mailto:book@evexec.co.uk", cfg.vapid_public, cfg.vapid_private);
+  webpush.setVapidDetails(cfg.vapid_subject || "mailto:hello@winjodigital.co.uk", cfg.vapid_public, cfg.vapid_private);
 
   const subs = cfg.subscriptions ?? [];
   let sent = 0;

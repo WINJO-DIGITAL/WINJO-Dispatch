@@ -39,7 +39,7 @@ import PlatformSettings from "@/components/operator/PlatformSettings";
 import { fmtDateTime } from "@/lib/dates";
 import { useTenantProfile } from "@/hooks/operator/useTenantProfile";
 import { pricingForSave, pricingFromTenant, pricingProblem } from "@/lib/prices";
-import { BUILT_IN_LOGO_SRC, DEFAULT_ACCENT, DEFAULT_PRIMARY, EV_EXEC_TENANT_ID, brandFrom, brandWarning, isHexColour, logoFileProblem } from "@/lib/brand";
+import { DEFAULT_ACCENT, DEFAULT_PRIMARY, brandFrom, brandWarning, isHexColour, logoFileProblem } from "@/lib/brand";
 import { useOperator } from "@/components/operator/OperatorContext";
 import AuditLogTab from "@/components/AuditLogTab";
 import TeamSettings from "@/components/operator/TeamSettings";
@@ -472,8 +472,7 @@ function BrandingSettings({ toast }) {
   if (!tenant || !form) return <p className="text-sm text-red-600">{error || "No business is linked to this account."}</p>;
 
   const off = !canEdit || busy || uploading;
-  const builtIn = !form.logoUrl && tenant.id === EV_EXEC_TENANT_ID;
-  const logoSrc = form.logoUrl || (builtIn ? BUILT_IN_LOGO_SRC : null);
+  const logoSrc = form.logoUrl || null;
   const warning = brandWarning(form.primary, form.accent);
 
   const pickFile = async (e) => {
@@ -559,7 +558,6 @@ function BrandingSettings({ toast }) {
                 </>
               )}
             </div>
-            {builtIn && <p className="mt-2 text-[11px] text-slate-500">Showing the built-in EV Exec badge.</p>}
           </div>
 
           <ColourField

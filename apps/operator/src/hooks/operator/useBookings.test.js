@@ -92,12 +92,12 @@ function primeRows(rows, times = 2) {
 
 describe("shapedBooking", () => {
   it("builds the pickup moment from the UK date and time when none is stored", () => {
-    const s = shapedBooking({ id: 1, ref: "EVX-1", travel_date: "2026-10-15", travel_time: "09:00:00", pickup_time: null, status: "Unassigned" });
+    const s = shapedBooking({ id: 1, ref: "ACM-1", travel_date: "2026-10-15", travel_time: "09:00:00", pickup_time: null, status: "Unassigned" });
     expect(s.pickupTime).toBe("2026-10-15T08:00:00.000Z"); // 09:00 BST
   });
   it("maps a full DB row to the display shape", () => {
     const row = {
-      ref: "EVX-1234", customer_name: "James Whitmore", flight_number: "EK017",
+      ref: "ACM-1234", customer_name: "James Whitmore", flight_number: "EK017",
       airport: "Manchester Airport", dropoff_address: "Blackpool",
       travel_time: "10:45:00", drivers: { name: "Nitisat Siri" },
       quoted_price: 160, status: "Dispatched", priority: false,
@@ -105,7 +105,7 @@ describe("shapedBooking", () => {
     };
     const s = shapedBooking(row);
 
-    expect(s.id).toBe("EVX-1234");
+    expect(s.id).toBe("ACM-1234");
     expect(s.customer).toBe("James Whitmore");
     expect(s.flight).toBe("EK017");
     expect(s.route).toBe("Manchester Airport → Blackpool");
@@ -118,7 +118,7 @@ describe("shapedBooking", () => {
 
   it("uses fallback values for null optional fields", () => {
     const row = {
-      ref: "EVX-0", customer_name: "X", flight_number: null, airport: null,
+      ref: "ACM-0", customer_name: "X", flight_number: null, airport: null,
       dropoff_address: "Somewhere", travel_time: null, drivers: null,
       quoted_price: null, status: "Unassigned", priority: null, updated_at: null,
     };
@@ -162,7 +162,7 @@ describe("useBookings — createBooking", () => {
     );
   });
 
-  it("returns a ref matching EVX- format", async () => {
+  it("returns a ref matching WJD- format", async () => {
     const { result } = renderHook(() => useBookings());
 
     let ref;
@@ -170,7 +170,7 @@ describe("useBookings — createBooking", () => {
       ({ ref } = await result.current.createBooking(validForm()));
     });
 
-    expect(ref).toMatch(/^EVX-[A-Z0-9]+$/);
+    expect(ref).toMatch(/^WJD-[A-Z0-9]+$/);
   });
 
   it("does not create a return leg when returnJourney is off", async () => {
@@ -201,8 +201,8 @@ describe("useBookings — createBooking", () => {
       direction: "Destination → Airport", travel_date: expect.any(String), travel_time: "18:30",
       flight_number: "EK018", status: "Unassigned",
     }));
-    expect(out.ref).toMatch(/^EVX-/);
-    expect(out.returnRef).toMatch(/^EVX-/);
+    expect(out.ref).toMatch(/^WJD-/);
+    expect(out.returnRef).toMatch(/^WJD-/);
     expect(out.returnRef).not.toBe(out.ref);
   });
 
@@ -322,13 +322,13 @@ describe("useBookings — updateStatus", () => {
     const { result } = renderHook(() => useBookings());
 
     await expect(
-      act(() => result.current.updateStatus("EVX-1234", "TakeOff"))
+      act(() => result.current.updateStatus("ACM-1234", "TakeOff"))
     ).rejects.toThrow(ValidationError);
   });
 
   it("throws ValidationError for a forbidden state-machine transition (Completed → Dispatched)", async () => {
     const completedRow = {
-      ref: "EVX-DONE", customer_name: "X", flight: null,
+      ref: "ACM-DONE", customer_name: "X", flight: null,
       airport: "A", destination: "B", pickup_time: null,
       drivers: null, price: null, status: "Completed",
       priority: false, updated_at: null,
@@ -342,13 +342,13 @@ describe("useBookings — updateStatus", () => {
     await act(async () => {});
 
     await expect(
-      act(() => result.current.updateStatus("EVX-DONE", "Dispatched"))
+      act(() => result.current.updateStatus("ACM-DONE", "Dispatched"))
     ).rejects.toThrow(ValidationError);
   });
 
   it("calls supabase.update on a valid transition", async () => {
     const dispatchedRow = {
-      ref: "EVX-LIVE", customer_name: "X", flight: null,
+      ref: "ACM-LIVE", customer_name: "X", flight: null,
       airport: "A", destination: "B", pickup_time: null,
       drivers: null, price: null, status: "Dispatched",
       priority: false, updated_at: null,
@@ -358,10 +358,10 @@ describe("useBookings — updateStatus", () => {
     const { result } = renderHook(() => useBookings());
     await act(async () => {});
     mockChain.eq.mockReturnValueOnce(mockChain);
-    mockChain.select.mockResolvedValueOnce({ data: [{ ref: "EVX-LIVE" }], error: null });
+    mockChain.select.mockResolvedValueOnce({ data: [{ ref: "ACM-LIVE" }], error: null });
 
     await act(async () => {
-      await result.current.updateStatus("EVX-LIVE", "En Route");
+      await result.current.updateStatus("ACM-LIVE", "En Route");
     });
 
     expect(mockChain.update).toHaveBeenCalledWith({ status: "En Route" });
@@ -369,7 +369,7 @@ describe("useBookings — updateStatus", () => {
 
   it("throws when Supabase returns an error during update", async () => {
     const dispatchedRow = {
-      ref: "EVX-ERR", customer_name: "X", flight: null,
+      ref: "ACM-ERR", customer_name: "X", flight: null,
       airport: "A", destination: "B", pickup_time: null,
       drivers: null, price: null, status: "Dispatched",
       priority: false, updated_at: null,
@@ -382,7 +382,7 @@ describe("useBookings — updateStatus", () => {
     mockChain.select.mockResolvedValueOnce({ data: [], error: { message: "DB write error" } });
 
     await expect(
-      act(() => result.current.updateStatus("EVX-ERR", "En Route"))
+      act(() => result.current.updateStatus("ACM-ERR", "En Route"))
     ).rejects.toThrow(/DB write error/);
   });
 });
@@ -421,10 +421,10 @@ describe("useBookings — loading the list", () => {
   const rowOf = (ref) => ({ id: ref, ref, customer_name: "C " + ref, travel_date: "2099-01-01", travel_time: "10:00:00", status: "Unassigned", drivers: null });
 
   it("shows the bookings and finishes loading", async () => {
-    primeRows([rowOf("EVX-A"), rowOf("EVX-B")], 1);
+    primeRows([rowOf("ACM-A"), rowOf("ACM-B")], 1);
     const { result } = renderHook(() => useBookings());
     await act(async () => {});
-    expect(result.current.bookings.map((b) => b.id)).toEqual(["EVX-A", "EVX-B"]);
+    expect(result.current.bookings.map((b) => b.id)).toEqual(["ACM-A", "ACM-B"]);
     expect(result.current.loading).toBe(false);
     expect(result.current.error).toBeNull();
   });
@@ -445,12 +445,12 @@ describe("useBookings — loading the list", () => {
   });
 
   it("refetch replaces the list", async () => {
-    primeRows([rowOf("EVX-A")], 1);
+    primeRows([rowOf("ACM-A")], 1);
     const { result } = renderHook(() => useBookings());
     await act(async () => {});
-    primeRows([rowOf("EVX-C")], 1);
+    primeRows([rowOf("ACM-C")], 1);
     await act(async () => { await result.current.refetch(); });
-    expect(result.current.bookings.map((b) => b.id)).toEqual(["EVX-C"]);
+    expect(result.current.bookings.map((b) => b.id)).toEqual(["ACM-C"]);
   });
 
   it("ignores a slow, older response that arrives after a newer one", async () => {
@@ -458,12 +458,12 @@ describe("useBookings — loading the list", () => {
     const slow = new Promise((resolve) => { releaseSlow = resolve; });
     mockChain.range.mockReset();
     mockChain.range.mockReturnValueOnce(slow);                                   // first load: slow
-    mockChain.range.mockResolvedValue({ data: [rowOf("EVX-NEW")], error: null }); // everything after: fast
+    mockChain.range.mockResolvedValue({ data: [rowOf("ACM-NEW")], error: null }); // everything after: fast
     const { result } = renderHook(() => useBookings());
     await act(async () => { await result.current.refetch(); });                  // newer fetch finishes first
-    expect(result.current.bookings.map((b) => b.id)).toEqual(["EVX-NEW"]);
-    await act(async () => { releaseSlow({ data: [rowOf("EVX-OLD")], error: null }); await slow; });
-    expect(result.current.bookings.map((b) => b.id)).toEqual(["EVX-NEW"]);
+    expect(result.current.bookings.map((b) => b.id)).toEqual(["ACM-NEW"]);
+    await act(async () => { releaseSlow({ data: [rowOf("ACM-OLD")], error: null }); await slow; });
+    expect(result.current.bookings.map((b) => b.id)).toEqual(["ACM-NEW"]);
     expect(result.current.loading).toBe(false);
   });
 });
@@ -472,9 +472,9 @@ describe("useBookings — loading the list", () => {
 
 describe("useBookings — respondToBooking", () => {
   const row = (o) => ({ id: o.ref + "-id", ref: o.ref, status: "Unassigned", source: "website", operator_response: null, customer_name: "Web Customer", customer_email: "", customer_phone: "", travel_date: tomorrow(), travel_time: "09:00", quoted_price: 160, ...o });
-  const outbound = row({ ref: "EVX-OUT1", return_journey: true });
-  const leg = row({ ref: "EVX-RET1", quoted_price: 0, notes: "Return leg created automatically from return booking. Original return fare: £160. Outbound ref: EVX-OUT1" });
-  const other = row({ ref: "EVX-OTHER", notes: "Return leg created automatically from return booking. Outbound ref: EVX-ELSE" });
+  const outbound = row({ ref: "ACM-OUT1", return_journey: true });
+  const leg = row({ ref: "ACM-RET1", quoted_price: 0, notes: "Return leg created automatically from return booking. Original return fare: £160. Outbound ref: ACM-OUT1" });
+  const other = row({ ref: "ACM-OTHER", notes: "Return leg created automatically from return booking. Outbound ref: ACM-ELSE" });
 
   async function loaded() {
     // Earlier tests can leave queued one-off responses behind; start clean.
@@ -488,42 +488,42 @@ describe("useBookings — respondToBooking", () => {
   }
 
   it("matches only the outbound's own return leg", () => {
-    expect(isReturnLegOf(shapedBooking(leg), "EVX-OUT1")).toBe(true);
-    expect(isReturnLegOf(shapedBooking(other), "EVX-OUT1")).toBe(false);
-    expect(isReturnLegOf(shapedBooking(outbound), "EVX-OUT1")).toBe(false);
+    expect(isReturnLegOf(shapedBooking(leg), "ACM-OUT1")).toBe(true);
+    expect(isReturnLegOf(shapedBooking(other), "ACM-OUT1")).toBe(false);
+    expect(isReturnLegOf(shapedBooking(outbound), "ACM-OUT1")).toBe(false);
   });
 
   it("accepting a return booking accepts its return leg too, with one customer notice", async () => {
     const { result } = await loaded();
     mockChain.eq.mockReturnValueOnce(mockChain);
-    mockChain.select.mockResolvedValueOnce({ data: [{ ref: "EVX-OUT1" }], error: null });
-    await act(async () => { await result.current.respondToBooking("EVX-OUT1", "accepted"); });
+    mockChain.select.mockResolvedValueOnce({ data: [{ ref: "ACM-OUT1" }], error: null });
+    await act(async () => { await result.current.respondToBooking("ACM-OUT1", "accepted"); });
     expect(mockChain.update).toHaveBeenCalledTimes(2);
     expect(mockChain.update).toHaveBeenNthCalledWith(2, expect.objectContaining({ operator_response: "accepted" }));
     expect(mockChain.update.mock.calls[1][0]).not.toHaveProperty("status");
-    expect(mockChain.like).toHaveBeenCalledWith("notes", "Return leg created automatically%Outbound ref: EVX-OUT1%");
+    expect(mockChain.like).toHaveBeenCalledWith("notes", "Return leg created automatically%Outbound ref: ACM-OUT1%");
     expect(mockChain.is).toHaveBeenCalledWith("operator_response", null);
     const byRef = Object.fromEntries(result.current.bookings.map((b) => [b.id, b]));
-    expect(byRef["EVX-RET1"].operatorResponse).toBe("accepted");
-    expect(byRef["EVX-OTHER"].operatorResponse).toBeNull();
+    expect(byRef["ACM-RET1"].operatorResponse).toBe("accepted");
+    expect(byRef["ACM-OTHER"].operatorResponse).toBeNull();
     expect(fetch).toHaveBeenCalledTimes(1); // one confirmation, for the outbound only
   });
 
   it("declining a return booking cancels its return leg too", async () => {
     const { result } = await loaded();
     mockChain.eq.mockReturnValueOnce(mockChain);
-    mockChain.select.mockResolvedValueOnce({ data: [{ ref: "EVX-OUT1" }], error: null });
-    await act(async () => { await result.current.respondToBooking("EVX-OUT1", "rejected"); });
+    mockChain.select.mockResolvedValueOnce({ data: [{ ref: "ACM-OUT1" }], error: null });
+    await act(async () => { await result.current.respondToBooking("ACM-OUT1", "rejected"); });
     expect(mockChain.update).toHaveBeenNthCalledWith(2, expect.objectContaining({ operator_response: "rejected", status: "Cancelled" }));
     expect(mockChain.not).toHaveBeenCalledWith("status", "in", "(Cancelled,Completed)");
     const byRef = Object.fromEntries(result.current.bookings.map((b) => [b.id, b]));
-    expect(byRef["EVX-RET1"]).toMatchObject({ operatorResponse: "rejected", status: "Cancelled" });
+    expect(byRef["ACM-RET1"]).toMatchObject({ operatorResponse: "rejected", status: "Cancelled" });
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 });
 
 describe("useBookings — deleteBooking", () => {
-  const row = { id: 1, ref: "EVX-DEL1", customer_name: "A", travel_date: tomorrow(), travel_time: "10:00", status: "Unassigned" };
+  const row = { id: 1, ref: "ACM-DEL1", customer_name: "A", travel_date: tomorrow(), travel_time: "10:00", status: "Unassigned" };
 
   async function loaded() {
     mockChain.range.mockReset();
@@ -537,11 +537,11 @@ describe("useBookings — deleteBooking", () => {
   it("re-checks the password, deletes the row and drops it from the list", async () => {
     const { result } = await loaded();
     mockChain.eq.mockReturnValueOnce(mockChain);
-    mockChain.select.mockResolvedValueOnce({ data: [{ ref: "EVX-DEL1" }], error: null });
-    await act(async () => { await result.current.deleteBooking("EVX-DEL1", "secret"); });
+    mockChain.select.mockResolvedValueOnce({ data: [{ ref: "ACM-DEL1" }], error: null });
+    await act(async () => { await result.current.deleteBooking("ACM-DEL1", "secret"); });
     expect(mockSupabase.auth.signInWithPassword).toHaveBeenCalledWith({ email: "office@example.com", password: "secret" });
     expect(mockChain.delete).toHaveBeenCalled();
-    expect(result.current.bookings.find((b) => b.id === "EVX-DEL1")).toBeUndefined();
+    expect(result.current.bookings.find((b) => b.id === "ACM-DEL1")).toBeUndefined();
   });
 
   it("puts the job back and reports it when the database removed nothing", async () => {
@@ -549,24 +549,24 @@ describe("useBookings — deleteBooking", () => {
     mockChain.eq.mockReturnValueOnce(mockChain);
     mockChain.select.mockResolvedValueOnce({ data: [], error: null });
     let caught;
-    await act(async () => { await result.current.deleteBooking("EVX-DEL1", "secret").catch((e) => { caught = e; }); });
+    await act(async () => { await result.current.deleteBooking("ACM-DEL1", "secret").catch((e) => { caught = e; }); });
     expect(caught?.message).toMatch(/could not be deleted/);
-    expect(result.current.bookings.find((b) => b.id === "EVX-DEL1")).toBeDefined();
+    expect(result.current.bookings.find((b) => b.id === "ACM-DEL1")).toBeDefined();
   });
 
   it("refuses a wrong password without touching the booking", async () => {
     const { result } = await loaded();
     mockSupabase.auth.signInWithPassword.mockResolvedValueOnce({ error: { message: "Invalid login credentials" } });
     let caught;
-    await act(async () => { await result.current.deleteBooking("EVX-DEL1", "wrong").catch((e) => { caught = e; }); });
+    await act(async () => { await result.current.deleteBooking("ACM-DEL1", "wrong").catch((e) => { caught = e; }); });
     expect(caught?.message).toBe("Password verification failed.");
     expect(mockChain.delete).not.toHaveBeenCalled();
-    expect(result.current.bookings.find((b) => b.id === "EVX-DEL1")).toBeDefined();
+    expect(result.current.bookings.find((b) => b.id === "ACM-DEL1")).toBeDefined();
   });
 });
 
 describe("keepReturnLegMarker", () => {
-  const marker = "Return leg created automatically from return booking. Original return fare: £160. Outbound ref: EVX-OUT1";
+  const marker = "Return leg created automatically from return booking. Original return fare: £160. Outbound ref: ACM-OUT1";
 
   it("keeps a return leg's marker when the operator replaces the notes", () => {
     expect(keepReturnLegMarker(marker, "Meet at arrivals, 3 bags")).toBe(`${marker}\nMeet at arrivals, 3 bags`);

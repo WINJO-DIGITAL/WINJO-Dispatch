@@ -7,7 +7,7 @@ export const PORTALS = {
   driverApp: {
     label: "Driver Portal",
     description: "Live dispatch app used by drivers — view jobs, update status, navigate",
-    url: process.env.NEXT_PUBLIC_DRIVER_APP_URL ?? "https://evexecdriverapp.vercel.app",
+    url: process.env.NEXT_PUBLIC_DRIVER_APP_URL ?? "https://winjo-dispatch.vercel.app/driver",
     envKey: "NEXT_PUBLIC_DRIVER_APP_URL",
   },
   bookingForm: {
@@ -42,7 +42,7 @@ export function driverJobUrl(bookingRef) {
 
 /**
  * The public booking page link for the signed-in business: its own website address, or null when it
- * has not got one yet (so another business's staff are never sent to EV Exec's website). Before the
+ * has not got one yet (so a business's staff are never sent to another business's website). Before the
  * business has loaded, null as well. A bare https domain only.
  */
 export function bookingPageLink(tenant) {

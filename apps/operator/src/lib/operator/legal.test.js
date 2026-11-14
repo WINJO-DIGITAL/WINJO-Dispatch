@@ -123,7 +123,7 @@ describe("custom terms", () => {
 import { licenceProblem } from "./legal";
 describe("licence number", () => {
   it("accepts a normal licence and empty", () => {
-    expect(licenceProblem("PHO0079")).toBeNull();
+    expect(licenceProblem("PHO0001")).toBeNull();
     expect(licenceProblem(" pho 0079 ")).toBeNull();
     expect(licenceProblem("")).toBeNull();
   });
@@ -138,8 +138,8 @@ import { publicLegalLinks } from "./legal";
 describe("public legal links", () => {
   it("builds the two page addresses from the business's short name", () => {
     expect(publicLegalLinks({ slug: "coastal-cars" })).toEqual({
-      terms: "https://www.evexec.co.uk/t/coastal-cars/terms",
-      privacy: "https://www.evexec.co.uk/t/coastal-cars/privacy",
+      terms: "https://winjo-dispatch.vercel.app/t/coastal-cars/terms",
+      privacy: "https://winjo-dispatch.vercel.app/t/coastal-cars/privacy",
     });
   });
   it("gives nothing for a missing or odd short name", () => {

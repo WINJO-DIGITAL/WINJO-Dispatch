@@ -10,13 +10,13 @@ import { loadBrand } from "@/lib/server/brands";
 // so the Resend API key never reaches the client.
 //
 // Required env (set in Vercel project settings):
-//   RESEND_API_KEY               — re_… from resend.com (Domains → Add domain, verify evexec.co.uk)
+//   RESEND_API_KEY               — re_… from resend.com (Domains → Add domain, verify your sending domain)
 //   NEXT_PUBLIC_SUPABASE_URL      — already configured
 //   NEXT_PUBLIC_SUPABASE_ANON_KEY — already configured (used to verify the caller's JWT)
 // Optional:
-//   INVOICE_FROM                 — sender, default "EV Exec <book@evexec.co.uk>"
+//   INVOICE_FROM                 — sender, default PLATFORM_FROM, else "Winjo Dispatch <hello@winjodigital.co.uk>"
 //                                  (the domain must be verified in Resend)
-//   INVOICE_REPLY_TO             — reply-to, default "book@evexec.co.uk"
+//   INVOICE_REPLY_TO             — reply-to (a dedicated deployment's business only)
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -104,7 +104,7 @@ export async function POST(req: Request) {
   if (pdfBase64.length > 8_000_000) return json({ error: "The invoice PDF is too large to email." }, 422);
 
   // ── Send via Resend ────────────────────────────────────────────────────────
-  // Same email layout as the website (src/lib/email, copied from evexec).
+  // Same email layout as the website (src/lib/email, copied from the website's lib/).
   const amount = Number(total.replace(/[^0-9.]/g, ""));
   const mail = invoiceEmail({
     tenant_id: senderTenantId,

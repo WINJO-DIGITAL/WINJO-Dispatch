@@ -7,7 +7,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: `${DEPLOYMENT_BRAND.name} Operator`,
     short_name: DEPLOYMENT_BRAND.name,
-    description: `Premium airport transfer management for ${DEPLOYMENT_BRAND.name} operators.`,
+    description: `Booking and dispatch management for ${DEPLOYMENT_BRAND.name} operators.`,
     start_url: "/operator/today",
     id: "/operator/",
     scope: "/operator/",

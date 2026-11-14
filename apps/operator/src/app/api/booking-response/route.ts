@@ -16,8 +16,8 @@ import { queueCustomerText, wantsCustomerText } from "@/lib/server/smsTask";
 // Accepted: "Booking confirmed" with the full journey details and, at the
 // bottom, the Payment section: a Pay Now link to the booking's page on the
 // website, where the customer pays by card (Stripe) or chooses cash. Same
-// content as the website's own booking-confirmed email (evexec/lib/notify.js).
-// Rejected: EV Exec cannot accommodate the journey, with an apology. No
+// content as the website's own booking-confirmed email (lib/notify.js).
+// Rejected: the business cannot accommodate the journey, with an apology. No
 // payment link.
 //
 // The caller must be staff (checked with the service role); the booking is read
@@ -25,9 +25,8 @@ import { queueCustomerText, wantsCustomerText } from "@/lib/server/smsTask";
 //
 // Env (Vercel project settings):
 //   NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY — already set
-//   RESEND_API_KEY  — re_… (verify evexec.co.uk in Resend); optional, falls back to SMS
+//   RESEND_API_KEY  — re_… (verify your sending domain in Resend); optional, falls back to SMS
 //   INVOICE_FROM / INVOICE_REPLY_TO — reused as the sender / reply-to
-//   EVEXEC_SITE_URL — optional, the website (default https://www.evexec.co.uk)
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -110,7 +109,7 @@ export async function POST(req: Request) {
   let emailed = false;
   let emailError = "";
   if (RESEND_API_KEY && email && isEmail(email)) {
-    // Same email as the website sends (src/lib/email, copied from evexec).
+    // Same email as the website sends (src/lib/email, copied from the website's lib/).
     const mail = accepted ? bookingConfirmed(b, { payUrl }) : bookingUnavailable(b);
     try {
       const res = await fetch("https://api.resend.com/emails", {

@@ -107,7 +107,7 @@ export function licenceProblem(raw) {
   return /^[A-Z0-9]{3,20}$/.test(clean) ? null : "The licence number must be 3 to 20 letters and numbers.";
 }
 
-// What the operator confirms (docs/legal/operator-responsibilities.md, version 1 in the evexec repo).
+// What the operator confirms (docs/legal/operator-responsibilities.md, version 2).
 export const RESPONSIBILITIES = [
   "Holding every operator, driver and vehicle licence the law where you operate requires, and following your licensing authority's conditions.",
   "Dispatching bookings only to drivers and vehicles licensed by the authority the law requires.",
@@ -123,7 +123,7 @@ export const RESPONSIBILITIES = [
 
 // Where a business's public terms and privacy pages live (built from its details
 // on the website; shown only once its legal details are complete).
-export const PUBLIC_LEGAL_BASE = "https://www.evexec.co.uk/t";
+export const PUBLIC_LEGAL_BASE = `${process.env.NEXT_PUBLIC_PLATFORM_URL ?? "https://winjo-dispatch.vercel.app"}/t`;
 export function publicLegalLinks(tenant) {
   const slug = typeof tenant?.slug === "string" ? tenant.slug.trim().toLowerCase() : "";
   if (!/^[a-z0-9][a-z0-9-]{0,39}$/.test(slug)) return null;

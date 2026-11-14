@@ -166,7 +166,7 @@ export default function LegalSettings({ toast }) {
 
       <div className="space-y-5">
         <p className="text-xs uppercase tracking-[0.28em] text-amber-600">Licence and data protection</p>
-        <Field label="Private hire operator licence" hint="Your licence number, e.g. PHO0079. It appears on your terms and emails.">
+        <Field label="Private hire operator licence" hint="Your licence number, e.g. PHO0001. It appears on your terms and emails.">
           <input className={INPUT} value={form.licence} onChange={(e) => set("licence")(e.target.value)} disabled={off} />
         </Field>
         {canEdit && (
@@ -183,7 +183,7 @@ export default function LegalSettings({ toast }) {
       <div className="space-y-5">
         <p className="text-xs uppercase tracking-[0.28em] text-amber-600">Cancellation charges</p>
         <p className="text-xs text-slate-500">
-          Free cancellation until the first notice below. Each band charges its percentage of the fare once it starts. After the last band, cancelling costs the full fare. Standard EV Exec charges are shown until you change them.
+          Free cancellation until the first notice below. Each band charges its percentage of the fare once it starts. After the last band, cancelling costs the full fare. The standard charges are shown until you change them.
         </p>
         {form.bands.map((b, i) => (
           <div key={i} className="grid gap-5 sm:grid-cols-2">

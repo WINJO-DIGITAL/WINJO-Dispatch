@@ -1,4 +1,4 @@
-// Auto-typed to match the live evexec.co.uk Supabase schema
+// Auto-typed to match the platform's Supabase schema
 
 export type BookingStatus =
   | "Unassigned"
