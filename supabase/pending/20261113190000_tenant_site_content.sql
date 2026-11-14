@@ -1,4 +1,4 @@
--- Site builder: a business's own website content and publish switch (DRAFT, not applied to live).
+-- Site builder: a business's own website content and publish switch (applied to the platform database 14/11/2026; kept here until the baseline is rebuilt).
 --
 -- tenants.brand gains:
 --   site            the content the business entered (see lib/siteContent.js for the shape)
