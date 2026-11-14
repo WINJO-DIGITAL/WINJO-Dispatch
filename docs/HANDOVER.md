@@ -54,6 +54,14 @@ Until they are applied: the Fees screen shows £49, anonymous direct inserts rem
    Also needed, and secret: `SUPABASE_SERVICE_ROLE_KEY` and `RESEND_API_KEY` for this project, entered by the owner in the dashboard only.
 3. **Nothing is live until a deploy is approved**: the pages and the form exist in the repository only.
 
+### The Vercel project (created 14/11/2026, owner approved; Pro plan, so usage counts)
+- Team `winjodigital` (`team_RhhxQIJqo6pFuKaXFV7lWZuW`), project `winjo-dispatch` (`prj_1TscAwPpnsRSyx3xhYXRK0nrppN2`), linked to `WINJO-DIGITAL/WINJO-Dispatch`, production branch `main`, Node 24.x. **Zero deployments so far.**
+- Git-triggered deployments are **switched off** on the project, and its "ignored build step" also skips any Git-triggered production build. A production deploy therefore only happens when the owner approves it and runs `.github/workflows/deploy.yml` (or deploys from the Vercel dashboard). To get preview builds on branches, turn Git deployments on in the project's Git settings (the Vercel GitHub app must have access to the repository).
+- Set (not secret, production and preview): `SUPABASE_URL` (the WINJO DISPATCH project), `SUPABASE_ANON_KEY` (the public browser key), `PLATFORM_FROM`, `PLATFORM_REPLY_TO`, `PLATFORM_OWNER_EMAIL`.
+- **Still to be entered by the owner in the Vercel dashboard (secrets, Sensitive):** `SUPABASE_SERVICE_ROLE_KEY` and `RESEND_API_KEY`. Without the first, `/api/signup/apply` answers "not available right now".
+- For the manual deploy workflow, the repository variables are `VERCEL_ORG_ID` = `team_RhhxQIJqo6pFuKaXFV7lWZuW` and `VERCEL_PROJECT_ID` = `prj_1TscAwPpnsRSyx3xhYXRK0nrppN2`, plus the secret `VERCEL_TOKEN`. (The IDs quoted earlier in the session were the retired account's; ignore them.)
+- The other project on that account, `winjodigital` (repository `wnjo`), is Winjo Digital's own site and was not touched.
+
 ## Environment and secrets (names only; values never go in the repo or in chat)
 
 - Website: `STRIPE_SECRET_KEY` (EV Exec's own), `STRIPE_WEBHOOK_SECRET`, `STRIPE_PLATFORM_SECRET_KEY` and `STRIPE_CONNECT_WEBHOOK_SECRET` (Winjo Digital's, for other businesses), `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `OPERATOR_EMAIL` (platform staff alerts; each business uses its own contact email).
