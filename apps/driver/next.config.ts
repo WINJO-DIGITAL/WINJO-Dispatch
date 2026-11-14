@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
   // Vercel's single-project build refuses a basePath, so the pages sit in app/driver and the
   // build files are asked for under /driver/_next (vercel.json sends them to /_next).
   assetPrefix: BASE_PATH,
+  // Build files are asked for under /driver/_next (assetPrefix); serve them from /_next.
+  async rewrites() {
+    return { beforeFiles: [{ source: `${BASE_PATH}/_next/:path+`, destination: '/_next/:path+' }], afterFiles: [], fallback: [] }
+  },
   // The Chat tab was removed (14/10/2026); send old links and bookmarks home.
   async redirects() {
     return [{ source: `${BASE_PATH}/chat`, destination: `${BASE_PATH}/dashboard`, permanent: false }]
