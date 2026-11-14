@@ -1360,7 +1360,7 @@ BEGIN
   );
 
   PERFORM net.http_post(
-    url     := 'https://yoltkmhtxwluqxxpewbl.supabase.co/functions/v1/notify-job-update',
+    url     := 'https://lztbivgmhcgohhvgakyu.supabase.co/functions/v1/notify-job-update',
     body    := payload,
     headers := jsonb_build_object(
       'Content-Type',     'application/json',
@@ -1391,7 +1391,7 @@ begin
   end if;
 
   perform net.http_post(
-    url     := 'https://yoltkmhtxwluqxxpewbl.supabase.co/functions/v1/send-push',
+    url     := 'https://lztbivgmhcgohhvgakyu.supabase.co/functions/v1/send-push',
     headers := jsonb_build_object(
                  'Content-Type', 'application/json',
                  'x-webhook-secret', (select s.decrypted_secret from vault.decrypted_secrets s
