@@ -102,3 +102,9 @@ Still open (small, judgement calls): on a phone the setup checklist sits above "
 ## Decisions already made by the owner
 
 £999 set-up and £99 a month; the customer buys its own domain; EV Exec is a customer at £0 with its own Stripe account; platform takes no percentage of card payments; no solicitor (wording checked against official UK sources, see `docs/legal/audit-2026-11-12.md`); no paid services without asking first.
+
+
+## 14/11/2026: merging the three apps into one site (in progress)
+
+- **Working on the preview:** the website and the Operator app share one Vercel project (`vercel.json` builds `apps/operator` with `@vercel/next`; its pages are under `/operator`, its public files under `public/operator/`, and its API routes, `/set-password` and payment pages are served from the filesystem). Checked on a preview: `/`, `/signup`, `/booking`, `/operator/today`, `/set-password`, the manifest, service worker, fonts and `/api/*` all answer.
+- **Driver App: code is ready, not yet routed.** Its pages now live in `apps/driver/app/driver/` (no `basePath`), public files in `apps/driver/public/driver/`, every link goes through `withBase()`, the middleware strips the prefix, `assetPrefix` is `/driver`, and it is on Next 16.3.6 (93 tests, tsc and lint pass, local build passes). Adding it to the same Vercel project's `builds` fails: two Next 16 builds write the same output files (`_global-error`, `_not-found`) and the deploy errors on a copy; on Next 15 the output is prefixed `apps/driver/` and its dynamic pages 404 (static ones work). Options: a second Vercel project with `/driver` forwarded to it, or moving the Driver pages into the Operator Next app.
