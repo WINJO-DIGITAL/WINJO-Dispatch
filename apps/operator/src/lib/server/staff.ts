@@ -113,6 +113,23 @@ export async function sendEmail(to: string, mail: { subject: string; html: strin
   }
 }
 
+/**
+ * An email from the platform itself (for the platform owner), using PLATFORM_FROM (falling back to
+ * INVOICE_FROM). It is never branded as a business and never sent without a sender being configured.
+ */
+export async function sendPlatformEmail(to: string, mail: { subject: string; html: string; text: string }) {
+  const from = (process.env.PLATFORM_FROM || process.env.INVOICE_FROM || "").trim();
+  if (!RESEND_API_KEY) throw new Error("Email isn't set up (RESEND_API_KEY is missing in Vercel).");
+  if (!/[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+>?$/.test(from)) throw new Error("PLATFORM_FROM is not set.");
+  const replyTo = (process.env.PLATFORM_REPLY_TO || "").trim();
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ from, to: [to], subject: mail.subject, html: mail.html, text: mail.text, ...(replyTo ? { reply_to: replyTo } : {}) }),
+  });
+  if (!res.ok) throw new Error(`The email provider rejected the send (${res.status}).`);
+}
+
 export const isUuid = (v: unknown): v is string =>
   typeof v === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
 

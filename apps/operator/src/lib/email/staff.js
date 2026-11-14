@@ -36,6 +36,18 @@ function passwordReset__build({ businessName, url }) {
   });
 }
 
+function signInLink__build({ businessName, url }) {
+  return build(`Your ${businessName} operator sign-in link`, {
+    audience: 'staff', preheader: 'Use this link to sign in to the operator app.',
+    status: { label: 'Sign in', tone: 'gold' }, title: 'Sign in to the operator app',
+    intro: [
+      `Use the button to sign in to the ${businessName} operator app. You do not need a password. The link works once and expires in an hour.`,
+      "If you didn't ask for it, ignore this email; nobody can sign in without it.",
+    ],
+    button: { label: 'Sign in', url },
+  });
+}
+
 /** A driver was invited to the Driver App. `newAccount` = they still need to set a password. */
 function driverInvite__build({ businessName, driverName, inviterName, url, newAccount }) {
   const first = String(driverName || '').trim().split(/\s+/)[0];
@@ -55,4 +67,5 @@ function driverInvite__build({ businessName, driverName, inviterName, url, newAc
 // Built for the business named by `tenant_id` in the argument (the caller's own).
 export const teamInvite = withBrandOf(teamInvite__build);
 export const passwordReset = withBrandOf(passwordReset__build);
+export const signInLink = withBrandOf(signInLink__build);
 export const driverInvite = withBrandOf(driverInvite__build);
