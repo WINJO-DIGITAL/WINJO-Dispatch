@@ -74,7 +74,7 @@ test('the applicant and the owner are both emailed, from the platform address on
   for (const m of sent) assert.equal(m.from, 'Winjo Digital <hello@platform.test>');
   const ack = sent.find((m) => m.to[0] === 'sam@moor.test');
   assert.match(ack.text, /£999/); assert.match(ack.text, /£99/); assert.match(ack.text, /https:\/\/platform\.test\/platform-terms/);
-  assert.doesNotMatch(JSON.stringify(sent), /evexec|Acme Cars/i);
+  assert.doesNotMatch(JSON.stringify(sent), /Acme Cars/i);
 });
 
 test('nothing is stored unless both boxes are ticked', async () => {

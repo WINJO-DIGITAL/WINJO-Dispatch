@@ -1,106 +1,47 @@
-# EV Exec platform: progress tracker
+# Winjo Dispatch platform: progress tracker
 
-Kept up to date by the engineering loop (assess, plan, build, test, fix, review, repeat). Read this first to pick up the work.
+Kept up to date by the engineering loop (assess, plan, build, test, fix, review, repeat). Read this first to pick up the work. The onboarding runbook, addresses and settings are in `docs/HANDOVER.md`.
 
 ## Objective
 
-A multi-tenant booking, dispatch and payments platform. Winjo Digital owns the platform and sells it to operators; EV Exec is one customer (£0, own Stripe account). Operators take card payments directly on their own Stripe account (Stripe Connect, no platform percentage). Platform fees are recorded, not billed. Cost rule: nothing may create a billed resource without the owner's approval. Twilio stays dormant.
+A multi-tenant booking, dispatch and payments platform (website, Operator app, Driver App) that Winjo Digital owns and sells to operators. Operators take card payments directly on their own Stripe account (Stripe Connect, no platform percentage). Platform fees are recorded, not billed. Cost rule: nothing may create a billed resource without the owner's approval. Twilio stays dormant. The platform is software only; each operator is responsible for its own licences, insurance and compliance.
 
 ## Done
 
-- Multi-tenant schema, per-tenant pricing, branding, legal pages, team and driver invites, platform tenant set-up.
-- Stripe Connect phase 1: operators connect their own Stripe account (Operator app Settings, Payments).
-- Stripe Connect phase 2: checkout, payment check, payment links, receipts and the webhook all use the operator's connected account; a payment can only mark its own business's booking Paid (`wrong_business` otherwise). Website #63, Operator app #40.
-- Platform fees: default and per-business monthly and set-up rates, EV Exec at £0, record only. Website #64, Operator app #41.
-- Staff alert (email and push) for a `wrong_business` payment. Website #65.
-- Operator app CI lint fixed (pre-existing `no-explicit-any` in four files).
+- **One repository, three apps** (14/11/2026): website at the root, `apps/operator`, `apps/driver`; two Vercel projects, both deployed to production with the owner's approval; `/driver` forwarded from the main address. Merged to `main`.
+- Multi-tenant schema, per-business pricing, branding, legal pages, team and driver invites, platform business set-up, platform fees record.
+- Stripe Connect phases 1 and 2 (connect an account; checkout, payment check, payment links, receipts and webhook on the operator's account; a payment can only mark its own business's booking Paid).
+- Self-serve sign-up (`/signup`, `/platform-terms`, applications table, Operator app Settings, Platform, Applications). Contract and Schedule A at version 2.
+- Owner login `hello@winjodigital.co.uk` (email-only, `super_admin`); email sign-in tested end to end on the live address.
+- Site builder (content format, renderer, three design directions, per-business sitemap).
+- Database baseline applied to the platform's Supabase project (14/11/2026); database tests, website tests, Operator app tests and Driver App tests all pass.
+- **Earlier-product references removed** (14/11/2026, owner instruction): no built-in business, price list, brand, Stripe owner or default tenant in the code, tests, docs or assets; neutral sample data in tests. Database items are tracked below.
 
-## Next steps (checkboxes updated 13/11/2026)
+## Open: needs the owner's approval
 
-> The full onboarding runbook and what is pending on the live database are in `docs/HANDOVER.md`.
+- [ ] **Database clean-up of the seed business and old names** (live changes): the seeded business row (`ev-exec`, name "Johns Taxis"), the `evexec_*` function names, the default `ref_prefix 'EVX'`, the `evexec_notification_email` helper, the backup function that points at another project, and old-project defaults in functions. Plan and list in `supabase/baseline/README.md` once prepared.
+- [ ] **Operator push alerts**: `public.push_config` has no row, so new-booking and no-show alerts send nothing. Needs a generated shared secret and VAPID keys (live change).
+- [ ] Fix `DRIVER_APP_URL` and `NEXT_PUBLIC_DRIVER_APP_URL` on the main project to `https://winjo-dispatch.vercel.app/driver` (they currently lack `/driver`), then redeploy production.
+- [ ] Automatic monthly billing of operators (Stripe Billing has its own fees). Live mode for Stripe Connect (after a test payment passes). Anything that costs money or turns Twilio on.
+- [ ] Owner actions: revoke the temporary Supabase access token and the full-access Resend key when go-live is finished; GitHub repository variables `VERCEL_ORG_ID` / `VERCEL_PROJECT_ID` and secret `VERCEL_TOKEN` if the manual deploy workflow is wanted; link `/signup` from wherever it should be found; put the platform's home page copy in place (the home page is a neutral placeholder).
 
-### Done since the last update
-- [x] (13/11/2026) New-business template: `npm run new:business` turns one validated config into provisioning SQL, an Operator app checklist and website/domain steps (`template/`). Direction confirmed by the owner: the product is the owner's own platform that businesses sign up to, not a one-off white-label copy. Website `/api/config` now reads `SUPABASE_ANON_KEY` from the environment.
-- [x] One website serves many businesses by domain (prices, references, links, alerts per business), merged (#73, #75, #77).
-- [x] A business's own website: branded home page with booking form, and booking and payment page; explicit per-domain routing (#78). 18 browser tests and 22 unit tests.
-- [x] Owner-only website address per business with a one-domain-per-business guard (#75, Operator app #47).
-- [x] Rate limiting on public forms; silent-update fixes in the Driver App and Operator app; direct public inserts closed (migration pending).
-- [x] Winjo Digital platform page copy drafted (copy-ready file, not yet published).
-- [x] Price options for operators drafted, with competitor research (see options: the owner chose £99 a month and £999 set-up on 13/11/2026).
-- [ ] Confirm the Operator app's latest production build shows the fees screen (Settings, Platform, Fees). Not yet confirmed: the Platform tab is hidden for the current login.
+## Open: engineering
 
-### Launch-readiness checklist (13/11/2026)
-- [x] Production redeploy confirmed: website `dpl_2o3j2ay…`, Operator app `dpl_Fz8gyxF…`, Driver App `dpl_82ATSPN…` all READY and aliased.
-- [x] Privacy retention periods written (12 months enquiries and logs, 24 months idle accounts, six years bookings); recorded in `docs/legal/audit-2026-11-12.md`. Owner must do the yearly clear-out by hand.
-- [ ] Supabase size: needs owner approval for VACUUM FULL, a 5-minute job schedule and a keep period.
-- [ ] One test-mode payment through a second business: needs the Test Operator login and Stripe test onboarding.
-- [ ] Automatic billing: needs owner approval (Stripe Billing has fees).
-- [ ] After launch: automatic domain routing, self-serve sign-up (needs the owner's decisions on payment of the £999 set-up fee, approval step and terms acceptance before any build).
-
-### Blocked on the owner
-- [x] Add `STRIPE_PLATFORM_SECRET_KEY` (test) to the website's Vercel project, Sensitive, Production and Preview. *Done by owner; website redeployed and READY.*
-- [x] Add `STRIPE_CONNECT_WEBHOOK_SECRET` to the website's Vercel project. *Done by owner.*
-- [ ] Create a Test Operator admin login (Supabase dashboard steps given; needs owner's platform role or the manual steps).
-- [ ] Complete Stripe test onboarding for Test Operator in the Operator app (Settings → Payments).
-
-### Self-serve sign-up (owner approved price and terms 14/11/2026)
-- [x] Public page `/signup` and terms page `/platform-terms`, the API `POST /api/signup/apply` (honeypot, rate limit of 5 an hour, fees read from the database, applicant and owner emails from the platform's own sender), 29 website tests.
-- [x] Draft migration `supabase/pending/20261114100000_signup_applications.sql`: a table only the server can write, plus owner-only functions to confirm payment, approve (creates the business) and reject. 33 database tests pass. **Applied to the platform database 14/11/2026 (owner approved); locks checked.**
-- [x] Operator app, Settings → Platform → Applications (`ApplicationsSection.jsx`): confirm payment, approve, reject. 8 tests; whole app 408 pass. Approving creates the business but no login: then use "Invite a business's first admin".
-- Decisions made (change on request): the owner approves every business; the £999 is invoiced and paid outside the site (no card collection, no new Stripe fees, the payment webhook is untouched); the platform's own emails come from `PLATFORM_FROM` and never from a business address.
-- [x] Preview deployed and tested end to end 14/11/2026 (see `docs/HANDOVER.md`); one test application row to reject.
-- [x] Vercel project `winjo-dispatch` created with the non-secret settings (see `docs/HANDOVER.md`); no deployment.
-- [x] Owner login `hello@winjodigital.co.uk` created email-only with `super_admin` (14/11/2026).
-- [x] Merge (14/11/2026): website + Operator app in `winjo-dispatch`, Driver App in `winjo-driver`, `/driver` forwarded; verified on a preview (see HANDOVER). Operator stays in the main project (no split needed).
-- [ ] Before it goes live (owner approval for production): deploy `winjo-driver` to production and point the `/driver` route at it; set the Driver/Operator app URLs and push-link functions to the final host; test the email sign-in on the final host; all Vercel settings are in (`SUPABASE_SERVICE_ROLE_KEY` and a sending-only `RESEND_API_KEY` set 14/11/2026); owner revokes the temporary Supabase access token and full-access Resend key; decide the wording items in `docs/legal/audit-2026-11-12.md` ("Published terms for the sign-up page"); link `/signup` from wherever you want it found (the home page is still a neutral placeholder).
-- [ ] Later: optional card payment of the set-up fee (Stripe Checkout; adds fees and touches the payment webhook, so ask first), an email to the applicant when approved or rejected.
-
-### Site builder (owner decision 13/11/2026; plan in `docs/site-builder.md`)
-- [x] Content format and validation (`lib/siteContent.js`, 7 tests).
-- [x] Renderer (`lib/siteBuilder.js`, wired into `lib/tenantSite.js`): a business that has published its content gets its own headline, hero photo, services, about, fleet, areas, reviews, FAQs, contact and SEO title/description on its home page; an unpublished one keeps the plain page. Every value escaped; photos only from its own folder. 5 tests, including injection and cross-business checks. It reuses the tenant page's existing design (Jost, cards, colours), not yet the first site's full header and styles.
-- [x] Design directions `classic`, `editorial`, `bold` (layout, type, order and shapes differ), checked in a real browser at desktop and phone width; skill added at `.claude/skills/anti-ai-design`. 11 renderer tests.
-- [x] Per-business `sitemap.xml` (home page, on the business's own https address) and a `Sitemap:` line in its `robots.txt`; 3 tests.
-- [ ] Not yet built: more directions, separate pages (`/about`, `/fleet`...), the editor control for the direction (Operator app).
-- [x] Draft migration `supabase/pending/20261113190000_tenant_site_content.sql` (`update_tenant_site`, publish switch) and its pgTAP test `supabase/tests/database/update_tenant_site.test.sql`. **Run 13/11/2026 on Postgres 17 + pgTAP: all 13 test files pass, 0 failures (the new one 19 of 19).**
-- [x] **Applied 14/11/2026 (owner approved): the baseline and then the site migration are live on `WINJO DISPATCH` (`lztbivgmhcgohhvgakyu`).** Checked by fingerprint (13 of 15 identical) and per function (3 deliberate differences). Details, the differences and the leftovers: `supabase/baseline/APPLIED-2026-11-14.md`. Next for the owner: create the owner login and give it `super_admin`. (The note below was written before it was applied.)
-- [ ] ~~Not applied anywhere.~~ The only Supabase project the session can reach is `WINJO DISPATCH` (`lztbivgmhcgohhvgakyu`, created 13/11/2026, eu-north-1, Postgres 17). It is empty: no tables, no migrations, no `tenants` table, no `brand-assets` bucket, so the migration cannot go on its own. Building the schema there means applying `supabase/baseline/schema.sql` first (the only complete structure in this repository; `supabase/migrations/` alone fails at `004_user_accounts.sql` and the core tables are in the other two repositories' histories). That is a separate production change and needs the owner's explicit go-ahead, plus decisions on the first-business seed row the baseline adds (`ev-exec`) and the storage buckets.
-- [ ] Operator app Settings, Website editor with photo upload (separate repository).
-
-### Decouple from EV Exec (owner decision 13/11/2026: EV Exec is no longer relevant)
-- [x] Stage 1 done (owner: delete): EV Exec's marketing and SEO pages, blog, EV Exec terms and privacy pages, page generator (`scripts/site`, `scripts/legal`), SEO docs, sitemap, EV Exec images and routes are deleted (still in git history at `6b12d43`). The home page and 404 are neutral placeholders; `booking.html` has a neutral header. `CLAUDE.md` history cut to rules and platform facts.
-- [ ] Stage 2, still EV Exec-branded and kept only because code uses them: `booking.html` and `account.html` (customer booking/payment and account pages), their logo/icon files, `lib/cancellation.js` links to the deleted `/terms-v1..v3`, `public/js/consent.js` (analytics id), `public/js/invoice-pdf.js`, `public/css/chrome.css`, `public/js/site.js` (now unused), and the Tailwind `src/input.css`.
-- [ ] Then: make the default business configurable (`DEFAULT_TENANT_ID`, `EV_EXEC` in `lib/brand.js`, `STRIPE_PLATFORM_TENANT_ID`, price `FALLBACK`), replace the EV Exec literals in 64 files, remove the hardcoded live Supabase address and anon key fallbacks, and neutralise email wordmark, licence and phone constants.
-- [ ] Same sweep in the Operator app (65 literals) and Driver App (19 literals), which are not in this repository yet.
-- [ ] Drop EV Exec-only items from the checklists below (the Vercel token for its account, the staff alert address, production redeploy).
-
-### Outstanding (engineering, no owner input needed)
-- [ ] Run one test-mode card payment on the Test Operator's connected account, and confirm the booking is marked Paid on that account (needs Stripe, Supabase and Vercel connections back).
-- [ ] Give the owner's login the platform owner role so the Platform screen shows (needs Supabase).
+- [ ] One test-mode card payment through a second business on its connected account (needs Stripe test keys and a test operator).
+- [ ] Operator app Settings, Website editor (site content, photos, design direction).
+- [ ] More design directions and separate pages for the site builder.
 - [ ] Review the Connect payment code before live mode.
-- [ ] Tidy two `react-hooks/set-state-in-effect` lint warnings in the Operator app (`FeesSection.jsx`, `PaymentsSettings.jsx`).
-- [x] Driver App tests: it has 74 unit tests and 22 function tests, all passing (earlier notes saying none were out of date). Coverage of the job screens is still thin.
-- [ ] Rate limiting on the public forms is open for review (evexec PR #67).
-- [ ] Two Operator app pull requests are open for review: #42 (lint tidy) and #43 (payment link closes open checkouts when the account is not ready).
+- [ ] Tidy two `react-hooks/set-state-in-effect` lint warnings in the Operator app (`FeesSection.jsx`, `PaymentsSettings.jsx`) and the Driver App warnings.
+- [ ] Driver App: coverage of the job screens is thin.
+- [ ] Supabase size: needs owner approval for VACUUM FULL, a 5-minute job schedule and a keep period.
+- [ ] Optional later: card payment of the set-up fee (adds fees and touches the payment webhook, so ask first); an email to the applicant when approved or rejected.
 
-### Winjo Digital website (not in these repos)
-- [ ] Publish the platform page (draft in the scratchpad).
-- [ ] Fix the contradictions in the website terms and FAQ (WINJO Refresh levels, hosting cancellation notice, terms date).
+## Needs the owner's decision
 
-### Needs the owner's decision
-- [x] Public platform pricing: £99 a month and £999 set-up (owner, 13/11/2026). The live default needs the migration `20261113160000` applied once Supabase is back.
-- [ ] Support hours for operators (the Order Details decide these; Winjo's site states none, so none are published).
+- [ ] Support hours for operators (the Order Details decide these; none are published).
 - [ ] VAT wording on the platform page.
-- [x] Domain: the customer buys their own domain (a few pounds a year), and the £999 set-up covers configuring it. Recorded in the contract, clause 3.6 and Schedule B (owner decision, 13/11/2026).
+- [ ] Data terms: still labelled "draft" until the owner signs them off.
 
-### Needs the owner's approval before any work
-- Automatic monthly billing of operators (Stripe Billing has its own fees).
-- Live mode for Stripe Connect (after the test payment passes).
-- Anything that costs money or turns Twilio on.
+## Test results (14/11/2026)
 
-## Known bugs
-
-None open that affect the live business.
-
-## Test results (13/11/2026)
-
-- Website unit tests: 211 pass (`npm run test:unit`, checked 13/11/2026; 208 listed in the handover plus 3 from `card-owner-only`, now included). Database tests (local pgTAP): all pass in CI. Operator app: 389 pass, lint 0 errors, typecheck clean.
+- Website: `npm run test:unit` 265 pass. Operator app: 416 pass, typecheck clean. Driver App: 93 unit and 22 function tests pass, typecheck clean. Database tests: run with `bash scripts/db-test.sh` (see HANDOVER).

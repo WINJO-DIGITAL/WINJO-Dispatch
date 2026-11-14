@@ -111,7 +111,7 @@ test('each business gets its own sitemap and robots.txt, on its own address only
   const t = row({ brand: { site_url: 'https://www.leedscars.test/' } });
   assert.match(site.sitemapFor(t), /<loc>https:\/\/www\.leedscars\.test\/<\/loc>/);
   assert.match(site.robotsFor(t), /Sitemap: https:\/\/www\.leedscars\.test\/sitemap\.xml/);
-  assert.doesNotMatch(site.sitemapFor(t), /evexec/);
+  assert.doesNotMatch(site.sitemapFor(t), /acme-cars/);
 });
 
 test('no sitemap entry without a valid https address, and the address is escaped', () => {

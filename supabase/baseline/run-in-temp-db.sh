@@ -21,7 +21,7 @@ echo "Loading stand-ins and baseline..."
 run -f "$W/baseline/local_stubs.sql" >/dev/null
 run -f "$W/baseline/schema.sql" >/dev/null
 
-# Draft migrations not yet applied to live (supabase/pending), in name order,
+# The migrations applied after the baseline (supabase/migrations), in name order,
 # so the tests check what the database will look like once they are applied.
 for m in "$W"/pending/*.sql; do
   [ -e "$m" ] || continue

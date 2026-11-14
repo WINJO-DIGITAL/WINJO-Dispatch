@@ -1,118 +1,76 @@
-# Handover and onboarding runbook (13/11/2026)
+# Handover and onboarding runbook (14/11/2026)
 
 Read this first, then `docs/TASKS.md` for the live checklist. Written so the work can be picked up without anyone re-explaining it.
 
 ## What exists
 
-One platform, three apps, many businesses:
+One platform, three apps, many businesses, one repository:
 
-- **Website** (this repository, Vercel): a branded website for each business on its own domain (`lib/tenantSite.js`: home page with booking form, booking and payment page). Booking, payment, account and operator APIs are per business (each booking carries its own business). The platform's own address shows a neutral placeholder page.
-- **Operator app** (`evexecoperator`): the office app. Each business has its own staff, prices, branding, legal settings, Stripe connection and drivers. The platform owner (super admin) also has Settings, Platform: set up businesses, set each one's website address, and record fees.
-- **Driver App** (`evexecdriverapp`): drivers sign in through their business's own link (`/login?b=<short name>`).
-- **Database** (Supabase, one project): every business-owned row has a `tenant_id`; row-level security limits staff to their own business. Verified by the local database suite (`scripts/db-test.sh`, 13 files).
+- **Website** (repository root): a branded website for each business on its own domain (`lib/tenantSite.js`: home page with booking form, booking and payment page). Booking, payment, account and operator APIs are per business (each booking carries its own business). The platform's own address shows a neutral placeholder page, `/signup` is the self-serve sign-up, `/platform-terms` the contract an applicant reads.
+- **Operator app** (`apps/operator`, served under `/operator` on the platform address): the office app. Each business has its own staff, prices, branding, legal settings, Stripe connection and drivers. The platform owner (super admin) also has Settings, Platform: set up businesses, set each one's website address, record fees, and review sign-up applications.
+- **Driver App** (`apps/driver`, served under `/driver`): drivers sign in through their business's own link (`/driver/login?b=<short name>`).
+- **Database** (Supabase project WINJO DISPATCH, `lztbivgmhcgohhvgakyu`): every business-owned row has a `tenant_id`; row-level security limits staff to their own business. Verified by the local database suite (`scripts/db-test.sh`).
+- **There is no built-in business.** A business has only what its own database row holds (name, contact details, brand, prices). On the shared platform an address that is no business's own gets no business: the booking API answers "No business found for this address". A dedicated deployment for one business can set `TENANT_ID` (and `STRIPE_PLATFORM_TENANT_ID` if that business holds the deployment's Stripe account).
+
+## Live addresses and deploys (14/11/2026)
+
+- Two Vercel projects (team `winjodigital`, `team_RhhxQIJqo6pFuKaXFV7lWZuW`), both deployed to production from this repository on 14/11/2026 with the owner's approval:
+  - `winjo-dispatch` (`prj_1TscAwPpnsRSyx3xhYXRK0nrppN2`): website + Operator app, address `https://winjo-dispatch.vercel.app`. The root `vercel.json` also forwards `/driver` to the Driver project.
+  - `winjo-driver` (`prj_Zf6uGdTX4FtCeSwPQvSu54BOpRGW`, root directory `apps/driver`): Driver App, address `https://winjo-driver.vercel.app`. Test deployments use its custom environment `staging`.
+- Two Next apps cannot share one project's `builds` (the builds collide), which is why the Driver App is a separate project. The Driver App's pages live in `apps/driver/app/driver/` (no `basePath`), links go through `withBase()`, and `/driver/_next/*` is rewritten to `/_next/*`.
+- Git deployments are off in both; deploys are triggered through the Vercel API. Each project's ignore-build-step skips production, so a production deploy lifts the guard for that one deploy and restores it. **Every production deploy needs the owner's explicit approval.**
+- No custom domains yet. A business's own domain is served by its own site only when it is listed in `config/tenant-domains.json` and `npm run build:domains` has written its route into `vercel.json`.
 
 ## How the website chooses the business
 
-The visitor's domain is matched to the business whose website address (`tenants.brand.site_url`) is that domain (`tenantIdFor` in `lib/brand.js`). A domain that matches none (a preview address) gets EV Exec. Two businesses can never share a domain (database unique index; owner-only `set_tenant_site`).
-
-A business's domain is only served by its own website when it is listed in `config/tenant-domains.json` and `npm run build:domains` has written its route into `vercel.json`. The list is empty today, so EV Exec's site is untouched.
+The visitor's domain is matched to the business whose website address (`tenants.brand.site_url`) is that domain (`tenantIdFor` in `lib/brand.js`). Two businesses can never share a domain (database unique index; owner-only `set_tenant_site`).
 
 ## Onboarding a new business: who does what
 
 | Step | Who | Where |
 |---|---|---|
-| 1. Contract signed (Operator Services Agreement, responsibilities statement) and £999 set-up fee paid | Owner and customer | `docs/legal/operator-contract.md` |
-| 2. Create the business and invite its first admin | Owner | Operator app, Settings, Platform, "Set up a business" then Invite |
+| 1. Business applies on `/signup`, accepts the Operator Services Agreement and Schedule A, pays the £999 set-up fee outside the app | Customer | `/signup`, `docs/legal/operator-contract.md` |
+| 2. Owner confirms payment and approves the application (this creates the business) and invites its first admin | Owner | Operator app, Settings, Platform, Applications |
 | 3. Admin sets business details, prices, logo and colours, legal details, cancellation policy, and ticks the responsibilities confirmation | Customer | Operator app, Settings (Business, Prices, Branding, Legal) |
 | 4. Admin connects its Stripe account (test mode first) | Customer | Operator app, Settings, Payments |
 | 5. Admin adds drivers and invites them to the Driver App | Customer | Operator app, Drivers |
 | 6. Customer buys its domain (a few pounds a year, in its own name) | Customer | Any registrar |
 | 7. Add the domain to the website's Vercel project and set DNS as Vercel says. **May cost money on the hosting plan: ask the owner first.** | Owner | Vercel, Project, Domains |
 | 8. Save the website address (`https://www.example.co.uk`) for the business | Owner | Operator app, Settings, Platform, Website address |
-| 9. Add the domain (no www) to `config/tenant-domains.json`, run `npm run build:domains`, open a pull request, merge, deploy | Engineer | `evexec` repo |
+| 9. Add the domain (no www) to `config/tenant-domains.json`, run `npm run build:domains`, merge, deploy | Engineer | This repository |
 | 10. Test end to end on the real domain: book, accept in the Operator app, pay (Stripe test mode), check the emails | Owner and engineer | Customer's domain |
 | 11. Go live: Stripe live mode and webhook for that business, remove test bookings | Owner | Stripe, Vercel |
 
-## Pending on the live database (needs the Supabase connection)
+## Owner login and platform settings
 
-Apply in this order (all additive; each file is in `supabase/migrations/`):
+- **Owner login:** `hello@winjodigital.co.uk` is an **email-only** account (no password) with one `tenant_users` row, role `super_admin`, no business. Sign in by requesting an email link on the Operator app's sign-in page (`/api/auth/email-link`); tested end to end on the live address (14/11/2026). Settings, Platform then appears.
+- **Website project settings** (none secret): `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `PLATFORM_FROM` (`Winjo Digital <hello@winjodigital.co.uk>`), `PLATFORM_REPLY_TO`, `PLATFORM_OWNER_EMAIL`, plus `DRIVER_APP_URL`, `NEXT_PUBLIC_DRIVER_APP_URL` and `NEXT_PUBLIC_OPERATOR_URL`. **The two driver values must include the path: `https://winjo-dispatch.vercel.app/driver`.** Secret (Sensitive): `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY` (sending access only, limited to winjodigital.co.uk).
+- **Driver project settings:** `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (public values), set for production/preview and separately for the `staging` environment.
+- Resend: domain winjodigital.co.uk verified, sending enabled, eu-west-1.
+- Stripe: not set up yet. Without `STRIPE_PLATFORM_SECRET_KEY` (and `STRIPE_WEBHOOK_SECRET` / `STRIPE_CONNECT_WEBHOOK_SECRET` for the webhook) no card payment is taken; cash works. Test mode first, never live without the owner's go-ahead. Sensitive variables must be created as "Sensitive" in Vercel.
+- The temporary Supabase access token and the full-access Resend key used for set-up are still held; the owner keeps them until go-live is finished.
 
-1. `20261113160000_platform_fee_monthly_99.sql`: default monthly platform fee £99 (record only).
-2. `20261113170000_close_anon_direct_inserts.sql`: removes the direct public inserts into quote requests and contact messages (the website writes them through its server).
-3. `20261113180000_tenant_site_address.sql`: owner-only website address and one-domain-per-business index.
+## Operator push alerts
 
-Until they are applied: the Fees screen shows £49, anonymous direct inserts remain open, and "Save" on a website address will report the function is missing. Also give the owner's login the `super_admin` role in `tenant_users` (so the Platform screen shows).
-
-## Sign-up: what the owner sets up (14/11/2026)
-
-1. **Owner login: done 14/11/2026.** `hello@winjodigital.co.uk` exists as an **email-only** account (confirmed; nobody set a password, Supabase keeps an internal placeholder) with one `tenant_users` row, role `super_admin`, no business. Sign in by requesting an email link on the Operator app's sign-in page (`/api/auth/email-link`); that screen is part of the merge and is not on the preview yet. Settings, Platform (Applications, Fees, set up a business) then appears. The sign-up trigger also gave the account a customer profile under the default `ev-exec` business, which is harmless and goes with the EV Exec clean-up.
-2. **Website settings** (the hosting project's environment variables; none is a secret):
-   - `PLATFORM_FROM` = `Winjo Digital <hello@winjodigital.co.uk>` (checked 14/11/2026 through the Resend connection: the domain winjodigital.co.uk is verified, sending enabled, region eu-west-1; receiving and open/click tracking are off)
-   - `PLATFORM_REPLY_TO` = `hello@winjodigital.co.uk`
-   - `PLATFORM_OWNER_EMAIL` = `hello@winjodigital.co.uk`
-   - optional `PLATFORM_SITE_URL` = the platform's public address (https, no trailing slash)
-   Also needed, and secret: `SUPABASE_SERVICE_ROLE_KEY` and `RESEND_API_KEY` for this project, entered by the owner in the dashboard only.
-3. **Nothing is live until a deploy is approved**: the pages and the form exist in the repository only.
-
-### The Vercel project (created 14/11/2026, owner approved; Pro plan, so usage counts)
-- Team `winjodigital` (`team_RhhxQIJqo6pFuKaXFV7lWZuW`), project `winjo-dispatch` (`prj_1TscAwPpnsRSyx3xhYXRK0nrppN2`), linked to `WINJO-DIGITAL/WINJO-Dispatch`, production branch `main`, Node 24.x. **Zero deployments so far.**
-- Git-triggered deployments are **switched off** on the project, and its "ignored build step" also skips any Git-triggered production build. A production deploy therefore only happens when the owner approves it and runs `.github/workflows/deploy.yml` (or deploys from the Vercel dashboard). To get preview builds on branches, turn Git deployments on in the project's Git settings (the Vercel GitHub app must have access to the repository).
-- Set (not secret, production and preview): `SUPABASE_URL` (the WINJO DISPATCH project), `SUPABASE_ANON_KEY` (the public browser key), `PLATFORM_FROM`, `PLATFORM_REPLY_TO`, `PLATFORM_OWNER_EMAIL`.
-- `RESEND_API_KEY` (Sensitive, production and preview) was set on 14/11/2026: a Resend key named `winjo-dispatch-platform`, **sending access only, limited to winjodigital.co.uk**, created through the Resend API and passed straight into Vercel (never shown in chat).
-- `SUPABASE_SERVICE_ROLE_KEY` (Sensitive, production and preview) was set on 14/11/2026 from the `WINJO DISPATCH` project's service-role key, read and passed to Vercel inside one command (never shown in chat; checked to be that project's key). **The owner should now revoke the Supabase access token used for this** (Supabase, Account, Access Tokens) and the full-access Resend key, and remove both stored credentials from the Claude environment settings.
-- All seven settings the website needs for sign-up are therefore in place. Remaining before it can go live: the owner login, and the owner's approval to deploy.
-- For the manual deploy workflow, the repository variables are `VERCEL_ORG_ID` = `team_RhhxQIJqo6pFuKaXFV7lWZuW` and `VERCEL_PROJECT_ID` = `prj_1TscAwPpnsRSyx3xhYXRK0nrppN2`, plus the secret `VERCEL_TOKEN`. (The IDs quoted earlier in the session were the retired account's; ignore them.)
-- **First preview deployed 14/11/2026** (`dpl_2Kv2BuFxcgcKKWBxcDvBfAGztQoz`, commit `f1d51bd`, preview only, behind Vercel's login). Checked on it: `/signup`, `/platform-terms`, the stylesheet, script and font load; the form's checks answer 405 and 422 correctly; one real test application was accepted (reference `90429CD7`, stored with £999 and £99, versions 1 and 1, accepted 14/11/2026 12:28), a repeat of the same short name was refused (409), and both emails (applicant acknowledgement and owner alert) show **delivered** in Resend. **That test row (`preview-test-co`, "Preview Test Co (delete me)") is still in the database waiting for payment: reject it in Settings, Platform, Applications once the owner can sign in.** Found and fixed: `/favicon.svg` had no route (404).
-- The other project on that account, `winjodigital` (repository `wnjo`), is Winjo Digital's own site and was not touched.
-
-## Environment and secrets (names only; values never go in the repo or in chat)
-
-- Website: `STRIPE_SECRET_KEY` (EV Exec's own), `STRIPE_WEBHOOK_SECRET`, `STRIPE_PLATFORM_SECRET_KEY` and `STRIPE_CONNECT_WEBHOOK_SECRET` (Winjo Digital's, for other businesses), `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `OPERATOR_EMAIL` (platform staff alerts; each business uses its own contact email).
-- Operator app: `STRIPE_PLATFORM_SECRET_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `INVOICE_FROM` (sender of invitation and password emails; today EV Exec's address, decision pending).
-- Sensitive variables must be created as "Sensitive" in Vercel.
+New-booking and no-show database triggers post to `https://winjo-dispatch.vercel.app/api/push/dispatch` with the shared secret from `public.push_config`. **`push_config` currently has no row, so the triggers send nothing** (they stop when there is no secret). The Operator app's dispatch route checks the same secret, so a row (with a generated secret and the VAPID keys) must exist before alerts work. Creating it is a live change that needs the owner's approval.
 
 ## How to run the tests
 
-- Website: `npm run test:unit` (264 tests; `npm ci` now works, Node 24 per `.nvmrc`) and `npm run test:browser` (18 tests in Chromium; screenshots in `tests/browser/out/`).
-- Database: `bash scripts/db-test.sh` (builds a throwaway Postgres 17; 13 files). It needs Postgres 17 and pgTAP from the PostgreSQL apt repository (`postgresql-17`, `postgresql-17-pgtap`, see `.github/workflows/db-tests.yml` for the exact steps). Docker is not used. If Postgres 17 is missing it exits 2 with a message.
-- Operator app: `npm test`, `npx tsc --noEmit`, `npm run lint`.
-- Driver App: `npm test`, `npm run test:functions`, `npm run typecheck`, `npm run lint`.
-
-## Deployment status (checked 13/11/2026, read-only)
-
-- **Production is behind main in all three projects.** The last production build in each Vercel project is an older commit: website `44878db` (PR #75; main is now at `949398b`), Operator app `2f69ca6` (PR #47; main is at `ea19f18`), Driver App `9b02c2a` (PR #20; main is at `b6577f9`). No deployment exists for the newer commits, and a few earlier ones show as cancelled. Preview builds of branches were still succeeding, and all three stopped at the same time, which looks like a Vercel platform limit rather than a code problem (I could not confirm the cause). Everything merged is tested; it simply is not live yet.
-- **What is not live yet:** the website's per-business domain matching and branded business website, the booking look-up fix for other prefixes, the Operator app's website address field and density changes, the Driver App's phone polish.
-- **To fix:** in Vercel, open each project's Deployments, check why the latest `main` commit has no build (an alert or limit notice, or an ignored-build setting), then redeploy `main`. A redeploy is a production action, so it needs the owner's go-ahead.
-
-## Visual review (13/11/2026)
-
-Ran the signed-in Operator app and Driver App locally against stand-in data and reviewed screenshots at phone (390 and 360 wide), iPad portrait and landscape, and desktop widths. No sideways scrolling anywhere. Fixed and merged: booking rows on iPad landscape (names were cut to three letters), shorter setup checklist, tile label, drivers screen (three per row, repeated tags removed), Driver App notification prompt (slim, hidden on a job), Jobs opens on Upcoming, neutral search hint, Settings tab cue.
-Still open (small, judgement calls): on a phone the setup checklist sits above "Needs you" on Today; driver cards on the Drivers screen are tall; the text-message link format needs a real iPhone test; real-device checks (touch targets, keyboard, push) are not covered by screenshots.
+- Website: `npm run test:unit` (265 tests; Node 24 per `.nvmrc`) and `npm run test:browser` (Chromium; screenshots in `tests/browser/out/`).
+- Database: `bash scripts/db-test.sh` (builds a throwaway Postgres 17 from `supabase/baseline/schema.sql`; pgTAP). It needs Postgres 17 and pgTAP from the PostgreSQL apt repository (see `.github/workflows/db-tests.yml`). Docker is not used. If Postgres 17 is missing it exits 2 with a message.
+- Operator app (`apps/operator`): `npm test`, `npx tsc --noEmit`, `npm run lint`.
+- Driver App (`apps/driver`): `npm test`, `npm run test:functions`, `npx tsc --noEmit`, `npm run lint`.
 
 ## Known limits (honest list)
 
 - Not yet tested on a real second domain (needs a domain and a hosting decision).
-- Stripe Connect has not had a live end-to-end payment (test mode needs the Test Operator's Stripe onboarding).
-- Customer accounts and Privilege Points exist on EV Exec's site only; a business's website has the booking form, booking page, payment and look-up.
-- Invitation and password emails still come from the platform's sender address.
-- Monthly billing of businesses is not built (fees are recorded only). Needs the owner's approval, because Stripe Billing has its own fees.
-- The Winjo Digital website's platform page and its terms contradictions are outside these repositories (draft copy exists).
+- Stripe Connect has not had a live end-to-end payment (test mode needs a test operator's Stripe onboarding).
+- Customer accounts and Privilege Points exist on the platform's customer pages; a business's own website has the booking form, booking page, payment and look-up.
+- Invitation and password emails come from the platform's sender address.
+- Monthly billing of businesses is not built (fees are recorded only). It needs the owner's approval, because Stripe Billing has its own fees.
 - No SMS is sent by the platform (Twilio is off by owner decision); customer texts are two-tap messages sent from the office's or a driver's own phone. The text-message link format has not been confirmed on a real iPhone.
+- Real-device checks (touch targets, keyboard, push) are not covered by the screenshot reviews.
 
 ## Decisions already made by the owner
 
-£999 set-up and £99 a month; the customer buys its own domain; EV Exec is a customer at £0 with its own Stripe account; platform takes no percentage of card payments; no solicitor (wording checked against official UK sources, see `docs/legal/audit-2026-11-12.md`); no paid services without asking first.
-
-
-## 14/11/2026: the three apps as one site (preview verified, owner-approved layout)
-
-- **Layout (owner chose 14/11/2026):** one domain, separate Vercel projects. `winjo-dispatch` (`prj_1TscAwPpnsRSyx3xhYXRK0nrppN2`) serves the website and the Operator app (`/operator/*`, `/set-password`, payment pages, `/api/*`, push). `winjo-driver` (`prj_Zf6uGdTX4FtCeSwPQvSu54BOpRGW`, root directory `apps/driver`) serves the Driver App; the main project forwards `/driver(/.*)?` to it with a route in the root `vercel.json`. Putting two Next apps in one project's `builds` does not work (Next 16 builds collide on `_global-error`/`_not-found`; Next 15 prefixes its output and its dynamic pages 404).
-- **Driver App:** pages in `apps/driver/app/driver/` (no `basePath`), public files in `public/driver/`, links through `withBase()`, middleware strips the prefix, `assetPrefix` `/driver` with a rewrite of `/driver/_next/*` to `/_next/*`, Next 16.3.6. Own project env: `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (public values). Git deployments disabled, ignore-build-step skips production, no deployment protection (the app is public, sign-in is its own).
-- **Preview only:** the Driver project's first deploy is treated as production by Vercel, so test deploys use its custom environment `staging` (`target: "staging"`). The main `vercel.json` forward currently points at the staging deployment URL `winjo-driver-elrpchi61-winjodigital.vercel.app`. **Before any production deploy (owner approval needed):** deploy the Driver project to production and change that route to its production domain; point the Operator app's `DRIVER_APP_URL` / `NEXT_PUBLIC_DRIVER_APP_URL` and the database push-link functions at the final host.
-- **Verified on a preview (14/11/2026):** `/`, `/signup`, `/booking`, `/operator/today`, `/set-password`, manifest, service worker, fonts, `/api/team` (401 signed out), `/driver` (redirects to `/driver/login` on the same host), `/driver/login`, manifest, service worker, fonts and build files all answer.
-- **Still to do:** Operator project split (optional, same pattern), per-app env vars on the Driver project beyond Supabase if any screen needs them, the sign-in email test once a host is final, production deploy (owner approval).
-
-## 14/11/2026: push notifications and the old repos
-
-- **Database push links** (`notify_operator_new_booking`, `notify_operator_no_show`) now post to `https://winjo-dispatch.vercel.app/api/push/dispatch`, the new Operator app. Only the URL changed; the shared secret in `push_config` is the same. Migration `supabase/migrations/20261114200000_push_dispatch_to_winjo_operator.sql` (applied to live 14/11/2026).
-- **The old repos** (`evexec`, `evexecoperator`, `evexecdriverapp`) and their live sites are separate. They have nothing to do with this project: do not change, deploy or point anything at them from here.
+£999 set-up and £99 a month; the customer buys its own domain; the platform takes no percentage of card payments; no solicitor (wording checked against official UK sources, see `docs/legal/audit-2026-11-12.md`); no paid services without asking first; the platform is software only and each operator is responsible for its own licences, insurance and compliance.

@@ -44,7 +44,7 @@ const COASTAL = {
   },
   pricing: { extra_stop: 8 },
 };
-const LEAK = /ev exec|evexec|07700|900123|PHO0001|Blackpool|Fylde|Tesla|Enyaq|Privilege/i;
+const LEAK = /Acme Cars|acme-cars|07700|900123|PHO0001|Exampleton|Privilege/i;
 
 test('another business\'s documents carry its own details and none of Acme Cars\'s', () => {
   for (const doc of [termsDocument(COASTAL), privacyDocument(COASTAL)]) {

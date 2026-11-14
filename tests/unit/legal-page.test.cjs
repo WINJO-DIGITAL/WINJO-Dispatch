@@ -61,13 +61,6 @@ test('the route serves a complete business and never indexes it', async () => {
   assert.equal(res.headers['X-Robots-Tag'], 'noindex');
   assert.match(res.body, /Privacy Policy/);
 });
-test('this website\'s own business is sent to its own published pages', async () => {
-  const { tenantId } = require('../../lib/brand');
-  const res = await run({ b: 'ev-exec', kind: 'privacy' }, [tenant({}, { id: tenantId() })]);
-  assert.equal(res.statusCode, 302);
-  assert.equal(res.headers.Location, '/privacy');
-});
-
 test('the /t/ route points at a function that is actually built', () => {
   const cfg = JSON.parse(require('node:fs').readFileSync(require('node:path').join(__dirname, '..', '..', 'vercel.json'), 'utf8'));
   const route = cfg.routes.find((r) => r.src && r.src.startsWith('/t/'));

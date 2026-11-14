@@ -1,6 +1,6 @@
 # Database hardening plan: grants and driver access
 
-Date: 10/11/2026. Project: `yoltkmhtxwluqxxpewbl`.
+Date: 10/11/2026. Written for the database this platform's structure came from; the same rules are in the baseline.
 
 **Status: stages 1, 2 and 3 applied 10/11/2026** (migrations `20261110064237_hardening_stage1_grants_and_driver_booking_policies`, `20261110130556_hardening_stage2_driver_id_only_sequences_functions_maintain` and `20261110131520_hardening_stage3_visitor_table_rights`, all approved by the owner). The driver cancel and No Show rules were applied the same day (migration `20261110133454_driver_no_show_status_and_cancel_rule`). See sections 6 to 9 for the results.
 
@@ -40,7 +40,7 @@ No vulnerability that is exploitable today was found. The items below are ranked
 
 - **No-show**: the guard lets a driver set `No Show`, the transition trigger refuses it from every status. The app therefore stores a no-show as `Cancelled` plus free text.
 - **Payment**: the guard silently restores `payment_status` on a driver write; the Driver App reports success.
-- **Second business**: `tenant_id` defaults to the EV Exec business on 15 tables, and the Operator app and Driver App do not send `tenant_id` on insert. A second business's inserts would be refused (safe, but broken).
+- **Second business**: `tenant_id` had a default to one seeded business on 15 tables, and the Operator app and Driver App do not send `tenant_id` on insert. A second business's inserts would be refused (safe, but broken).
 - **`notification_channel_settings`**: one global row, writable by staff of any business.
 - **Job photos**: no staff read policy on the `job-photos` bucket; the office cannot view them from the browser.
 
@@ -280,7 +280,7 @@ Approved by the owner; database part only. The Driver App is unchanged and keeps
 
 **Still to do (Driver App, then one more database step)**
 
-1. **Driver App: done 10/11/2026** (branch `claude/sweet-meitner-med7lt` of `evexecdriverapp`, commit `0565756`, after merging its 11 missing `main` commits). The no-show button sends `status: 'No Show'` (keeping the note), the job screen treats `No Show` as finished and still recognises older Cancelled-plus-note no-shows, and the in-app "Job cancelled" pop-up stays quiet for the driver's own no-show. Type check, lint (0 errors) and a production build pass. Merged to the Driver App's `main` (pull request #10, 19:48 UTC 10/11/2026); the owner confirmed it deployed.
+1. **Driver App: done 10/11/2026** (branch `claude/sweet-meitner-med7lt` of the Driver App, commit `0565756`, after merging its 11 missing `main` commits). The no-show button sends `status: 'No Show'` (keeping the note), the job screen treats `No Show` as finished and still recognises older Cancelled-plus-note no-shows, and the in-app "Job cancelled" pop-up stays quiet for the driver's own no-show. Type check, lint (0 errors) and a production build pass. Merged to the Driver App's `main` (pull request #10, 19:48 UTC 10/11/2026); the owner confirmed it deployed.
 2. **Decision (owner, 10/11/2026: go with the recommendation):**
    - **Office: yes.** A driver's no-show sends a push to every office device (Operator app), opening that booking. Nothing alerts the office today; the 17/10 migration only silences the driver's own alert. Build: an AFTER UPDATE trigger on `bookings` (status becomes `No Show`) posting to the Operator app's `/api/push/dispatch` with the notification override, the same way the new-booking and payment alerts do. **Live since 10/11/2026 20:00 UTC** (migration `20261110200016_operator_no_show_push.sql`): function `notify_operator_no_show()`, trigger `trg_operator_no_show_push`. It also fires for the older form (Cancelled plus the "[No Show]" note), and a failure to send can never stop the driver's update. Tested first in a rolled-back transaction, then one test alert was sent to the office devices: accepted, sent to 4 devices. Rollback: `alter table public.bookings disable trigger trg_operator_no_show_push;`.
    - **Customer: nothing automatic.** A real `No Show` status sends the customer nothing (the cancellation notice only fires for `Cancelled`). Terms section 7.3 says the office contacts the customer and decides the charge, so a "your booking has been cancelled" message from the app would be wrong. The office can still send a text from Today, Texts to send.
