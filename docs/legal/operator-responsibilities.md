@@ -1,6 +1,6 @@
-# Operator responsibilities (version 1, 12/11/2026)
+# Operator responsibilities (version 2, 14/11/2026)
 
-This is the single statement of who is responsible for what when a business ("the operator") uses the EV Exec booking website, Operator app and Driver App ("the platform"). The operator contract, the operator data terms and the confirmation in the Operator app (Settings → Legal) all use this wording. Change it here first, then bump the version.
+This is the single statement of who is responsible for what when a business ("the operator") uses the booking website, Operator app and Driver App ("the platform"). The operator contract, the operator data terms and the confirmation in the Operator app (Settings → Legal) all use this wording. Change it here first, then bump the version.
 
 Drafted from official UK sources (listed at the end), not by a solicitor. Not legal advice and not a guarantee. What was and was not checked is stated honestly in the last section.
 

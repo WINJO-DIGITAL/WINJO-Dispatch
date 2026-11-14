@@ -96,15 +96,13 @@ test('the terms page leaves out the other business\'s details and the internal n
   assert.match(html, /Template \(for each new Operator\)/);
 });
 
-test('the only "EV Exec" wording left in the published terms is the three sentences the owner must decide on', () => {
+test('the published terms no longer name EV Exec (owner decision 13/11/2026; wording version 2, 14/11/2026)', () => {
   const hits = (T.build().match(/[^.<>]*EV Exec[^.<>]*/g) || []).map((x) => x.trim());
-  assert.equal(hits.length, 3, hits.join(' | '));
-  assert.ok(hits.some((h) => /EV Exec is one of the Supplier/.test(h)));
-  assert.ok(hits.some((h) => /does not own or run the EV Exec business/.test(h)));
-  assert.ok(hits.some((h) => /uses the EV Exec booking website/.test(h)));
+  assert.deepEqual(hits, []);
 });
 
-test('one known dangling reference: the status line mentions a section that is not published', () => {
-  const refs = T.build().match(/section &quot;Fill in before first use&quot;/g) || [];
-  assert.equal(refs.length, 1, 'if the owner rewords the status line this test can be removed');
+test('the status line no longer points to an unpublished section or internal file names', () => {
+  const html = T.build();
+  assert.doesNotMatch(html, /Fill in before first use/);
+  assert.doesNotMatch(html, /audit-2026-11-12/);
 });

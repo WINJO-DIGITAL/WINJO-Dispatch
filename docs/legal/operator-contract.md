@@ -1,8 +1,8 @@
-# Operator Services Agreement (version 1, 12/11/2026)
+# Operator Services Agreement (version 2, 14/11/2026)
 
-**Status: ready-to-use draft. Not legal advice and not a guarantee. No solicitor was used (owner decision).** Drafted from, and checked against, official UK sources: Unfair Contract Terms Act 1977 ss.2, 3, 11 and Sch.2; Late Payment of Commercial Debts (Interest) Act 1998 ss.1, 6, 7, 8; UK GDPR Art 28 (in the separate data terms); and the sources listed in `operator-responsibilities.md`. The Supplier's details are taken from its published terms (https://winjodigital.co.uk/terms, version 2026-11-12.1). Anything still missing is listed in section "Fill in before first use" at the end. What was and was not verified is in `audit-2026-11-12.md`.
+**Not legal advice and not a guarantee. No solicitor was used (owner decision).** Drafted from, and checked against, official UK sources: Unfair Contract Terms Act 1977 ss.2, 3, 11 and Sch.2; Late Payment of Commercial Debts (Interest) Act 1998 ss.1, 6, 7, 8; UK GDPR Art 28 (in the separate data terms); and the sources listed in `operator-responsibilities.md`. The Supplier's details are taken from its published terms (https://winjodigital.co.uk/terms, version 2026-11-12.1).
 
-**The parties.** The **Supplier** is Nitisat Sirisom, a sole trader trading as WINJO DIGITAL, of 3 Knoxwood Close, Thornton-Cleveleys, FY5 3UP ("Winjo Digital", "we", "us"). The **Operator** is the business named in the Order Details ("you"). EV Exec is one of the Supplier's customers and is treated exactly like any other Operator. The Supplier does not own or run the EV Exec business.
+**The parties.** The **Supplier** is Nitisat Sirisom, a sole trader trading as WINJO DIGITAL, of 3 Knoxwood Close, Thornton-Cleveleys, FY5 3UP ("Winjo Digital", "we", "us"). The **Operator** is the business named in the Order Details ("you"). Each Operator that uses the platform is treated exactly like every other Operator. The Supplier does not own or run any Operator's business.
 
 ---
 
