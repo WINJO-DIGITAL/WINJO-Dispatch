@@ -5,6 +5,7 @@ import { Building2, Plus, RefreshCw, UserPlus, Users } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useOperatorToast } from "./Toast";
 import FeesSection from "./FeesSection";
+import ApplicationsSection from "./ApplicationsSection";
 import { siteAddressProblem, tidySiteAddress } from "@/lib/operator/siteAddress";
 
 // Platform actions go through the Operator app's own server route (/api/platform/tenants),
@@ -281,6 +282,11 @@ export default function PlatformSettings() {
             </div>
           ))}
         </div>
+      </div>
+
+      <div>
+        <p className="mb-3 text-[10px] uppercase tracking-[0.2em] text-slate-500">Applications</p>
+        <ApplicationsSection toast={toast} onApproved={loadTenants} />
       </div>
 
       <div>

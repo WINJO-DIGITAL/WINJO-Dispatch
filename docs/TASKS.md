@@ -43,6 +43,14 @@ A multi-tenant booking, dispatch and payments platform. Winjo Digital owns the p
 - [ ] Create a Test Operator admin login (Supabase dashboard steps given; needs owner's platform role or the manual steps).
 - [ ] Complete Stripe test onboarding for Test Operator in the Operator app (Settings → Payments).
 
+### Self-serve sign-up (owner approved price and terms 14/11/2026)
+- [x] Public page `/signup` and terms page `/platform-terms`, the API `POST /api/signup/apply` (honeypot, rate limit of 5 an hour, fees read from the database, applicant and owner emails from the platform's own sender), 29 website tests.
+- [x] Draft migration `supabase/pending/20261114100000_signup_applications.sql`: a table only the server can write, plus owner-only functions to confirm payment, approve (creates the business) and reject. 33 database tests pass. **Not applied to the platform database yet: needs the owner's approval.**
+- [x] Operator app, Settings → Platform → Applications (`ApplicationsSection.jsx`): confirm payment, approve, reject. 8 tests; whole app 408 pass. Approving creates the business but no login: then use "Invite a business's first admin".
+- Decisions made (change on request): the owner approves every business; the £999 is invoiced and paid outside the site (no card collection, no new Stripe fees, the payment webhook is untouched); the platform's own emails come from `PLATFORM_FROM` and never from a business address.
+- [ ] Before it goes live: apply the migration (approval needed); set `PLATFORM_FROM` (verified in Resend), `PLATFORM_OWNER_EMAIL`, optional `PLATFORM_SITE_URL`; decide the wording items in `docs/legal/audit-2026-11-12.md` ("Published terms for the sign-up page"); link `/signup` from wherever you want it found (the home page is still a neutral placeholder).
+- [ ] Later: optional card payment of the set-up fee (Stripe Checkout; adds fees and touches the payment webhook, so ask first), an email to the applicant when approved or rejected.
+
 ### Site builder (owner decision 13/11/2026; plan in `docs/site-builder.md`)
 - [x] Content format and validation (`lib/siteContent.js`, 7 tests).
 - [x] Renderer (`lib/siteBuilder.js`, wired into `lib/tenantSite.js`): a business that has published its content gets its own headline, hero photo, services, about, fleet, areas, reviews, FAQs, contact and SEO title/description on its home page; an unpublished one keeps the plain page. Every value escaped; photos only from its own folder. 5 tests, including injection and cross-business checks. It reuses the tenant page's existing design (Jost, cards, colours), not yet the first site's full header and styles.

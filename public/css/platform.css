@@ -1,0 +1,66 @@
+/* Platform pages (sign-up and the terms). Warm paper, dark green ink, one rust accent.
+   Self-hosted Jost for UI text, Georgia for long reading. No gradients, shadows or card grids. */
+:root{--paper:#f6f3ec;--ink:#17261f;--soft:#4a574f;--rule:#cfc8b8;--accent:#a9441f;--accent-ink:#fff;--field:#fffdf8;--bad:#9a1c1c;--good:#1f5a3a}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.55 Jost,system-ui,-apple-system,"Segoe UI",sans-serif}
+a{color:var(--accent);text-underline-offset:3px}a:hover{text-decoration-thickness:2px}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.bar{padding:18px max(20px,4vw);border-bottom:1px solid var(--rule)}
+.mark{color:var(--ink);font-weight:600;font-size:1.05rem;text-decoration:none;letter-spacing:.01em}
+main{padding:0 max(20px,4vw) 72px;max-width:1180px;margin:0 auto}
+
+/* Sign-up: a statement on the left, the form on the right (stacked on phones, form first after the headline). */
+.apply{display:grid;gap:40px;padding-top:44px}
+@media(min-width:920px){.apply{grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:72px;padding-top:72px;align-items:start}}
+.apply h1{margin:0 0 20px;font-weight:500;font-size:clamp(1.9rem,4.6vw,2.9rem);line-height:1.08;max-width:15ch}
+.apply .lead{margin:0 0 28px;color:var(--soft);max-width:34rem;font-size:1.08rem}
+.jump{margin:-8px 0 26px}@media(min-width:920px){.jump{display:none}}
+.terms-of-trade{margin:0 0 30px;padding:0;list-style:none;border-top:1px solid var(--rule)}
+.terms-of-trade li{display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid var(--rule)}
+.terms-of-trade b{font-weight:600;white-space:nowrap}
+.steps{margin:0 0 8px;padding:0 0 0 1.2em;color:var(--soft)}.steps li{margin:0 0 8px;padding-left:4px}
+.steps li::marker{color:var(--accent);font-weight:600}
+h2.small{margin:30px 0 10px;font-size:.82rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--soft)}
+.fine{font-size:.92rem;color:var(--soft);max-width:34rem}
+
+form.sheet{display:grid;gap:22px}
+.field label,.field .lbl{display:block;margin:0 0 6px;font-weight:500;font-size:.95rem}
+.field .hint{display:block;margin:5px 0 0;font-size:.85rem;color:var(--soft)}
+input[type=text],input[type=email],input[type=tel],textarea{width:100%;font:inherit;color:var(--ink);background:var(--field);border:0;border-bottom:2px solid var(--ink);border-radius:0;padding:11px 2px;min-height:48px}
+textarea{min-height:96px;border:2px solid var(--ink);padding:10px;resize:vertical}
+input:focus,textarea:focus{background:#fff;outline:none;border-color:var(--accent)}
+.two{display:grid;gap:22px}@media(min-width:620px){.two{grid-template-columns:1fr 1fr}}
+.slugrow{display:flex;align-items:baseline;gap:6px;border-bottom:2px solid var(--ink);background:var(--field)}
+.slugrow:focus-within{border-color:var(--accent)}
+.slugrow span{color:var(--soft);white-space:nowrap;font-size:.95rem;padding-left:2px}
+.slugrow input{border:0;min-height:48px;padding-left:0}
+.agree{display:grid;grid-template-columns:24px 1fr;gap:12px;align-items:start;padding:14px 0;border-top:1px solid var(--rule)}
+.agree input{width:22px;height:22px;margin:2px 0 0;accent-color:var(--accent)}
+.agree label{font-weight:400;margin:0}
+.err{margin:6px 0 0;color:var(--bad);font-size:.9rem;font-weight:500}
+.bad input,.bad textarea,.bad .slugrow{border-color:var(--bad)}
+.hp{position:absolute;left:-9999px;height:0;overflow:hidden}
+button.go{font:inherit;font-weight:600;color:var(--accent-ink);background:var(--accent);border:0;border-radius:3px;min-height:52px;padding:0 26px;cursor:pointer;justify-self:start}
+button.go:hover{background:#8e3718}button.go:disabled{opacity:.55;cursor:wait}
+.formmsg{margin:0;padding:12px 14px;border-left:4px solid var(--bad);background:#f8e9e6;font-size:.95rem}
+.done{border-top:4px solid var(--good);padding-top:22px}.done h2{margin:0 0 10px;font-size:1.7rem;font-weight:500}
+.done .ref{font-weight:600;letter-spacing:.06em}
+[hidden]{display:none!important}
+
+/* The terms page: a long document set for reading. */
+.legal main{max-width:760px}
+.crumb{margin:26px 0 0;font-size:.95rem}
+.doc-title{margin:14px 0 14px;font-weight:500;font-size:clamp(1.7rem,4vw,2.4rem);line-height:1.1}
+.lede{color:var(--soft);margin:0 0 20px}
+.toc{margin:0 0 36px;padding-left:1.2em}.toc li{margin:0 0 6px}
+.doc{border-top:3px solid var(--ink);margin-top:44px;padding-top:6px;font-family:Georgia,"Times New Roman",serif;font-size:1.02rem;line-height:1.6}
+.doc h1{font-family:Jost,system-ui,sans-serif;font-weight:500;font-size:1.6rem;line-height:1.15;margin:20px 0 16px}
+.doc h2{font-family:Jost,system-ui,sans-serif;font-weight:600;font-size:1.15rem;margin:34px 0 10px;padding-top:10px;border-top:1px solid var(--rule)}
+.doc h3{font-family:Jost,system-ui,sans-serif;font-weight:600;font-size:1rem;margin:22px 0 8px}
+.doc p{margin:0 0 12px}.doc ul,.doc ol{margin:0 0 14px;padding-left:1.3em}.doc li{margin:0 0 6px}
+.doc hr{border:0;border-top:1px solid var(--rule);margin:26px 0}
+.doc table{width:100%;border-collapse:collapse;margin:0 0 18px;font-size:.95rem}
+.doc th,.doc td{border:1px solid var(--rule);padding:8px 10px;text-align:left;vertical-align:top}
+.doc th{background:#ece7da;font-family:Jost,system-ui,sans-serif;font-weight:600}
+.doc code{font-size:.9em;background:#ece7da;padding:1px 4px}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}

@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Apply to put your business on Winjo Digital</title>
+<meta name="description" content="A booking website, an office app and a driver app for private hire and transfer businesses. £999 to set up, £99 a month, no VAT.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/public/css/fonts.css">
+<link rel="stylesheet" href="/public/css/platform.css">
+</head>
+<body>
+<header class="bar"><a class="mark" href="/signup">Winjo Digital</a></header>
+<main>
+<div class="apply">
+  <section aria-labelledby="top">
+    <h1 id="top">A booking website, office app and driver app for your transfer business</h1>
+    <p class="lead">Customers book and pay on your own website. Your office dispatches, invoices and sets prices in the Operator app. Your drivers get their jobs in the Driver App. You set it up under your own name, with your own logo, prices and Stripe account.</p>
+
+    <p class="jump"><a href="#formh">Go straight to the application</a></p>
+
+    <ul class="terms-of-trade" aria-label="What it costs">
+      <li><span>Set-up</span><b>£999, paid before we start</b></li>
+      <li><span>Monthly</span><b>£99, from the day your service is live</b></li>
+      <li><span>VAT</span><b>None charged</b></li>
+      <li><span>Your domain</span><b>You buy it, we configure it</b></li>
+    </ul>
+
+    <h2 class="small">What happens next</h2>
+    <ol class="steps">
+      <li>You send this application and accept the agreement.</li>
+      <li>We email you an invoice for the set-up fee. We do not take payment on this page.</li>
+      <li>Once it is paid and we have approved you, we set up your business and invite your first admin.</li>
+      <li>You add your prices, logo, drivers and legal details, and connect Stripe in test mode first.</li>
+    </ol>
+
+    <h2 class="small">What this is, and is not</h2>
+    <p class="fine">We supply software and hosting only. We are not a private hire operator and are not a party to any booking. You alone are responsible for your licences, insurance, vehicles and driver checks. Read the full <a href="/platform-terms">agreement and Schedule A</a> before you apply.</p>
+  </section>
+
+  <section aria-labelledby="formh">
+    <div id="formwrap">
+      <h2 id="formh" class="small" style="margin-top:0">Your application</h2>
+      <form class="sheet" id="apply" novalidate>
+        <div class="field" data-f="business_name">
+          <label for="business_name">Business name</label>
+          <input id="business_name" name="business_name" type="text" autocomplete="organization" maxlength="100" required>
+        </div>
+        <div class="field" data-f="slug">
+          <label for="slug">Short name</label>
+          <div class="slugrow"><span>sign-in link: /login?b=</span><input id="slug" name="slug" type="text" autocapitalize="none" autocomplete="off" spellcheck="false" maxlength="40" required aria-describedby="slug-hint"></div>
+          <span class="hint" id="slug-hint">Lowercase letters, numbers and hyphens. Your drivers use it to sign in.</span>
+        </div>
+        <div class="two">
+          <div class="field" data-f="contact_name">
+            <label for="contact_name">Your name</label>
+            <input id="contact_name" name="contact_name" type="text" autocomplete="name" maxlength="100" required>
+          </div>
+          <div class="field" data-f="contact_phone">
+            <label for="contact_phone">Phone <span style="font-weight:400;color:var(--soft)">(optional)</span></label>
+            <input id="contact_phone" name="contact_phone" type="tel" autocomplete="tel" maxlength="40">
+          </div>
+        </div>
+        <div class="field" data-f="contact_email">
+          <label for="contact_email">Email</label>
+          <input id="contact_email" name="contact_email" type="email" autocomplete="email" maxlength="254" required>
+          <span class="hint">The invoice and everything about your set-up goes here.</span>
+        </div>
+        <div class="field" data-f="message">
+          <label for="message">Anything we should know <span style="font-weight:400;color:var(--soft)">(optional)</span></label>
+          <textarea id="message" name="message" maxlength="1000"></textarea>
+        </div>
+
+        <div class="hp" aria-hidden="true"><label for="company_website">Leave this empty</label><input id="company_website" name="company_website" type="text" tabindex="-1" autocomplete="off"></div>
+
+        <div class="field" data-f="accept_contract">
+          <div class="agree"><input id="accept_contract" name="accept_contract" type="checkbox"><label for="accept_contract">I have read and accept the <a href="/platform-terms#agreement" target="_blank" rel="noopener">Operator Services Agreement</a> (version 1), including the £999 set-up fee and £99 monthly fee.</label></div>
+        </div>
+        <div class="field" data-f="accept_responsibilities" style="margin-top:-22px">
+          <div class="agree" style="border-top:0;padding-top:0"><input id="accept_responsibilities" name="accept_responsibilities" type="checkbox"><label for="accept_responsibilities">I understand <a href="/platform-terms#schedule-a" target="_blank" rel="noopener">Schedule A</a>: I alone am responsible for my operator, driver and vehicle licences, insurance and driver checks. Winjo Digital checks none of these.</label></div>
+        </div>
+
+        <p class="formmsg" id="formmsg" role="alert" hidden></p>
+        <button class="go" id="go" type="submit">Send application</button>
+        <p class="fine">Sending this creates nothing and charges nothing. We read every application ourselves.</p>
+      </form>
+    </div>
+
+    <div class="done" id="done" hidden tabindex="-1">
+      <h2>Application received</h2>
+      <p>Your reference is <span class="ref" id="ref"></span>. We have emailed a copy to <b id="doneemail"></b>. If it is not in your inbox in a few minutes, check your junk folder or reply to us from the address you applied with.</p>
+      <p>Next we will email you an invoice for the set-up fee. We start once it is paid.</p>
+    </div>
+  </section>
+</div>
+</main>
+<script src="/public/js/signup.js" defer></script>
+</body>
+</html>
