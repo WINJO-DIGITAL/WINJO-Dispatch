@@ -49,7 +49,7 @@ A multi-tenant booking, dispatch and payments platform. Winjo Digital owns the p
 - [x] Operator app, Settings → Platform → Applications (`ApplicationsSection.jsx`): confirm payment, approve, reject. 8 tests; whole app 408 pass. Approving creates the business but no login: then use "Invite a business's first admin".
 - Decisions made (change on request): the owner approves every business; the £999 is invoiced and paid outside the site (no card collection, no new Stripe fees, the payment webhook is untouched); the platform's own emails come from `PLATFORM_FROM` and never from a business address.
 - [x] Vercel project `winjo-dispatch` created with the non-secret settings (see `docs/HANDOVER.md`); no deployment.
-- [ ] Before it goes live: create the owner login (below); owner enters `SUPABASE_SERVICE_ROLE_KEY` and `RESEND_API_KEY` in Vercel; check the sending domain is verified in Resend; decide the wording items in `docs/legal/audit-2026-11-12.md` ("Published terms for the sign-up page"); link `/signup` from wherever you want it found (the home page is still a neutral placeholder).
+- [ ] Before it goes live: create the owner login (below); owner enters `SUPABASE_SERVICE_ROLE_KEY` and `RESEND_API_KEY` in Vercel (the sending domain is verified in Resend, checked 14/11/2026); decide the wording items in `docs/legal/audit-2026-11-12.md` ("Published terms for the sign-up page"); link `/signup` from wherever you want it found (the home page is still a neutral placeholder).
 - [ ] Later: optional card payment of the set-up fee (Stripe Checkout; adds fees and touches the payment webhook, so ask first), an email to the applicant when approved or rejected.
 
 ### Site builder (owner decision 13/11/2026; plan in `docs/site-builder.md`)

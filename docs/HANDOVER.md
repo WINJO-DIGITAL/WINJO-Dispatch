@@ -47,7 +47,7 @@ Until they are applied: the Fees screen shows £49, anonymous direct inserts rem
 
 1. **Owner login** (Supabase dashboard, project WINJO DISPATCH, Authentication, Users, "Add user", email `hello@winjodigital.co.uk`, tick "Auto confirm user", choose a password and keep it yourself; never send it in chat). Then tell the engineer, who adds its `tenant_users` row with role `super_admin` and no business. That row is what makes Settings, Platform (Applications, Fees, set up a business) appear in the Operator app.
 2. **Website settings** (the hosting project's environment variables; none is a secret):
-   - `PLATFORM_FROM` = `Winjo Digital <hello@winjodigital.co.uk>` (the domain winjodigital.co.uk must be verified in Resend, or the emails are refused; not checked from here)
+   - `PLATFORM_FROM` = `Winjo Digital <hello@winjodigital.co.uk>` (checked 14/11/2026 through the Resend connection: the domain winjodigital.co.uk is verified, sending enabled, region eu-west-1; receiving and open/click tracking are off)
    - `PLATFORM_REPLY_TO` = `hello@winjodigital.co.uk`
    - `PLATFORM_OWNER_EMAIL` = `hello@winjodigital.co.uk`
    - optional `PLATFORM_SITE_URL` = the platform's public address (https, no trailing slash)
