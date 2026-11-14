@@ -45,7 +45,7 @@ Until they are applied: the Fees screen shows £49, anonymous direct inserts rem
 
 ## Sign-up: what the owner sets up (14/11/2026)
 
-1. **Owner login** (Supabase dashboard, project WINJO DISPATCH, Authentication, Users, "Add user", email `hello@winjodigital.co.uk`, tick "Auto confirm user", choose a password and keep it yourself; never send it in chat). Then tell the engineer, who adds its `tenant_users` row with role `super_admin` and no business. That row is what makes Settings, Platform (Applications, Fees, set up a business) appear in the Operator app.
+1. **Owner login: done 14/11/2026.** `hello@winjodigital.co.uk` exists as an **email-only** account (confirmed; nobody set a password, Supabase keeps an internal placeholder) with one `tenant_users` row, role `super_admin`, no business. Sign in by requesting an email link on the Operator app's sign-in page (`/api/auth/email-link`); that screen is part of the merge and is not on the preview yet. Settings, Platform (Applications, Fees, set up a business) then appears. The sign-up trigger also gave the account a customer profile under the default `ev-exec` business, which is harmless and goes with the EV Exec clean-up.
 2. **Website settings** (the hosting project's environment variables; none is a secret):
    - `PLATFORM_FROM` = `Winjo Digital <hello@winjodigital.co.uk>` (checked 14/11/2026 through the Resend connection: the domain winjodigital.co.uk is verified, sending enabled, region eu-west-1; receiving and open/click tracking are off)
    - `PLATFORM_REPLY_TO` = `hello@winjodigital.co.uk`

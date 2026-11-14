@@ -50,7 +50,8 @@ A multi-tenant booking, dispatch and payments platform. Winjo Digital owns the p
 - Decisions made (change on request): the owner approves every business; the £999 is invoiced and paid outside the site (no card collection, no new Stripe fees, the payment webhook is untouched); the platform's own emails come from `PLATFORM_FROM` and never from a business address.
 - [x] Preview deployed and tested end to end 14/11/2026 (see `docs/HANDOVER.md`); one test application row to reject.
 - [x] Vercel project `winjo-dispatch` created with the non-secret settings (see `docs/HANDOVER.md`); no deployment.
-- [ ] Before it goes live: create the owner login (below); all Vercel settings are in (`SUPABASE_SERVICE_ROLE_KEY` and a sending-only `RESEND_API_KEY` set 14/11/2026); owner revokes the temporary Supabase access token and full-access Resend key; decide the wording items in `docs/legal/audit-2026-11-12.md` ("Published terms for the sign-up page"); link `/signup` from wherever you want it found (the home page is still a neutral placeholder).
+- [x] Owner login `hello@winjodigital.co.uk` created email-only with `super_admin` (14/11/2026).
+- [ ] Before it goes live: the Operator app (with the email sign-in screen) must be part of the deployment, which is the merge; all Vercel settings are in (`SUPABASE_SERVICE_ROLE_KEY` and a sending-only `RESEND_API_KEY` set 14/11/2026); owner revokes the temporary Supabase access token and full-access Resend key; decide the wording items in `docs/legal/audit-2026-11-12.md` ("Published terms for the sign-up page"); link `/signup` from wherever you want it found (the home page is still a neutral placeholder).
 - [ ] Later: optional card payment of the set-up fee (Stripe Checkout; adds fees and touches the payment webhook, so ask first), an email to the applicant when approved or rejected.
 
 ### Site builder (owner decision 13/11/2026; plan in `docs/site-builder.md`)
