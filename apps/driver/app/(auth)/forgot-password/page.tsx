@@ -6,6 +6,7 @@ import { ArrowLeft, Loader2, MailCheck } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { BRAND } from '@/lib/brand'
 import { useSigninBrand } from '@/lib/use-signin-brand'
+import { withBase } from '@/lib/base-path'
 
 export default function ForgotPasswordPage() {
   const brand = useSigninBrand()
@@ -40,7 +41,7 @@ export default function ForgotPasswordPage() {
           <p className="mx-auto max-w-xs text-2xl font-semibold tracking-widest uppercase text-[#060C1A]">{brand.name}</p>
         ) : (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={brand?.logoUrl || '/logo.png'} alt={brand?.name || BRAND.name} width={160} height={160} className="mx-auto max-h-40 w-auto object-contain" />
+          <img src={brand?.logoUrl || withBase('/logo.png')} alt={brand?.name || BRAND.name} width={160} height={160} className="mx-auto max-h-40 w-auto object-contain" />
         )}
         <p className="text-[#4f6580] mt-2 tracking-widest uppercase text-xs">Driver Portal</p>
       </div>

@@ -59,3 +59,25 @@ describe('matcher', () => {
     for (const p of ['/dashboard', '/jobs/abc', '/login']) expect(re.test(p), p).toBe(true)
   })
 })
+
+// Served under /driver (next.config basePath): the redirects must keep the prefix.
+describe('under the /driver base path', () => {
+  const runBase = (path: string) => middleware(new NextRequest(`https://site.test/driver${path}`, { nextConfig: { basePath: '/driver' } }))
+
+  it('sends a signed-out visitor to /driver/login, not /login', async () => {
+    getUser.mockResolvedValue({ data: { user: null } })
+    const r = await runBase('/jobs/abc?x=1')
+    expect(r.status).toBe(307)
+    expect(loc(r)).toBe('https://site.test/driver/login')
+  })
+  it('lets the public pages through', async () => {
+    getUser.mockResolvedValue({ data: { user: null } })
+    for (const p of ['/login', '/forgot-password', '/reset-password', '/auth/callback']) expect((await runBase(p)).status).toBe(200)
+  })
+  it('sends a signed-in driver on /driver/login to /driver/dashboard', async () => {
+    getUser.mockResolvedValue({ data: { user: { id: 'u1' } } })
+    const r = await runBase('/login')
+    expect(r.status).toBe(307)
+    expect(loc(r)).toBe('https://site.test/driver/dashboard')
+  })
+})

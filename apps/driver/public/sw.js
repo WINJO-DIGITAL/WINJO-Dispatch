@@ -1,4 +1,15 @@
-const CACHE = 'evexec-driver-v2'
+const CACHE = 'driver-v3'
+
+// This app is one page of a larger site, served under /driver (see lib/base-path.ts). Links in push
+// notifications are written relative to the app ('/jobs/1'), so they are put under /driver here, and
+// a tap only ever reuses a Driver App tab, never another page of the site.
+const BASE = '/driver'
+const appUrl = (u) => {
+  u = String(u || '/jobs')
+  if (/^https?:\/\//.test(u)) return u
+  if (!u.startsWith('/')) u = `/${u}`
+  return u === BASE || u.startsWith(`${BASE}/`) || u.startsWith(`${BASE}?`) ? u : `${BASE}${u}`
+}
 
 self.addEventListener('install', () => { self.skipWaiting() })
 
@@ -37,16 +48,16 @@ self.addEventListener('push', (event) => {
   // receives pushes without displaying a notification.
   let data = {}
   try { data = event.data?.json() ?? {} } catch { data = { body: event.data?.text() } }
-  const tag = data.tag ?? `${data.url ?? '/jobs'}|${data.title ?? ''}`
+  const tag = data.tag ?? `${appUrl(data.url)}|${data.title ?? ''}`
   event.waitUntil(
     self.registration.showNotification(data.title ?? 'New notification', {
       body: data.body ?? 'You have an update',
-      icon: '/icons/icon-192.png',
-      badge: '/icons/badge-96.png',
+      icon: `${BASE}/icons/icon-192.png`,
+      badge: `${BASE}/icons/badge-96.png`,
       vibrate: [200, 100, 200],
       tag,
       renotify: true,
-      data: { url: data.url ?? '/jobs' },
+      data: { url: appUrl(data.url) },
     })
   )
 })
@@ -54,10 +65,10 @@ self.addEventListener('push', (event) => {
 // Open app on notification tap
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()
-  const url = event.notification.data?.url ?? '/jobs'
+  const url = appUrl(event.notification.data?.url)
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((cs) => {
-      const open = cs.find((c) => c.url.includes(self.location.origin))
+      const open = cs.find((c) => c.url.startsWith(`${self.location.origin}${BASE}/`) || c.url === `${self.location.origin}${BASE}`)
       if (open) { open.navigate(url); return open.focus() }
       return clients.openWindow(url)
     })

@@ -31,12 +31,20 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p))
 
+  // nextUrl knows the base path (/driver); a plain new URL('/login', ...) would drop it.
+  const go = (to: string) => {
+    const url = request.nextUrl.clone()
+    url.pathname = to
+    url.search = ''
+    return NextResponse.redirect(url)
+  }
+
   if (!user && !isPublic) {
-    return NextResponse.redirect(new URL('/login', request.url))
+    return go('/login')
   }
 
   if (user && pathname === '/login') {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+    return go('/dashboard')
   }
 
   return supabaseResponse

@@ -7,6 +7,7 @@ import { Eye, EyeOff, Loader2 } from 'lucide-react'
 import { login } from '@/app/actions/auth'
 import { BRAND } from '@/lib/brand'
 import { useSigninBrand } from '@/lib/use-signin-brand'
+import { withBase } from '@/lib/base-path'
 
 export default function LoginPage() {
   const brand = useSigninBrand()
@@ -39,7 +40,7 @@ export default function LoginPage() {
         ) : (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={brand?.logoUrl || '/logo.png'}
+            src={brand?.logoUrl || withBase('/logo.png')}
             alt={brand?.name || BRAND.name}
             width={160}
             height={160}

@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { formatDate, formatTime, paymentInfo, formatStamp } from '@/lib/format'
 import type { Booking, BookingExpense } from '@/lib/types'
 import { useBusiness } from '@/components/business'
+import { withBase } from '@/lib/base-path'
 
 export default function ReceiptPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -142,7 +143,7 @@ export default function ReceiptPage({ params }: { params: Promise<{ id: string }
           {/* Header */}
           <div className="text-center mb-6 pb-5 border-b border-[#c4d4e4] print-divider">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt={business.name} width={64} height={64} className="mx-auto mb-3" />
+            <img src={withBase('/logo.png')} alt={business.name} width={64} height={64} className="mx-auto mb-3" />
             <p className="text-[#4f6580] text-[10px] uppercase tracking-widest print-gray">Journey Receipt</p>
             <h1 className="text-[#7a5c14] font-bold text-2xl mt-1 tracking-wide print-black">
               {ref}

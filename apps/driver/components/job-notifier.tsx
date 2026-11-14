@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { syncPush } from '@/lib/push'
 import { useToast } from './toast'
 import { formatDate } from '@/lib/format'
+import { withBase } from '@/lib/base-path'
 
 const CANCELLED_STATUSES = new Set(['cancelled', 'Cancelled', 'canceled', 'Canceled', 'No Show', 'no show'])
 const DETAIL_FIELDS = [
@@ -21,7 +22,7 @@ function showNativeNotification(title: string, body: string, tag: string) {
   if (!('Notification' in window) || Notification.permission !== 'granted') return
   if (document.visibilityState === 'visible') return
   navigator.serviceWorker?.ready
-    .then((reg) => reg.showNotification(title, { body, icon: '/icons/icon-192.png', badge: '/icons/badge-96.png', tag }))
+    .then((reg) => reg.showNotification(title, { body, icon: withBase('/icons/icon-192.png'), badge: withBase('/icons/badge-96.png'), tag }))
     .catch(() => {})
 }
 
