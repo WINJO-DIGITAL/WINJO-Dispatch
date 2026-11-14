@@ -1,7 +1,9 @@
--- EV Exec database baseline: the structure of the live project, for tests.
+-- Platform database baseline: the structure of the live project, for tests.
 --
--- GENERATED. Do not edit by hand. Rebuild with generate.sql and assemble.py
--- (see README.md). It holds structure and access rules only: no customer data,
+-- Updated on 14/11/2026 to match the live project after the clean-up migration
+-- (20261114210000), by applying the same changes to this file and running the
+-- database tests. A full regeneration with generate.sql and assemble.py (see
+-- README.md) should be run when convenient to confirm it matches live. It holds structure and access rules only: no customer data,
 -- no secrets, no scheduled jobs.
 --
 -- It is NOT a migration and is never applied to the live project.
@@ -34,7 +36,7 @@ create table public.audit_log (
   entity_id text not null,
   details jsonb,
   created_at timestamp with time zone default now(),
-  tenant_id uuid default '00000000-0000-0000-0000-000000000001'::uuid not null
+  tenant_id uuid not null
 );
 
 create table public.booking_audit_log (
@@ -131,7 +133,7 @@ create table public.bookings (
   offer_expires_at timestamp with time zone,
   operator_response text,
   operator_responded_at timestamp with time zone,
-  tenant_id uuid default '00000000-0000-0000-0000-000000000001'::uuid not null,
+  tenant_id uuid not null,
   attestation_first_deadline timestamp with time zone,
   attestation_second_deadline timestamp with time zone,
   first_attestation_sent_at timestamp with time zone,
@@ -152,7 +154,7 @@ create table public.contact_messages (
   message text not null,
   status text default 'new'::text,
   created_at timestamp with time zone default now(),
-  tenant_id uuid default '00000000-0000-0000-0000-000000000001'::uuid not null
+  tenant_id uuid not null
 );
 
 create table public.driver_events (
@@ -195,7 +197,7 @@ create table public.driver_shifts (
 
 create table public.driver_sms_reminders (
   id uuid default gen_random_uuid() not null,
-  tenant_id uuid default '00000000-0000-0000-0000-000000000001'::uuid not null,
+  tenant_id uuid not null,
   booking_id uuid not null,
   driver_id uuid not null,
   reminder_type text not null,
@@ -244,7 +246,7 @@ create table public.drivers (
   license_expiry date,
   dbs_expiry date,
   pcol_expiry date,
-  tenant_id uuid default '00000000-0000-0000-0000-000000000001'::uuid not null,
+  tenant_id uuid not null,
   kind text default 'driver'::text not null
 );
 
@@ -257,11 +259,11 @@ create table public.error_log (
   user_email text,
   context jsonb,
   created_at timestamp with time zone default now(),
-  tenant_id uuid default '00000000-0000-0000-0000-000000000001'::uuid not null
+  tenant_id uuid not null
 );
 
 create table public.flight_verification_settings (
-  tenant_id uuid default '00000000-0000-0000-0000-000000000001'::uuid not null,
+  tenant_id uuid not null,
   pickup_buffer_minutes integer default 45 not null,
   updated_at timestamp with time zone default now() not null,
   updated_by uuid
@@ -269,7 +271,7 @@ create table public.flight_verification_settings (
 
 create table public.flight_verifications (
   id uuid default gen_random_uuid() not null,
-  tenant_id uuid default '00000000-0000-0000-0000-000000000001'::uuid not null,
+  tenant_id uuid not null,
   booking_id uuid not null,
   direction text not null,
   flight_number text not null,
@@ -323,7 +325,7 @@ create table public.invoices (
   created_at timestamp with time zone default now() not null,
   updated_at timestamp with time zone default now() not null,
   journey jsonb default '{}'::jsonb not null,
-  tenant_id uuid default '00000000-0000-0000-0000-000000000001'::uuid not null,
+  tenant_id uuid not null,
   booking_id uuid
 );
 
@@ -344,7 +346,7 @@ create table public.missed_calls (
   resolved boolean default false,
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now(),
-  tenant_id uuid default '00000000-0000-0000-0000-000000000001'::uuid not null
+  tenant_id uuid not null
 );
 
 create table public.notification_channel_settings (
@@ -365,7 +367,7 @@ create table public.notification_log (
   channel text not null,
   recipient text,
   sent_at timestamp with time zone default now(),
-  tenant_id uuid default '00000000-0000-0000-0000-000000000001'::uuid not null
+  tenant_id uuid not null
 );
 
 create table public.notification_queue (
@@ -386,7 +388,7 @@ create table public.notification_queue (
   sent_at timestamp with time zone,
   last_error text,
   created_at timestamp with time zone default now(),
-  tenant_id uuid default '00000000-0000-0000-0000-000000000001'::uuid not null
+  tenant_id uuid not null
 );
 
 create table public.operator_push_subscriptions (
@@ -402,7 +404,7 @@ create table public.operator_push_subscriptions (
 
 create table public.operator_sms_tasks (
   id uuid default gen_random_uuid() not null,
-  tenant_id uuid default '00000000-0000-0000-0000-000000000001'::uuid not null,
+  tenant_id uuid not null,
   booking_id uuid not null,
   kind text not null,
   customer_name text,
@@ -417,7 +419,7 @@ create table public.operator_sms_tasks (
 
 create table public.points_transactions (
   id uuid default gen_random_uuid() not null,
-  tenant_id uuid default '00000000-0000-0000-0000-000000000001'::uuid not null,
+  tenant_id uuid not null,
   user_id uuid not null,
   booking_id uuid,
   points integer not null,
@@ -436,7 +438,7 @@ create table public.profiles (
   privilege_points integer default 0 not null,
   created_at timestamp with time zone default now() not null,
   updated_at timestamp with time zone default now() not null,
-  tenant_id uuid default '00000000-0000-0000-0000-000000000001'::uuid not null,
+  tenant_id uuid not null,
   stripe_customer_id text,
   notify_email boolean default true not null,
   notify_sms boolean default true not null
@@ -488,7 +490,7 @@ create table public.quote_requests (
   return_flight_number text,
   return_pickup text,
   return_destination text,
-  tenant_id uuid default '00000000-0000-0000-0000-000000000001'::uuid not null
+  tenant_id uuid not null
 );
 
 create table public.reviews (
@@ -499,7 +501,7 @@ create table public.reviews (
   source text default 'Google'::text,
   is_featured boolean default true,
   created_at timestamp with time zone default now(),
-  tenant_id uuid default '00000000-0000-0000-0000-000000000001'::uuid not null
+  tenant_id uuid not null
 );
 
 create table public.saved_addresses (
@@ -556,7 +558,7 @@ create table public.tenants (
   created_at timestamp with time zone default now() not null,
   updated_at timestamp with time zone default now() not null,
   pricing jsonb,
-  ref_prefix text default 'EVX'::text not null
+  ref_prefix text default 'WJD'::text not null
 );
 
 
@@ -761,6 +763,35 @@ CREATE INDEX stripe_webhook_rejections_received_idx ON public.stripe_webhook_rej
 CREATE UNIQUE INDEX tenant_users_one_super_admin_per_user ON public.tenant_users USING btree (user_id) WHERE (role = 'super_admin'::text);
 
 -- ─── Functions ─────────────────────────────────────────────────────────────
+
+-- The signed-in person's business (used as the default for new business rows).
+
+create or replace function private.my_tenant_id()
+ returns uuid
+ language sql
+ stable security definer
+ set search_path to 'public', 'pg_temp'
+as $fn$
+  select tu.tenant_id
+  from public.tenant_users tu
+  where tu.user_id = auth.uid() and tu.tenant_id is not null
+  order by tu.tenant_id
+  limit 1
+$fn$;
+revoke all on function private.my_tenant_id() from public;
+grant execute on function private.my_tenant_id() to anon, authenticated, service_role;
+
+CREATE OR REPLACE FUNCTION public.html_escape(p text)
+ RETURNS text
+ LANGUAGE sql
+ IMMUTABLE
+ SET search_path TO 'public', 'pg_temp'
+AS $function$
+  select replace(replace(replace(coalesce(p,''),'&','&amp;'),'<','&lt;'),'>','&gt;')
+$function$
+;
+revoke all on function public.html_escape(text) from public, anon, authenticated, service_role;
+grant execute on function public.html_escape(text) to service_role;
 
 CREATE OR REPLACE FUNCTION public.driver_accept_booking(p_booking_id uuid, p_driver_id uuid)
  RETURNS json
@@ -1047,7 +1078,7 @@ begin
         if v_ch='email' then
           v_html := tenant_notification_email(new.tenant_id, 
             'Booking confirmed', '#fbf3e0', '#8a6516',
-            'Hi ' || evexec_esc(v_first) || ', your airport transfer is booked. We look forward to seeing you.',
+            'Hi ' || html_escape(v_first) || ', your airport transfer is booked. We look forward to seeing you.',
             v_rows, v_foot);
           insert into notification_queue (id,booking_id,type,channel,recipient,subject,body,html,status,attempts,next_attempt_at,created_at)
           values (gen_random_uuid(),new.id,'received','email',v_email,'Your '||v_bn||'airport transfer is booked (Ref '||new.ref||')',v_conf,v_html,'pending',0,now(),now());
@@ -1066,7 +1097,7 @@ begin
         v_reminder_type := 'en_route';
         v_html := tenant_notification_email(new.tenant_id, 
           'Driver on the way', '#e6effb', '#1e4a8a',
-          'Hi ' || evexec_esc(v_first) || ', your driver is now on the way to your pickup point.',
+          'Hi ' || html_escape(v_first) || ', your driver is now on the way to your pickup point.',
           v_rows || jsonb_build_array(
             jsonb_build_object('label', 'Driver',  'value', v_drv_name),
             jsonb_build_object('label', 'Vehicle', 'value', v_drv_vehicle)),
@@ -1076,7 +1107,7 @@ begin
         v_reminder_type := 'arrived';
         v_html := tenant_notification_email(new.tenant_id, 
           'Driver arrived', '#dcfce7', '#166534',
-          'Hi ' || evexec_esc(v_first) || ', your driver has arrived at your pickup point and is ready when you are.',
+          'Hi ' || html_escape(v_first) || ', your driver has arrived at your pickup point and is ready when you are.',
           v_rows || jsonb_build_array(
             jsonb_build_object('label', 'Driver',  'value', v_drv_name),
             jsonb_build_object('label', 'Vehicle', 'value', v_drv_vehicle)),
@@ -1088,7 +1119,7 @@ begin
         v_reminder_type := 'cancelled';
         v_html := tenant_notification_email(new.tenant_id, 
           'Booking cancelled', '#fee2e2', '#991b1b',
-          'Hi ' || evexec_esc(v_first) || ', your booking has been cancelled. If this is unexpected, please get in touch.',
+          'Hi ' || html_escape(v_first) || ', your booking has been cancelled. If this is unexpected, please get in touch.',
           v_rows, v_foot);
       else v_msg := null; end if;
 
@@ -1115,25 +1146,7 @@ end;
 $function$
 ;
 
-CREATE OR REPLACE FUNCTION public.evexec_esc(p text)
- RETURNS text
- LANGUAGE sql
- IMMUTABLE
- SET search_path TO 'public', 'pg_temp'
-AS $function$
-  select replace(replace(replace(coalesce(p,''),'&','&amp;'),'<','&lt;'),'>','&gt;')
-$function$
-;
 
-CREATE OR REPLACE FUNCTION public.evexec_notification_email(p_pill text, p_pill_bg text, p_pill_fg text, p_lead text, p_rows jsonb, p_footnote text)
- RETURNS text
- LANGUAGE sql
- STABLE
- SET search_path TO 'public', 'pg_temp'
-AS $function$
-  select public.tenant_notification_email('00000000-0000-0000-0000-000000000001'::uuid, p_pill, p_pill_bg, p_pill_fg, p_lead, p_rows, p_footnote)
-$function$
-;
 
 CREATE OR REPLACE FUNCTION public.get_booking_status_breakdown(since timestamp with time zone DEFAULT NULL::timestamp with time zone)
  RETURNS TABLE(status text, count bigint)
@@ -1181,7 +1194,7 @@ begin
   select jsonb_build_object(
     'vapid_public',  c.vapid_public,
     'vapid_private', c.vapid_private,
-    'vapid_subject', coalesce(c.vapid_subject, 'mailto:book@evexec.co.uk'),
+    'vapid_subject', coalesce(c.vapid_subject, 'mailto:hello@winjodigital.co.uk'),
     'subscriptions', coalesce((
       select jsonb_agg(jsonb_build_object('endpoint', s.endpoint, 'p256dh', s.p256dh, 'auth', s.auth))
       from public.operator_push_subscriptions s
@@ -1214,7 +1227,7 @@ begin
   select jsonb_build_object(
     'vapid_public',  c.vapid_public,
     'vapid_private', c.vapid_private,
-    'vapid_subject', coalesce(c.vapid_subject, 'mailto:book@evexec.co.uk'),
+    'vapid_subject', coalesce(c.vapid_subject, 'mailto:hello@winjodigital.co.uk'),
     'subscriptions', coalesce((
       select jsonb_agg(jsonb_build_object('endpoint', s.endpoint, 'p256dh', s.p256dh, 'auth', s.auth))
       from public.operator_push_subscriptions s
@@ -1252,10 +1265,13 @@ begin
     select id into v_tenant from public.tenants where id = v_raw::uuid and status = 'active';
   end if;
 
-  insert into public.profiles (id, full_name, tenant_id)
-  values (NEW.id, NEW.raw_user_meta_data->>'full_name',
-          coalesce(v_tenant, '00000000-0000-0000-0000-000000000001'::uuid))
-  on conflict (id) do nothing;
+  -- A customer profile belongs to a business. An account made with no business (staff, drivers,
+  -- the platform owner) gets none.
+  if v_tenant is not null then
+    insert into public.profiles (id, full_name, tenant_id)
+    values (NEW.id, NEW.raw_user_meta_data->>'full_name', v_tenant)
+    on conflict (id) do nothing;
+  end if;
   return NEW;
 end;
 $function$
@@ -1401,7 +1417,7 @@ begin
   select webhook_secret into v_secret from public.push_config where id = true;
   if v_secret is null then return new; end if;
   perform net.http_post(
-    url     := 'https://evexecoperator.vercel.app/api/push/dispatch',
+    url     := 'https://winjo-dispatch.vercel.app/api/push/dispatch',
     headers := jsonb_build_object('Content-Type', 'application/json', 'x-webhook-secret', v_secret),
     body    := jsonb_build_object('record', row_to_json(new))
   );
@@ -1428,7 +1444,7 @@ begin
     v_when  := concat_ws(' ', left(new.travel_time, 5), to_char(new.travel_date, 'DD/MM/YYYY'));
     v_where := coalesce(nullif(new.pickup_location, ''), new.airport);
     perform net.http_post(
-      url := 'https://evexecoperator.vercel.app/api/push/dispatch',
+      url := 'https://winjo-dispatch.vercel.app/api/push/dispatch',
       headers := jsonb_build_object('Content-Type', 'application/json', 'x-webhook-secret', v_secret),
       body := jsonb_build_object(
         'tenant_id', new.tenant_id,
@@ -1802,53 +1818,6 @@ end;
 $function$
 ;
 
-CREATE OR REPLACE FUNCTION private.run_evexec_backup()
- RETURNS integer
- LANGUAGE plpgsql
- SECURITY DEFINER
- SET search_path TO 'public', 'pg_temp'
-AS $function$
-declare
-  url constant text := 'https://xrcrwcejxkcowhrfbmgq.supabase.co/rest/v1/rpc/store_evexec_backup';
-  key constant text := 'sb_publishable_5x6A7BtHKULnjllWEcNSpw_G7xUrPtm';
-  secret text;
-  run uuid := gen_random_uuid();
-  t record;
-  rows jsonb;
-  sent int := 0;
-begin
-  select decrypted_secret into secret from vault.decrypted_secrets where name = 'evexec_backup_secret';
-  if secret is null then raise exception 'evexec_backup_secret missing from vault'; end if;
-
-  for t in
-    select table_schema, table_name from information_schema.tables
-     where table_schema in ('public', 'private') and table_type = 'BASE TABLE'
-     order by 1, 2
-  loop
-    execute format('select coalesce(jsonb_agg(to_jsonb(x)), ''[]''::jsonb) from %I.%I x', t.table_schema, t.table_name) into rows;
-    perform net.http_post(
-      url := url,
-      headers := jsonb_build_object('Content-Type', 'application/json', 'apikey', key),
-      body := jsonb_build_object('p_secret', secret, 'p_run_id', run, 'p_table', t.table_schema || '.' || t.table_name, 'p_rows', rows),
-      timeout_milliseconds := 30000);
-    sent := sent + 1;
-  end loop;
-
-  select coalesce(jsonb_agg(jsonb_build_object(
-           'id', u.id, 'email', u.email, 'phone', u.phone, 'created_at', u.created_at,
-           'email_confirmed_at', u.email_confirmed_at, 'last_sign_in_at', u.last_sign_in_at,
-           'raw_user_meta_data', u.raw_user_meta_data)), '[]'::jsonb)
-    into rows from auth.users u;
-  perform net.http_post(
-    url := url,
-    headers := jsonb_build_object('Content-Type', 'application/json', 'apikey', key),
-    body := jsonb_build_object('p_secret', secret, 'p_run_id', run, 'p_table', 'auth.users', 'p_rows', rows),
-    timeout_milliseconds := 30000);
-
-  return sent + 1;
-end;
-$function$
-;
 
 CREATE OR REPLACE FUNCTION private.set_audit_log_tenant()
  RETURNS trigger
@@ -1858,11 +1827,10 @@ CREATE OR REPLACE FUNCTION private.set_audit_log_tenant()
 AS $function$
 begin
   if new.tenant_id is null then
-    new.tenant_id := coalesce(
-      (select tu.tenant_id from public.tenant_users tu where tu.user_id = new.actor_id and tu.tenant_id is not null limit 1),
-      '00000000-0000-0000-0000-000000000001'
-    );
+    new.tenant_id := (select tu.tenant_id from public.tenant_users tu where tu.user_id = new.actor_id and tu.tenant_id is not null limit 1);
   end if;
+  -- An action by someone with no business of their own (the platform owner) is not filed under any business.
+  if new.tenant_id is null then return null; end if;
   return new;
 end;
 $function$
@@ -2177,7 +2145,7 @@ AS $function$
   with t as (
     select t.name, t.contact_email, t.contact_phone, t.brand
     from public.tenants t
-    where t.id = coalesce(p_tenant, '00000000-0000-0000-0000-000000000001'::uuid)
+    where t.id = p_tenant
   ),
   p as (
     select t.*,
@@ -2226,7 +2194,7 @@ AS $function$
   || '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#E9EBF2" style="background:#E9EBF2"><tr><td align="center">'
   || '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#ffffff" style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e2e5ee">'
   || '<tr><td bgcolor="#0B132B" style="background:#0B132B;padding:22px 28px">'
-  ||   '<div style="color:#d7a23f;font-size:20px;font-weight:800;letter-spacing:.22em">' || evexec_esc(b.v->>'wordmark') || '</div>'
+  ||   '<div style="color:#d7a23f;font-size:20px;font-weight:800;letter-spacing:.22em">' || html_escape(b.v->>'wordmark') || '</div>'
   || '</td></tr>'
   || '<tr><td bgcolor="#C9A550" style="background:#C9A550;height:4px;line-height:4px;font-size:0">&nbsp;</td></tr>'
   || '<tr><td bgcolor="#ffffff" style="background:#ffffff;padding:26px 28px">'
@@ -2236,9 +2204,9 @@ AS $function$
   ||   coalesce((
          select string_agg(
                   '<tr><td style="padding:9px 0;color:#64748b;width:118px;border-bottom:1px solid #eef0f3;font-size:12px;text-transform:uppercase;letter-spacing:.04em;vertical-align:top">'
-                  || evexec_esc(e->>'label')
+                  || html_escape(e->>'label')
                   || '</td><td style="padding:9px 0;font-weight:700;color:#0f1b33;border-bottom:1px solid #eef0f3;font-size:14px;vertical-align:top">'
-                  || evexec_esc(e->>'value') || '</td></tr>',
+                  || html_escape(e->>'value') || '</td></tr>',
                   '' order by ord)
          from jsonb_array_elements(p_rows) with ordinality as t(e, ord)
          where nullif(btrim(e->>'value'),'') is not null
@@ -2249,8 +2217,8 @@ AS $function$
             else '' end
   || '</td></tr>'
   || '<tr><td bgcolor="#0B132B" style="background:#0B132B;padding:14px 28px;color:#9aa3b2;font-size:11px">'
-  ||   evexec_esc(concat_ws(' · ', nullif(b.v->>'name',''), nullif(b.v->>'tagline',''), nullif(b.v->>'phone',''), nullif(b.v->>'email',''), nullif(b.v->>'domain','')))
-  ||   case when nullif(b.v->>'licence','') is not null then '<br>Private hire operator licence ' || evexec_esc(b.v->>'licence') else '' end
+  ||   html_escape(concat_ws(' · ', nullif(b.v->>'name',''), nullif(b.v->>'tagline',''), nullif(b.v->>'phone',''), nullif(b.v->>'email',''), nullif(b.v->>'domain','')))
+  ||   case when nullif(b.v->>'licence','') is not null then '<br>Private hire operator licence ' || html_escape(b.v->>'licence') else '' end
   ||   '</td></tr>'
   || '</table></td></tr></table></body></html>'
   from (select public.tenant_brand(p_tenant) as v) b
@@ -3263,8 +3231,6 @@ revoke all on function driver_update_status(uuid,text,uuid) from public, anon, a
 revoke all on function enforce_booking_status_transition() from public, anon, authenticated, service_role;
 revoke all on function enqueue_driver_notifications() from public, anon, authenticated, service_role;
 revoke all on function enqueue_operator_customer_notifications() from public, anon, authenticated, service_role;
-revoke all on function evexec_esc(text) from public, anon, authenticated, service_role;
-revoke all on function evexec_notification_email(text,text,text,text,jsonb,text) from public, anon, authenticated, service_role;
 revoke all on function get_booking_status_breakdown(timestamp with time zone) from public, anon, authenticated, service_role;
 revoke all on function get_booking_totals(timestamp with time zone) from public, anon, authenticated, service_role;
 revoke all on function get_push_dispatch_bundle(text) from public, anon, authenticated, service_role;
@@ -3287,7 +3253,6 @@ revoke all on function private.is_member_of_tenant(uuid) from anon, authenticate
 revoke all on function private.is_staff() from public, anon, authenticated, service_role;
 revoke all on function private.is_super_admin() from anon, authenticated, service_role;
 revoke all on function private.log_booking_changes() from public, anon, authenticated, service_role;
-revoke all on function private.run_evexec_backup() from public, anon, authenticated, service_role;
 revoke all on function private.set_audit_log_tenant() from anon, authenticated, service_role;
 revoke all on function private.set_push_subscription_tenant() from public, anon, authenticated, service_role;
 revoke all on function private.set_tenant_from_booking() from public, anon, authenticated, service_role;
@@ -3324,8 +3289,6 @@ grant execute on function enforce_booking_status_transition() to public;
 grant execute on function enforce_booking_status_transition() to service_role;
 grant execute on function enqueue_driver_notifications() to service_role;
 grant execute on function enqueue_operator_customer_notifications() to service_role;
-grant execute on function evexec_esc(text) to service_role;
-grant execute on function evexec_notification_email(text,text,text,text,jsonb,text) to service_role;
 grant execute on function get_booking_status_breakdown(timestamp with time zone) to authenticated;
 grant execute on function get_booking_status_breakdown(timestamp with time zone) to service_role;
 grant execute on function get_booking_totals(timestamp with time zone) to authenticated;
@@ -3463,12 +3426,6 @@ alter default privileges for role postgres in schema public grant all on sequenc
 alter default privileges for role postgres in schema public grant execute on functions to anon, authenticated, service_role;
 
 
--- ─── Rows the structure depends on ──────────────────────────────────────────
--- The first operator business. Column defaults and the sign-up trigger point at
--- this id, so it must exist. Name only: no contact details, prices or branding.
-insert into public.tenants (id, slug, name)
-values ('00000000-0000-0000-0000-000000000001', 'ev-exec', 'EV Exec')
-on conflict (id) do nothing;
 
 
 -- ─── Live settings recorded for reference (not created here) ────────────────
@@ -3717,3 +3674,22 @@ $fn$;
 
 revoke all on function public.set_tenant_site(uuid, text) from public, anon;
 grant execute on function public.set_tenant_site(uuid, text) to authenticated, service_role;
+
+-- ─── Column defaults: a new row takes the business of the signed-in person ───
+alter table public.audit_log alter column tenant_id set default private.my_tenant_id();
+alter table public.bookings alter column tenant_id set default private.my_tenant_id();
+alter table public.contact_messages alter column tenant_id set default private.my_tenant_id();
+alter table public.driver_sms_reminders alter column tenant_id set default private.my_tenant_id();
+alter table public.drivers alter column tenant_id set default private.my_tenant_id();
+alter table public.error_log alter column tenant_id set default private.my_tenant_id();
+alter table public.flight_verification_settings alter column tenant_id set default private.my_tenant_id();
+alter table public.flight_verifications alter column tenant_id set default private.my_tenant_id();
+alter table public.invoices alter column tenant_id set default private.my_tenant_id();
+alter table public.missed_calls alter column tenant_id set default private.my_tenant_id();
+alter table public.notification_log alter column tenant_id set default private.my_tenant_id();
+alter table public.notification_queue alter column tenant_id set default private.my_tenant_id();
+alter table public.operator_sms_tasks alter column tenant_id set default private.my_tenant_id();
+alter table public.points_transactions alter column tenant_id set default private.my_tenant_id();
+alter table public.profiles alter column tenant_id set default private.my_tenant_id();
+alter table public.quote_requests alter column tenant_id set default private.my_tenant_id();
+alter table public.reviews alter column tenant_id set default private.my_tenant_id();
