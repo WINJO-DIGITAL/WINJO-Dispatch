@@ -45,10 +45,10 @@ A multi-tenant booking, dispatch and payments platform. Winjo Digital owns the p
 
 ### Self-serve sign-up (owner approved price and terms 14/11/2026)
 - [x] Public page `/signup` and terms page `/platform-terms`, the API `POST /api/signup/apply` (honeypot, rate limit of 5 an hour, fees read from the database, applicant and owner emails from the platform's own sender), 29 website tests.
-- [x] Draft migration `supabase/pending/20261114100000_signup_applications.sql`: a table only the server can write, plus owner-only functions to confirm payment, approve (creates the business) and reject. 33 database tests pass. **Not applied to the platform database yet: needs the owner's approval.**
+- [x] Draft migration `supabase/pending/20261114100000_signup_applications.sql`: a table only the server can write, plus owner-only functions to confirm payment, approve (creates the business) and reject. 33 database tests pass. **Applied to the platform database 14/11/2026 (owner approved); locks checked.**
 - [x] Operator app, Settings → Platform → Applications (`ApplicationsSection.jsx`): confirm payment, approve, reject. 8 tests; whole app 408 pass. Approving creates the business but no login: then use "Invite a business's first admin".
 - Decisions made (change on request): the owner approves every business; the £999 is invoiced and paid outside the site (no card collection, no new Stripe fees, the payment webhook is untouched); the platform's own emails come from `PLATFORM_FROM` and never from a business address.
-- [ ] Before it goes live: apply the migration (approval needed); set `PLATFORM_FROM` (verified in Resend), `PLATFORM_OWNER_EMAIL`, optional `PLATFORM_SITE_URL`; decide the wording items in `docs/legal/audit-2026-11-12.md` ("Published terms for the sign-up page"); link `/signup` from wherever you want it found (the home page is still a neutral placeholder).
+- [ ] Before it goes live: create the owner login (below); set the three settings below in the website's hosting project; check the sending domain is verified in Resend; decide the wording items in `docs/legal/audit-2026-11-12.md` ("Published terms for the sign-up page"); link `/signup` from wherever you want it found (the home page is still a neutral placeholder).
 - [ ] Later: optional card payment of the set-up fee (Stripe Checkout; adds fees and touches the payment webhook, so ask first), an email to the applicant when approved or rejected.
 
 ### Site builder (owner decision 13/11/2026; plan in `docs/site-builder.md`)

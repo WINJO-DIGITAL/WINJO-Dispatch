@@ -43,6 +43,17 @@ Apply in this order (all additive; each file is in `supabase/migrations/`):
 
 Until they are applied: the Fees screen shows £49, anonymous direct inserts remain open, and "Save" on a website address will report the function is missing. Also give the owner's login the `super_admin` role in `tenant_users` (so the Platform screen shows).
 
+## Sign-up: what the owner sets up (14/11/2026)
+
+1. **Owner login** (Supabase dashboard, project WINJO DISPATCH, Authentication, Users, "Add user", email `hello@winjodigital.co.uk`, tick "Auto confirm user", choose a password and keep it yourself; never send it in chat). Then tell the engineer, who adds its `tenant_users` row with role `super_admin` and no business. That row is what makes Settings, Platform (Applications, Fees, set up a business) appear in the Operator app.
+2. **Website settings** (the hosting project's environment variables; none is a secret):
+   - `PLATFORM_FROM` = `Winjo Digital <hello@winjodigital.co.uk>` (the domain winjodigital.co.uk must be verified in Resend, or the emails are refused; not checked from here)
+   - `PLATFORM_REPLY_TO` = `hello@winjodigital.co.uk`
+   - `PLATFORM_OWNER_EMAIL` = `hello@winjodigital.co.uk`
+   - optional `PLATFORM_SITE_URL` = the platform's public address (https, no trailing slash)
+   Also needed, and secret: `SUPABASE_SERVICE_ROLE_KEY` and `RESEND_API_KEY` for this project, entered by the owner in the dashboard only.
+3. **Nothing is live until a deploy is approved**: the pages and the form exist in the repository only.
+
 ## Environment and secrets (names only; values never go in the repo or in chat)
 
 - Website: `STRIPE_SECRET_KEY` (EV Exec's own), `STRIPE_WEBHOOK_SECRET`, `STRIPE_PLATFORM_SECRET_KEY` and `STRIPE_CONNECT_WEBHOOK_SECRET` (Winjo Digital's, for other businesses), `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `OPERATOR_EMAIL` (platform staff alerts; each business uses its own contact email).

@@ -1,4 +1,4 @@
--- Self-serve sign-up (DRAFT, not applied to live).
+-- Self-serve sign-up (applied to the platform database 14/11/2026 with the owner's approval; kept here until the baseline is rebuilt).
 --
 -- A business applies on the website (/signup): its details and its acceptance of the Operator
 -- Services Agreement and Schedule A are stored here by the website's server (service role).
