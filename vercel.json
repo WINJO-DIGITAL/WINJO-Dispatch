@@ -36,6 +36,7 @@
     { "src": "/api/config", "dest": "/api/booking/index.js" },
     { "src": "/robots.txt", "dest": "/robots.txt" },
     { "src": "/booking", "dest": "/booking.html" },
+    { "src": "/favicon\\.(svg|ico)", "dest": "/favicon.$1" },
     { "src": "/signup", "dest": "/signup.html" },
     { "src": "/platform-terms", "dest": "/platform-terms.html" },
     { "src": "/account", "dest": "/account.html" },
