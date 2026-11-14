@@ -5,7 +5,6 @@ const nextConfig = {
   // bookmarks and push-notification links ("/operator") keep working.
   async redirects() {
     return [
-      { source: "/", destination: "/operator/today", permanent: false },
       { source: "/operator", destination: "/operator/today", permanent: false },
       { source: "/operator/dashboard", destination: "/operator/today", permanent: false },
       // Dispatch and Calendar became views of Bookings (?q= is passed through,
