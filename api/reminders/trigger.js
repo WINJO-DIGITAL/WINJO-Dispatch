@@ -159,6 +159,7 @@ async function handOffSmsToDriver(booking, message, type) {
     method: 'POST',
     headers: dbHeaders({ Prefer: 'resolution=ignore-duplicates,return=minimal' }),
     body: JSON.stringify({
+      tenant_id: booking.tenant_id,
       booking_id: booking.id,
       driver_id: booking.assigned_driver_id,
       reminder_type: reminderType,
