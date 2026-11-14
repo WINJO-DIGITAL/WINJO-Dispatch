@@ -1,4 +1,4 @@
--- Row-level security and guard-trigger tests for the shared EV Exec database
+-- Row-level security and guard-trigger tests for the shared platform database
 -- (website, Operator app, Driver App).
 --
 -- What it locks in: who can read and change bookings, drivers and the other
@@ -62,15 +62,15 @@ insert into public.drivers (id, tenant_id, name, full_name, email) values
 insert into public.bookings
   (id, tenant_id, ref, customer_name, customer_phone, travel_date, travel_time, status, payment_status, quoted_price, assigned_driver_id, user_id)
 values
-  ('aaaaaaaa-0000-4000-8000-00000000b001', 'aaaaaaaa-0000-4000-8000-000000000001', 'EVX-RLSTEST1', 'Test One',   '07000000001', '2099-01-01', '10:00', 'Dispatched', 'Unpaid', 90,   'aaaaaaaa-0000-4000-8000-0000000000d1', null),
-  ('aaaaaaaa-0000-4000-8000-00000000b002', 'aaaaaaaa-0000-4000-8000-000000000001', 'EVX-RLSTEST2', 'Test Two',   '07000000002', '2099-01-02', '10:00', 'Dispatched', 'Unpaid', 90,   'aaaaaaaa-0000-4000-8000-0000000000d2', null),
-  ('aaaaaaaa-0000-4000-8000-00000000b003', 'aaaaaaaa-0000-4000-8000-000000000001', 'EVX-RLSTEST3', 'Test Three', '07000000003', '2099-01-03', '10:00', 'Unassigned', 'Unpaid', 90,   null, 'aaaaaaaa-0000-4000-8000-0000000000c1'),
-  ('aaaaaaaa-0000-4000-8000-00000000b004', 'aaaaaaaa-0000-4000-8000-000000000002', 'EVX-RLSTEST4', 'Test Four',  '07000000004', '2099-01-04', '10:00', 'Dispatched', 'Unpaid', 90,   'aaaaaaaa-0000-4000-8000-0000000000d3', null),
-  ('aaaaaaaa-0000-4000-8000-00000000b005', 'aaaaaaaa-0000-4000-8000-000000000001', 'EVX-RLSTEST5', 'Test Five',  '07000000005', '2099-01-05', '10:00', 'pending',    'Unpaid', 90,   null, null),
-  ('aaaaaaaa-0000-4000-8000-00000000b006', 'aaaaaaaa-0000-4000-8000-000000000001', 'EVX-RLSTEST6', 'Test Six',   '07000000006', '2099-01-06', '10:00', 'Completed',  'Unpaid', null, 'aaaaaaaa-0000-4000-8000-0000000000d1', null),
-  ('aaaaaaaa-0000-4000-8000-00000000b007', 'aaaaaaaa-0000-4000-8000-000000000001', 'EVX-RLSTEST7', 'Test Seven', '07000000007', '2099-01-07', '10:00', 'Arrived',    'Unpaid', null, 'aaaaaaaa-0000-4000-8000-0000000000d1', null),
-  ('aaaaaaaa-0000-4000-8000-00000000b008', 'aaaaaaaa-0000-4000-8000-000000000002', 'EVX-RLSTEST8', 'Test Eight', '07000000008', '2099-01-08', '10:00', 'Dispatched', 'Unpaid', null, 'aaaaaaaa-0000-4000-8000-0000000000d1', null),
-  ('aaaaaaaa-0000-4000-8000-00000000b009', 'aaaaaaaa-0000-4000-8000-000000000001', 'EVX-RLSTEST9', 'Test Nine',  '07000000009', '2099-01-09', '10:00', 'Dispatched', 'Unpaid', null, 'aaaaaaaa-0000-4000-8000-0000000000d1', null);
+  ('aaaaaaaa-0000-4000-8000-00000000b001', 'aaaaaaaa-0000-4000-8000-000000000001', 'ACM-RLSTEST1', 'Test One',   '07000000001', '2099-01-01', '10:00', 'Dispatched', 'Unpaid', 90,   'aaaaaaaa-0000-4000-8000-0000000000d1', null),
+  ('aaaaaaaa-0000-4000-8000-00000000b002', 'aaaaaaaa-0000-4000-8000-000000000001', 'ACM-RLSTEST2', 'Test Two',   '07000000002', '2099-01-02', '10:00', 'Dispatched', 'Unpaid', 90,   'aaaaaaaa-0000-4000-8000-0000000000d2', null),
+  ('aaaaaaaa-0000-4000-8000-00000000b003', 'aaaaaaaa-0000-4000-8000-000000000001', 'ACM-RLSTEST3', 'Test Three', '07000000003', '2099-01-03', '10:00', 'Unassigned', 'Unpaid', 90,   null, 'aaaaaaaa-0000-4000-8000-0000000000c1'),
+  ('aaaaaaaa-0000-4000-8000-00000000b004', 'aaaaaaaa-0000-4000-8000-000000000002', 'ACM-RLSTEST4', 'Test Four',  '07000000004', '2099-01-04', '10:00', 'Dispatched', 'Unpaid', 90,   'aaaaaaaa-0000-4000-8000-0000000000d3', null),
+  ('aaaaaaaa-0000-4000-8000-00000000b005', 'aaaaaaaa-0000-4000-8000-000000000001', 'ACM-RLSTEST5', 'Test Five',  '07000000005', '2099-01-05', '10:00', 'pending',    'Unpaid', 90,   null, null),
+  ('aaaaaaaa-0000-4000-8000-00000000b006', 'aaaaaaaa-0000-4000-8000-000000000001', 'ACM-RLSTEST6', 'Test Six',   '07000000006', '2099-01-06', '10:00', 'Completed',  'Unpaid', null, 'aaaaaaaa-0000-4000-8000-0000000000d1', null),
+  ('aaaaaaaa-0000-4000-8000-00000000b007', 'aaaaaaaa-0000-4000-8000-000000000001', 'ACM-RLSTEST7', 'Test Seven', '07000000007', '2099-01-07', '10:00', 'Arrived',    'Unpaid', null, 'aaaaaaaa-0000-4000-8000-0000000000d1', null),
+  ('aaaaaaaa-0000-4000-8000-00000000b008', 'aaaaaaaa-0000-4000-8000-000000000002', 'ACM-RLSTEST8', 'Test Eight', '07000000008', '2099-01-08', '10:00', 'Dispatched', 'Unpaid', null, 'aaaaaaaa-0000-4000-8000-0000000000d1', null),
+  ('aaaaaaaa-0000-4000-8000-00000000b009', 'aaaaaaaa-0000-4000-8000-000000000001', 'ACM-RLSTEST9', 'Test Nine',  '07000000009', '2099-01-09', '10:00', 'Dispatched', 'Unpaid', null, 'aaaaaaaa-0000-4000-8000-0000000000d1', null);
 
 -- ─── 1. Structure ────────────────────────────────────────────────────────────
 
@@ -187,7 +187,7 @@ select lives_ok($$ select count(*) from public.reviews $$, 'not signed in: can r
 
 select throws_ok(
   $$ insert into public.bookings (tenant_id, ref, customer_name, customer_phone, travel_date, travel_time, status, payment_status)
-     values ('aaaaaaaa-0000-4000-8000-000000000001', 'EVX-RLSANON', 'Anon', '07000000000', '2099-02-01', '10:00', 'pending', 'Unpaid') $$,
+     values ('aaaaaaaa-0000-4000-8000-000000000001', 'ACM-RLSANON', 'Anon', '07000000000', '2099-02-01', '10:00', 'pending', 'Unpaid') $$,
   '42501', null,
   'not signed in: cannot insert a booking directly (the website goes through its own server)'
 );
@@ -209,7 +209,7 @@ set local "request.jwt.claims" to '{"sub":"aaaaaaaa-0000-4000-8000-0000000000a1"
 set local role authenticated;
 
 select is(
-  (select count(*)::int from public.bookings where ref like 'EVX-RLSTEST%'), 7,
+  (select count(*)::int from public.bookings where ref like 'ACM-RLSTEST%'), 7,
   'staff: see all seven bookings of their own business'
 );
 select is(
@@ -243,7 +243,7 @@ select lives_ok(
 );
 select throws_ok(
   $$ insert into public.bookings (tenant_id, ref, customer_name, customer_phone, travel_date, travel_time, status, payment_status)
-     values ('aaaaaaaa-0000-4000-8000-000000000002', 'EVX-RLSCROSS', 'Cross', '07000000000', '2099-02-02', '10:00', 'Unassigned', 'Unpaid') $$,
+     values ('aaaaaaaa-0000-4000-8000-000000000002', 'ACM-RLSCROSS', 'Cross', '07000000000', '2099-02-02', '10:00', 'Unassigned', 'Unpaid') $$,
   '42501', null,
   'staff: cannot create a booking inside another business'
 );
@@ -279,7 +279,7 @@ set local "request.jwt.claims" to '{"sub":"aaaaaaaa-0000-4000-8000-0000000000b1"
 set local role authenticated;
 
 select is(
-  (select array_agg(ref order by ref) from public.bookings where ref like 'EVX-RLSTEST%'), array['EVX-RLSTEST4', 'EVX-RLSTEST8'],
+  (select array_agg(ref order by ref) from public.bookings where ref like 'ACM-RLSTEST%'), array['ACM-RLSTEST4', 'ACM-RLSTEST8'],
   'staff of business two: see only their own bookings'
 );
 select is(
@@ -295,7 +295,7 @@ set local "request.jwt.claims" to '{"sub":"aaaaaaaa-0000-4000-8000-0000000000c1"
 set local role authenticated;
 
 select is(
-  (select array_agg(ref order by ref) from public.bookings), array['EVX-RLSTEST3'],
+  (select array_agg(ref order by ref) from public.bookings), array['ACM-RLSTEST3'],
   'customer: sees only their own booking'
 );
 select is((select count(*)::int from public.drivers), 0, 'customer: sees no drivers');
@@ -323,7 +323,7 @@ set local role authenticated;
 select is(
   (select array_agg(ref order by ref) from public.bookings
    where assigned_driver_id is not null and tenant_id = 'aaaaaaaa-0000-4000-8000-000000000001'),
-  array['EVX-RLSTEST1', 'EVX-RLSTEST6', 'EVX-RLSTEST7', 'EVX-RLSTEST9'],
+  array['ACM-RLSTEST1', 'ACM-RLSTEST6', 'ACM-RLSTEST7', 'ACM-RLSTEST9'],
   'driver: of the assigned jobs in their business, sees only their own'
 );
 select is(
@@ -538,7 +538,7 @@ reset role;
 set local "request.jwt.claims" to '{"sub":"aaaaaaaa-0000-4000-8000-0000000000f1","role":"authenticated","email":"super@rls-test.invalid"}';
 set local role authenticated;
 
-select is((select count(*)::int from public.bookings where ref like 'EVX-RLSTEST%'), 9, 'super admin: sees the bookings of every business');
+select is((select count(*)::int from public.bookings where ref like 'ACM-RLSTEST%'), 9, 'super admin: sees the bookings of every business');
 select is((select count(*)::int from public.drivers where email like '%@rls-test.invalid'), 3, 'super admin: sees the drivers of every business');
 select is((select count(*)::int from public.tenants where slug like 'rls-test-%'), 2, 'super admin: sees every business record');
 
@@ -549,7 +549,7 @@ reset role;
 set local "request.jwt.claims" to '{"role":"service_role"}';
 set local role service_role;
 
-select is((select count(*)::int from public.bookings where ref like 'EVX-RLSTEST%'), 9, 'service role: reads the bookings of every business');
+select is((select count(*)::int from public.bookings where ref like 'ACM-RLSTEST%'), 9, 'service role: reads the bookings of every business');
 select lives_ok(
   $$ update public.bookings set payment_status = 'Paid', payment_method = 'Card', quoted_price = 120 where id = 'aaaaaaaa-0000-4000-8000-00000000b004' $$,
   'service role: can record a payment and change a price (the website payment flow)'

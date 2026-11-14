@@ -1,6 +1,6 @@
 -- Setting up a new business (draft migration
 -- supabase/pending/20261112120000_provision_tenant.sql).
--- Checks what a new business gets, what it must not get (EV Exec's prices, SMS
+-- Checks what a new business gets, what it must not get (any built-in prices, SMS
 -- switched on), bad input, duplicates, and that only the servers can call it.
 -- Runs in one transaction and rolls back; creates its own fixtures.
 
@@ -17,7 +17,7 @@ select is((select slug from made), 'new-cars', 'the short name is kept');
 select is((select contact_email from made), 'hello@new.test', 'contact email saved');
 select is((select contact_phone from made), '07123 456789', 'contact phone saved without surrounding spaces');
 select is((select status from made), 'active', 'new businesses start active');
-select is((select pricing from made), '{"airports": [], "extra_stop": 0}'::jsonb, 'the price list starts empty, never EV Exec''s');
+select is((select pricing from made), '{"airports": [], "extra_stop": 0}'::jsonb, 'the price list starts empty, never a built-in list');
 select is((select brand #>> '{invoice,business_name}' from made), 'New Cars', 'the invoice name is pre-filled');
 
 select is((select count(*)::int from public.notification_channel_settings s join made m on m.id = s.tenant_id), 1, 'it has its own notification settings row');

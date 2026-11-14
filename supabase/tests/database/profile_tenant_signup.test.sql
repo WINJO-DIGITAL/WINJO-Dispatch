@@ -1,5 +1,4 @@
--- A new customer's profile is filed under the business named at sign-up (draft
--- migration supabase/migrations/20261112170000_profile_tenant_at_signup.sql).
+-- A new customer's profile is filed under the business named at sign-up.
 -- Rolls back; creates its own fixtures.
 
 begin;
@@ -20,11 +19,11 @@ insert into auth.users (id, email, raw_user_meta_data) values
 
 select is((select tenant_id from public.profiles where id = 'cccccccc-0000-4000-8000-0000000000a1'), (select id from biz), 'a customer who signed up on another business''s site is filed under it');
 select is((select full_name from public.profiles where id = 'cccccccc-0000-4000-8000-0000000000a1'), 'Ann', 'their name is still saved');
-select is((select tenant_id from public.profiles where id = 'cccccccc-0000-4000-8000-0000000000a2'), '00000000-0000-0000-0000-000000000001'::uuid, 'no business given: EV Exec, as before');
-select is((select tenant_id from public.profiles where id = 'cccccccc-0000-4000-8000-0000000000a3'), '00000000-0000-0000-0000-000000000001'::uuid, 'a malformed value does not block sign-up and falls back to EV Exec');
-select is((select tenant_id from public.profiles where id = 'cccccccc-0000-4000-8000-0000000000a4'), '00000000-0000-0000-0000-000000000001'::uuid, 'an unknown business falls back to EV Exec');
-select is((select tenant_id from public.profiles where id = 'cccccccc-0000-4000-8000-0000000000a5'), '00000000-0000-0000-0000-000000000001'::uuid, 'a suspended business is not used');
-select is((select count(*)::int from public.profiles where id::text like 'cccccccc-0000-4000-8000-0000000000a%'), 5, 'every sign-up got a profile');
+select is((select count(*)::int from public.profiles where id = 'cccccccc-0000-4000-8000-0000000000a2'), 0, 'no business given: no customer profile (staff, drivers and the platform owner have none)');
+select is((select count(*)::int from public.profiles where id = 'cccccccc-0000-4000-8000-0000000000a3'), 0, 'a malformed value does not block sign-up and gives no profile');
+select is((select count(*)::int from public.profiles where id = 'cccccccc-0000-4000-8000-0000000000a4'), 0, 'an unknown business gives no profile');
+select is((select count(*)::int from public.profiles where id = 'cccccccc-0000-4000-8000-0000000000a5'), 0, 'a suspended business is not used');
+select is((select count(*)::int from auth.users where id::text like 'cccccccc-0000-4000-8000-0000000000a%'), 5, 'every sign-up still created its account');
 
 select * from finish();
 rollback;

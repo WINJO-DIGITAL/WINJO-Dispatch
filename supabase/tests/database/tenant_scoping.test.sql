@@ -38,8 +38,8 @@ insert into public.tenant_users (user_id, tenant_id, role) values
 
 insert into public.bookings (id, tenant_id, ref, customer_name, customer_phone, travel_date, travel_time, status, payment_status)
 values
-  ('bbbbbbbb-0000-4000-8000-00000000b001', 'bbbbbbbb-0000-4000-8000-000000000001', 'EVX-SCOPE1', 'One', '07000000001', '2099-01-01', '10:00', 'Unassigned', 'Unpaid'),
-  ('bbbbbbbb-0000-4000-8000-00000000b002', 'bbbbbbbb-0000-4000-8000-000000000002', 'EVX-SCOPE2', 'Two', '07000000002', '2099-01-02', '10:00', 'Unassigned', 'Unpaid');
+  ('bbbbbbbb-0000-4000-8000-00000000b001', 'bbbbbbbb-0000-4000-8000-000000000001', 'ACM-SCOPE1', 'One', '07000000001', '2099-01-01', '10:00', 'Unassigned', 'Unpaid'),
+  ('bbbbbbbb-0000-4000-8000-00000000b002', 'bbbbbbbb-0000-4000-8000-000000000002', 'ACM-SCOPE2', 'Two', '07000000002', '2099-01-02', '10:00', 'Unassigned', 'Unpaid');
 
 insert into public.push_config (id, vapid_public, vapid_private, vapid_subject, webhook_secret)
 values (true, 'pub', 'priv', 'mailto:test@scope-test.invalid', 'test-secret')
@@ -170,21 +170,20 @@ set local role authenticated;
 select is((select count(*)::int from public.notification_channel_settings), 0, 'a customer sees no settings');
 reset role;
 
-select is((select count(*)::int from public.notification_channel_settings where tenant_id = '00000000-0000-0000-0000-000000000001'), 0, 'test database starts without the live business''s settings row (so none leaks into these checks)');
+select is((select count(*)::int from public.notification_channel_settings where tenant_id = 'a0000000-0000-4000-8000-000000000001'), 0, 'test database starts without any settings row for a made-up business (so none leaks into these checks)');
 
 -- ─── 3. Notification queue and log ──────────────────────────────────────────
 
 insert into public.notification_queue (booking_id, type, channel, recipient)
 values ('bbbbbbbb-0000-4000-8000-00000000b001', 'received', 'email', 'one@scope-test.invalid'),
        ('bbbbbbbb-0000-4000-8000-00000000b002', 'received', 'email', 'two@scope-test.invalid');
-insert into public.notification_queue (type, channel, recipient) values ('other', 'email', 'nobody@scope-test.invalid');
+select throws_ok($$insert into public.notification_queue (type, channel, recipient) values ('other', 'email', 'nobody@scope-test.invalid')$$, '23502', null, 'a message with no booking and no business is refused, never filed under another business');
 insert into public.notification_log (booking_id, type, channel, recipient)
 values ('bbbbbbbb-0000-4000-8000-00000000b001', 'received', 'email', 'one@scope-test.invalid'),
        ('bbbbbbbb-0000-4000-8000-00000000b002', 'received', 'email', 'two@scope-test.invalid');
 
 select is((select tenant_id::text from public.notification_queue where recipient = 'one@scope-test.invalid'), 'bbbbbbbb-0000-4000-8000-000000000001', 'a queued message takes its booking''s business');
 select is((select tenant_id::text from public.notification_queue where recipient = 'two@scope-test.invalid'), 'bbbbbbbb-0000-4000-8000-000000000002', 'including for the other business');
-select is((select tenant_id::text from public.notification_queue where recipient = 'nobody@scope-test.invalid'), '00000000-0000-0000-0000-000000000001', 'a message with no booking keeps the default business');
 select is((select tenant_id::text from public.notification_log where recipient = 'two@scope-test.invalid'), 'bbbbbbbb-0000-4000-8000-000000000002', 'a log row takes its booking''s business');
 
 set local "request.jwt.claims" to '{"sub":"bbbbbbbb-0000-4000-8000-0000000000a1","role":"authenticated"}';
@@ -208,7 +207,7 @@ reset role;
 
 set local "request.jwt.claims" to '{"sub":"bbbbbbbb-0000-4000-8000-0000000000f1","role":"authenticated"}';
 set local role authenticated;
-select is((select count(*)::int from public.notification_queue where recipient like '%@scope-test.invalid'), 3, 'a platform super admin sees every business''s queue');
+select is((select count(*)::int from public.notification_queue where recipient like '%@scope-test.invalid'), 2, 'a platform super admin sees every business''s queue');
 reset role;
 
 set local role anon;
@@ -219,7 +218,7 @@ reset role;
 
 set local "request.jwt.claims" to '{"role":"service_role"}';
 set local role service_role;
-select is((select count(*)::int from public.notification_queue where recipient like '%@scope-test.invalid'), 3, 'the servers still see the whole queue');
+select is((select count(*)::int from public.notification_queue where recipient like '%@scope-test.invalid'), 2, 'the servers still see the whole queue');
 select lives_ok($$ insert into public.notification_queue (booking_id, type, channel, recipient) values ('bbbbbbbb-0000-4000-8000-00000000b001', 'x', 'email', 'server@scope-test.invalid') $$, 'the servers can still queue a message');
 select lives_ok($$ insert into public.notification_log (booking_id, type, channel) values ('bbbbbbbb-0000-4000-8000-00000000b001', 'x', 'email') $$, 'the servers can still write the log');
 reset role;
@@ -229,23 +228,23 @@ reset role;
 -- The new-booking alert sends the whole booking row; the no-show alert sends
 -- the business next to its notice.
 insert into public.bookings (id, tenant_id, ref, customer_name, customer_phone, travel_date, travel_time, status, payment_status, source)
-values ('bbbbbbbb-0000-4000-8000-00000000b003', 'bbbbbbbb-0000-4000-8000-000000000002', 'EVX-SCOPE3', 'Three', '07000000003', '2099-01-03', '10:00', 'Unassigned', 'Unpaid', 'website');
+values ('bbbbbbbb-0000-4000-8000-00000000b003', 'bbbbbbbb-0000-4000-8000-000000000002', 'ACM-SCOPE3', 'Three', '07000000003', '2099-01-03', '10:00', 'Unassigned', 'Unpaid', 'website');
 select is(
-  (select body -> 'record' ->> 'tenant_id' from net._sent where body -> 'record' ->> 'ref' = 'EVX-SCOPE3'),
+  (select body -> 'record' ->> 'tenant_id' from net._sent where body -> 'record' ->> 'ref' = 'ACM-SCOPE3'),
   'bbbbbbbb-0000-4000-8000-000000000002',
   'the new-booking alert carries the booking''s business'
 );
 
 insert into public.bookings (id, tenant_id, ref, customer_name, customer_phone, travel_date, travel_time, status, payment_status)
-values ('bbbbbbbb-0000-4000-8000-00000000b004', 'bbbbbbbb-0000-4000-8000-000000000002', 'EVX-SCOPE4', 'Four', '07000000004', '2099-01-04', '10:00', 'Arrived', 'Unpaid');
+values ('bbbbbbbb-0000-4000-8000-00000000b004', 'bbbbbbbb-0000-4000-8000-000000000002', 'ACM-SCOPE4', 'Four', '07000000004', '2099-01-04', '10:00', 'Arrived', 'Unpaid');
 update public.bookings set status = 'No Show' where id = 'bbbbbbbb-0000-4000-8000-00000000b004';
 select is(
-  (select body ->> 'tenant_id' from net._sent where body -> 'notification' ->> 'tag' = 'noshow-EVX-SCOPE4'),
+  (select body ->> 'tenant_id' from net._sent where body -> 'notification' ->> 'tag' = 'noshow-ACM-SCOPE4'),
   'bbbbbbbb-0000-4000-8000-000000000002',
   'the no-show alert carries the booking''s business'
 );
 select is(
-  (select body -> 'notification' ->> 'title' from net._sent where body -> 'notification' ->> 'tag' = 'noshow-EVX-SCOPE4'),
+  (select body -> 'notification' ->> 'title' from net._sent where body -> 'notification' ->> 'tag' = 'noshow-ACM-SCOPE4'),
   'No-show: Four',
   'and still reads as before'
 );

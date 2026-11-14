@@ -1,4 +1,4 @@
--- Self-serve sign-up (draft migration supabase/pending/20261114100000_signup_applications.sql).
+-- Self-serve sign-up .
 -- Rolls back; creates its own fixtures.
 begin;
 create extension if not exists pgtap with schema extensions;
@@ -7,9 +7,10 @@ select * from no_plan();
 insert into auth.users (id, email) values
   ('eeeeeeee-0000-4000-8000-000000000051', 'owner@signup.invalid'),
   ('eeeeeeee-0000-4000-8000-000000000052', 'admin@signup.invalid');
+insert into public.tenants (id, slug, name) values ('a0000000-0000-4000-8000-000000000001', 'sample-cars', 'Sample Cars');
 insert into public.tenant_users (tenant_id, user_id, role) values
   (null, 'eeeeeeee-0000-4000-8000-000000000051', 'super_admin'),
-  ('00000000-0000-0000-0000-000000000001', 'eeeeeeee-0000-4000-8000-000000000052', 'operator_admin');
+  ('a0000000-0000-4000-8000-000000000001', 'eeeeeeee-0000-4000-8000-000000000052', 'operator_admin');
 
 -- The website's server (service role) files applications.
 set local role service_role;
@@ -77,11 +78,11 @@ select is((select decision_note from public.signup_applications where slug = 'no
 -- A short name already used by a business cannot be approved.
 set local role service_role;
 insert into public.signup_applications (business_name, slug, contact_name, contact_email, contract_version, responsibilities_version, setup_pence, monthly_pence, status)
-values ('Clash Ltd', 'ev-exec', 'C', 'c@clash.invalid', '1', '1', 0, 0, 'awaiting_payment');
+values ('Clash Ltd', 'sample-cars', 'C', 'c@clash.invalid', '1', '1', 0, 0, 'awaiting_payment');
 reset role;
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"eeeeeeee-0000-4000-8000-000000000051","role":"authenticated"}', true);
-select throws_ok($$select public.approve_signup_application((select id from public.list_signup_applications() where slug = 'ev-exec'))$$, '23505', null, 'a short name already used by a business is refused');
+select throws_ok($$select public.approve_signup_application((select id from public.list_signup_applications() where slug = 'sample-cars'))$$, '23505', null, 'a short name already used by a business is refused');
 reset role;
 
 select * from finish();
