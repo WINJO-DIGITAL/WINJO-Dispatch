@@ -12,6 +12,7 @@ import { BRAND } from '@/lib/brand'
 import { useBusiness } from '@/components/business'
 import type { Driver } from '@/lib/types'
 import { PushSettings } from '@/components/push-settings'
+import { withBase } from '@/lib/base-path'
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -121,7 +122,7 @@ export default function ProfilePage() {
       {/* Menu rows */}
       <div className="bg-white border border-[#c4d4e4] rounded-2xl overflow-hidden mb-4">
         <button
-          onClick={() => router.push('/earnings')}
+          onClick={() => router.push(withBase('/earnings'))}
           className="w-full flex items-center justify-between px-4 py-3.5 border-b border-[#d8e6f0] active:bg-[#dce8f2]"
         >
           <div className="flex items-center gap-3">
@@ -132,7 +133,7 @@ export default function ProfilePage() {
         </button>
 
         <button
-          onClick={() => router.push('/earnings?view=report')}
+          onClick={() => router.push(withBase('/earnings?view=report'))}
           className="w-full flex items-center justify-between px-4 py-3.5 border-b border-[#d8e6f0] active:bg-[#dce8f2]"
         >
           <div className="flex items-center gap-3">
@@ -146,7 +147,7 @@ export default function ProfilePage() {
         </button>
 
         <button
-          onClick={() => router.push('/notifications')}
+          onClick={() => router.push(withBase('/notifications'))}
           className="w-full flex items-center justify-between px-4 py-3.5 border-b border-[#d8e6f0] active:bg-[#dce8f2]"
         >
           <div className="flex items-center gap-3">

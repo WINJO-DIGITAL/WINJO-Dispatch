@@ -76,7 +76,7 @@ export default function ResetPasswordPage() {
     } else {
       setSuccess(true)
       setTimeout(() => {
-        router.push('/dashboard')
+        router.push(withBase('/dashboard'))
         router.refresh()
       }, 1500)
     }
@@ -151,7 +151,7 @@ export default function ResetPasswordPage() {
                 <div className="text-red-800 text-xs bg-red-100 border border-red-200 rounded-lg px-3 py-2 space-y-1">
                   <p>{error}</p>
                   {!ready ? null : (
-                    <Link href="/forgot-password" className="underline inline-block">
+                    <Link href={withBase('/forgot-password')} className="underline inline-block">
                       Request a new link
                     </Link>
                   )}

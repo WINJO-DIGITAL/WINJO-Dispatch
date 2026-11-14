@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { BookingStatusBadge } from '@/components/badges'
 import { formatTime } from '@/lib/format'
 import type { Booking, BookingStatus } from '@/lib/types'
+import { withBase } from '@/lib/base-path'
 
 const ACTIVE_STATUSES: BookingStatus[] = ['En Route', 'en_route', 'Arrived', 'arrived', 'Passenger On Board', 'Active', 'active']
 
@@ -143,7 +144,7 @@ export default function MyJobsPage() {
                     </div>
                   </div>
 
-                  <Link href={`/jobs/${booking.id}`}>
+                  <Link href={withBase(`/jobs/${booking.id}`)}>
                     <button
                       className="w-full py-2.5 rounded-xl font-semibold text-[#020813] text-sm flex items-center justify-center gap-1.5 active:opacity-80"
                       style={{ background: 'linear-gradient(135deg, #f1c56a, #d5a538 55%, #a97918)' }}

@@ -1,3 +1,4 @@
+import { withBase } from '@/lib/base-path'
 import { redirect } from 'next/navigation'
 
 // Old link format used by the "Customer reminder due" push
@@ -12,5 +13,5 @@ export default async function ReminderRedirect({
 }) {
   const { id } = await params
   const { type } = await searchParams
-  redirect(type === '24hr' || type === '7day' ? `/jobs/${id}?reminder=${type}` : `/jobs/${id}`)
+  redirect(withBase(type === '24hr' || type === '7day' ? `/jobs/${id}?reminder=${type}` : `/jobs/${id}`))
 }

@@ -8,10 +8,12 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || '',
   },
   // One site, three apps: this one lives under /driver.
-  basePath: BASE_PATH,
+  // Vercel's single-project build refuses a basePath, so the pages sit in app/driver and the
+  // build files are asked for under /driver/_next (vercel.json sends them to /_next).
+  assetPrefix: BASE_PATH,
   // The Chat tab was removed (14/10/2026); send old links and bookmarks home.
   async redirects() {
-    return [{ source: '/chat', destination: '/dashboard', permanent: false }]
+    return [{ source: `${BASE_PATH}/chat`, destination: `${BASE_PATH}/dashboard`, permanent: false }]
   },
 }
 

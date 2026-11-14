@@ -23,7 +23,7 @@ export default function ReceiptPage({ params }: { params: Promise<{ id: string }
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/login'); return }
+      if (!user) { router.push(withBase('/login')); return }
 
       const [{ data: b }, { data: exp }, { data: profile }] = await Promise.all([
         supabase.from('bookings').select('*').eq('id', id).single(),
@@ -31,7 +31,7 @@ export default function ReceiptPage({ params }: { params: Promise<{ id: string }
         supabase.from('drivers').select('full_name').eq('id', user.id).single(),
       ])
 
-      if (!b) { router.push('/jobs'); return }
+      if (!b) { router.push(withBase('/jobs')); return }
       setBooking(b)
       setExpenses(exp ?? [])
       setDriverName(profile?.full_name ?? '')

@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { stripBase, withBase } from '@/lib/base-path'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Home, ClipboardList, CalendarDays, User } from 'lucide-react'
@@ -52,7 +53,7 @@ const NAV_ITEMS = [
 ]
 
 export function BottomNav() {
-  const pathname = usePathname()
+  const pathname = stripBase(usePathname())
   const activeJobs = useActiveJobsCount()
 
   if (/^\/jobs\/[^/]+/.test(pathname)) return null
@@ -69,7 +70,7 @@ export function BottomNav() {
           return (
             <Link
               key={href}
-              href={resolvedHref}
+              href={withBase(resolvedHref)}
               className={`relative flex min-h-[62px] min-w-[56px] flex-col items-center justify-center gap-1.5 rounded-2xl px-2 transition-colors ${
                 active ? 'text-[#d5a538]' : 'text-white/35 hover:text-white/65'
               }`}

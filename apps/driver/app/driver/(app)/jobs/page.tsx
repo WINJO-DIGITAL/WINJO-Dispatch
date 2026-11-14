@@ -8,6 +8,7 @@ import { BookingStatusBadge } from '@/components/badges'
 import { RouteDisplay } from '@/components/route-icons'
 import { formatDate, formatTime, paymentInfo, formatStampDate } from '@/lib/format'
 import type { Booking } from '@/lib/types'
+import { withBase } from '@/lib/base-path'
 
 type Tab = 'upcoming' | 'active' | 'completed'
 type DateFilter = 'all' | 'today' | 'tomorrow' | '7days'
@@ -24,7 +25,7 @@ function sortNearestFirst(list: Booking[]) {
 
 function BookingCard({ booking }: { booking: Booking }) {
   return (
-    <Link href={`/jobs/${booking.id}`}>
+    <Link href={withBase(`/jobs/${booking.id}`)}>
       <div className="bg-white border border-[#c4d4e4] rounded-2xl p-4 shadow-sm active:opacity-80 transition-opacity">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2">

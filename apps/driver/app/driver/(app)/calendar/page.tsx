@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { RouteDisplay } from '@/components/route-icons'
 import { formatTime } from '@/lib/format'
 import type { Booking } from '@/lib/types'
+import { withBase } from '@/lib/base-path'
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
@@ -330,7 +331,7 @@ export default function CalendarPage() {
                 const isCompleted = job.status === 'completed' || job.status === 'Completed'
                 const isCancelled = job.status === 'cancelled' || job.status === 'Cancelled' || job.status === 'No Show'
                 return (
-                  <Link key={job.id} href={`/jobs/${job.id}`}>
+                  <Link key={job.id} href={withBase(`/jobs/${job.id}`)}>
                     <div className={`rounded-2xl p-4 active:opacity-80 transition-opacity ${
                       isCompleted
                         ? 'bg-white border border-green-200'

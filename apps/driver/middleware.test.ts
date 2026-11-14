@@ -10,7 +10,8 @@ vi.mock('@supabase/ssr', () => ({
 
 import { middleware, config } from './middleware'
 
-const run = (path: string) => middleware(new NextRequest(`https://driver.test${path}`))
+// The app is served under /driver (its pages sit in app/driver); paths below are in-app paths.
+const run = (path: string) => middleware(new NextRequest(`https://driver.test/driver${path === '/' ? '' : path}`))
 const loc = (r: Response) => r.headers.get('location')
 
 beforeEach(() => {
@@ -24,7 +25,7 @@ describe('signed out', () => {
   it.each(['/dashboard', '/jobs', '/jobs/abc', '/', '/profile'])('sends %s to /login', async (p) => {
     const r = await run(p)
     expect(r.status).toBe(307)
-    expect(loc(r)).toBe('https://driver.test/login')
+    expect(loc(r)).toBe('https://driver.test/driver/login')
   })
   it.each(['/login', '/forgot-password', '/reset-password', '/reset-password?token_hash=x&type=recovery', '/auth/callback'])('lets %s through', async (p) => {
     const r = await run(p)
@@ -38,7 +39,7 @@ describe('signed in', () => {
 
   it('sends /login to the dashboard', async () => {
     const r = await run('/login')
-    expect(loc(r)).toBe('https://driver.test/dashboard')
+    expect(loc(r)).toBe('https://driver.test/driver/dashboard')
   })
   it('lets every other page through', async () => {
     for (const p of ['/dashboard', '/jobs/abc', '/reset-password']) {
@@ -49,35 +50,13 @@ describe('signed in', () => {
 })
 
 describe('matcher', () => {
-  const re = new RegExp(`^${config.matcher[0]}$`)
-  it('skips api, static files, icons, the manifest, the service worker and fonts', () => {
-    for (const p of ['/api/x', '/_next/static/a.js', '/_next/image', '/favicon.ico', '/icons/icon-192.png', '/manifest.json', '/sw.js', '/fonts/a.woff2', '/logo.png']) {
+  const re = new RegExp(`^(?:${config.matcher.join('|')})$`)
+  it('skips static files, icons, the manifest, the service worker and fonts, and anything outside /driver', () => {
+    for (const p of ['/api/x', '/operator/today', '/driver/_next/static/a.js', '/driver/_next/image', '/driver/favicon.ico', '/driver/icons/icon-192.png', '/driver/manifest.json', '/driver/sw.js', '/driver/fonts/a.woff2', '/driver/logo.png']) {
       expect(re.test(p), p).toBe(false)
     }
   })
   it('guards the app pages', () => {
-    for (const p of ['/dashboard', '/jobs/abc', '/login']) expect(re.test(p), p).toBe(true)
-  })
-})
-
-// Served under /driver (next.config basePath): the redirects must keep the prefix.
-describe('under the /driver base path', () => {
-  const runBase = (path: string) => middleware(new NextRequest(`https://site.test/driver${path}`, { nextConfig: { basePath: '/driver' } }))
-
-  it('sends a signed-out visitor to /driver/login, not /login', async () => {
-    getUser.mockResolvedValue({ data: { user: null } })
-    const r = await runBase('/jobs/abc?x=1')
-    expect(r.status).toBe(307)
-    expect(loc(r)).toBe('https://site.test/driver/login')
-  })
-  it('lets the public pages through', async () => {
-    getUser.mockResolvedValue({ data: { user: null } })
-    for (const p of ['/login', '/forgot-password', '/reset-password', '/auth/callback']) expect((await runBase(p)).status).toBe(200)
-  })
-  it('sends a signed-in driver on /driver/login to /driver/dashboard', async () => {
-    getUser.mockResolvedValue({ data: { user: { id: 'u1' } } })
-    const r = await runBase('/login')
-    expect(r.status).toBe(307)
-    expect(loc(r)).toBe('https://site.test/driver/dashboard')
+    for (const p of ['/driver', '/driver/dashboard', '/driver/jobs/abc', '/driver/login']) expect(re.test(p), p).toBe(true)
   })
 })

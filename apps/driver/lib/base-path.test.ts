@@ -21,3 +21,14 @@ describe('withBase', () => {
     expect(withBase('/drivers')).toBe('/driver/drivers')
   })
 })
+
+import { stripBase } from './base-path'
+describe('stripBase', () => {
+  it('turns a browser pathname into an in-app path', () => {
+    expect(stripBase('/driver')).toBe('/')
+    expect(stripBase('/driver/jobs/1')).toBe('/jobs/1')
+    expect(stripBase('/jobs/1')).toBe('/jobs/1')
+    expect(stripBase(null)).toBe('/')
+    expect(stripBase('/drivers')).toBe('/drivers')
+  })
+})

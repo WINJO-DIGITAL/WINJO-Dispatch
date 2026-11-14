@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { stripBase, withBase } from '@/lib/base-path'
 
 const PUBLIC_PATHS = ['/login', '/forgot-password', '/reset-password', '/auth/callback']
 
@@ -28,13 +29,13 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { pathname } = request.nextUrl
+  const pathname = stripBase(request.nextUrl.pathname)
   const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p))
 
-  // nextUrl knows the base path (/driver); a plain new URL('/login', ...) would drop it.
+  // The app's pages sit under /driver, so redirect targets get the prefix.
   const go = (to: string) => {
     const url = request.nextUrl.clone()
-    url.pathname = to
+    url.pathname = withBase(to)
     url.search = ''
     return NextResponse.redirect(url)
   }
@@ -51,5 +52,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|logo.png|logo.jpg|icons|manifest.json|sw.js|fonts).*)'],
+  matcher: ['/driver/((?!_next/static|_next/image|favicon.ico|logo.png|logo.jpg|icons|manifest.json|sw.js|fonts).*)', '/driver'],
 }

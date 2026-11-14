@@ -9,6 +9,7 @@ import { RouteDisplay } from '@/components/route-icons'
 import { formatDate, formatTime, ukToday } from '@/lib/format'
 import type { Booking, Driver } from '@/lib/types'
 import { useToast } from '@/components/toast'
+import { withBase } from '@/lib/base-path'
 
 type AttestBooking = Pick<Booking, 'id' | 'ref' | 'customer_name' | 'travel_date' | 'travel_time' | 'pickup_location' | 'airport' | 'attestation_status'>
 
@@ -134,7 +135,7 @@ export default function DashboardPage() {
             <RefreshCw size={16} className={`text-[#3b5470] ${refreshing ? 'animate-spin' : ''}`} />
           </button>
           <Link
-            href="/notifications"
+            href={withBase('/notifications')}
             className="relative w-10 h-10 rounded-xl bg-[#dce8f2] border border-[#c4d4e4] flex items-center justify-center"
           >
             <Bell size={18} className="text-[#3b5470]" />
@@ -199,7 +200,7 @@ export default function DashboardPage() {
 
       {/* Active Job Banner */}
       {activeBooking && (
-        <Link href={`/jobs/${activeBooking.id}`}>
+        <Link href={withBase(`/jobs/${activeBooking.id}`)}>
           <div
             className="mb-5 rounded-2xl border border-[#d5a538]/30 p-4"
             style={{ background: 'linear-gradient(135deg, rgba(213,165,56,0.12), rgba(213,165,56,0.04))' }}
@@ -240,7 +241,7 @@ export default function DashboardPage() {
       {/* Upcoming Jobs */}
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-[#060C1A] font-semibold text-sm">Today&apos;s Jobs</h2>
-        <Link href="/jobs" className="text-[#7a5c14] text-xs font-medium">
+        <Link href={withBase('/jobs')} className="text-[#7a5c14] text-xs font-medium">
           View all
         </Link>
       </div>
@@ -253,7 +254,7 @@ export default function DashboardPage() {
       ) : (
         <div className="space-y-3">
           {upcomingBookings.slice(0, 3).map((booking) => (
-            <Link key={booking.id} href={`/jobs/${booking.id}`}>
+            <Link key={booking.id} href={withBase(`/jobs/${booking.id}`)}>
               <div className="bg-white border border-[#c4d4e4] rounded-2xl p-4 shadow-sm active:opacity-80 transition-opacity">
                 <div className="flex items-start justify-between mb-2">
                   <span className="text-[#7a5c14] font-bold text-base">{formatTime(booking.travel_time)}</span>

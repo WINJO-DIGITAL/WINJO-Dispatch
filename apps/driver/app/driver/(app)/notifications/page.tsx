@@ -11,6 +11,7 @@ import { createClient } from '@/lib/supabase/client'
 import { PickupIcon } from '@/components/route-icons'
 import { formatDate, formatTime } from '@/lib/format'
 import type { Booking, BookingStatus } from '@/lib/types'
+import { withBase } from '@/lib/base-path'
 
 function timeAgo(dateStr: string | null): string {
   if (!dateStr) return ''
@@ -127,7 +128,7 @@ export default function NotificationsPage() {
             const { label, Icon, iconColor, bgColor } = meta
             const pickup = booking.pickup_location ?? booking.airport ?? 'See job details'
             return (
-              <Link key={booking.id} href={`/jobs/${booking.id}`}>
+              <Link key={booking.id} href={withBase(`/jobs/${booking.id}`)}>
                 <div className="bg-white border border-[#c4d4e4] rounded-2xl p-4 active:opacity-80 transition-opacity">
                   <div className="flex items-start gap-3">
                     {/* Status icon */}

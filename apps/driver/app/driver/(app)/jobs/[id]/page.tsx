@@ -23,6 +23,7 @@ import {
 } from '@/lib/customer-sms'
 import type { Booking, BookingStatus } from '@/lib/types'
 import { STATUS_FLOW, TIMESTAMP_FIELD, PROGRESS_STEPS, STEP_LABELS, getGraceMinutes, formatPref, isNoShowJob } from '@/lib/job'
+import { withBase } from '@/lib/base-path'
 
 // ─── SwipeToConfirm ───────────────────────────────────────────────────────────
 
@@ -919,7 +920,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                   {booking.quoted_price != null && booking.quoted_price > 0 && (
                     <p className="text-green-800 text-sm mt-1">£{booking.quoted_price.toFixed(2)}</p>
                   )}
-                  <Link href={`/jobs/${booking.id}/receipt`} className="inline-flex items-center gap-1.5 mt-3 px-4 py-2 rounded-xl bg-[#dce8f2] border border-[#c4d4e4] text-[#3b5470] text-sm font-medium hover:bg-[#dce8f2] transition-colors">
+                  <Link href={withBase(`/jobs/${booking.id}/receipt`)} className="inline-flex items-center gap-1.5 mt-3 px-4 py-2 rounded-xl bg-[#dce8f2] border border-[#c4d4e4] text-[#3b5470] text-sm font-medium hover:bg-[#dce8f2] transition-colors">
                     <FileText size={14} />
                     View Receipt
                   </Link>

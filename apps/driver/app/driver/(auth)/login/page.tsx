@@ -25,7 +25,7 @@ export default function LoginPage() {
       if (result?.error) {
         setError(result.error)
       } else {
-        router.push('/dashboard')
+        router.push(withBase('/dashboard'))
         router.refresh()
       }
     })
@@ -90,7 +90,7 @@ export default function LoginPage() {
               </button>
             </div>
             <div className="text-right mt-2">
-              <Link href="/forgot-password" className="text-[#7a5c14] text-xs font-medium">
+              <Link href={withBase('/forgot-password')} className="text-[#7a5c14] text-xs font-medium">
                 Forgot password?
               </Link>
             </div>

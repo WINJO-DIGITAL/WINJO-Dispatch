@@ -23,7 +23,7 @@ export default function ForgotPasswordPage() {
     setIsPending(true)
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
+      redirectTo: `${window.location.origin}${withBase('/auth/callback')}?next=/reset-password`,
     })
 
     setIsPending(false)
@@ -55,7 +55,7 @@ export default function ForgotPasswordPage() {
               If an account exists for <span className="text-[#1e3a5f]">{email}</span>, we&apos;ve sent a link to reset your password.
             </p>
             <Link
-              href="/login"
+              href={withBase('/login')}
               className="inline-flex items-center gap-1.5 text-[#7a5c14] text-xs font-medium mt-6"
             >
               <ArrowLeft size={14} />
@@ -103,7 +103,7 @@ export default function ForgotPasswordPage() {
             </form>
 
             <Link
-              href="/login"
+              href={withBase('/login')}
               className="inline-flex items-center gap-1.5 text-[#4f6580] hover:text-[#3b5470] text-xs font-medium mt-6"
             >
               <ArrowLeft size={14} />

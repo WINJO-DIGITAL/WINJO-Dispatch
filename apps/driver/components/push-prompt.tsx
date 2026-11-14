@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
+import { stripBase } from '@/lib/base-path'
 import { BellRing, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { enablePush, pushState, type PushState } from '@/lib/push'
@@ -14,7 +15,7 @@ export function PushPrompt() {
   const [state, setState] = useState<PushState | null>(null)
   const [busy, setBusy] = useState(false)
   const [hidden, setHidden] = useState(false)
-  const pathname = usePathname()
+  const pathname = stripBase(usePathname())
 
   useEffect(() => {
     setState(pushState())

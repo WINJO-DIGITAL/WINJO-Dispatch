@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useCallback } from 'react'
 import { X, Bell } from 'lucide-react'
 import Link from 'next/link'
+import { withBase } from '@/lib/base-path'
 
 type Toast = { id: string; title: string; message: string; href?: string }
 type ToastCtx = { addToast: (t: Omit<Toast, 'id'>) => void }
@@ -47,7 +48,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             </div>
           )
           return t.href ? (
-            <Link key={t.id} href={t.href}>{content}</Link>
+            <Link key={t.id} href={withBase(t.href)}>{content}</Link>
           ) : (
             <div key={t.id}>{content}</div>
           )

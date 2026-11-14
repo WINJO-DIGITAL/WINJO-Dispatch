@@ -7,11 +7,12 @@ import { PushPrompt } from '@/components/push-prompt'
 import { BusinessProvider } from '@/components/business'
 import { loadBusiness } from '@/lib/business'
 import { DEPLOYMENT_BUSINESS } from '@/lib/brand'
+import { withBase } from '@/lib/base-path'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirect(withBase('/login'))
   const business = await loadBusiness(supabase, user.id, DEPLOYMENT_BUSINESS)
 
   return (

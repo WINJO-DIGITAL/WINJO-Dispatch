@@ -10,3 +10,10 @@ export function withBase(path: string): string {
   const p = path.startsWith('/') ? path : `/${path}`
   return p === BASE_PATH || p.startsWith(`${BASE_PATH}/`) || p.startsWith(`${BASE_PATH}?`) ? p : `${BASE_PATH}${p === '/' ? '' : p}`
 }
+
+/** The in-app path of a browser pathname: '/driver/jobs/1' -> '/jobs/1', '/driver' -> '/'. */
+export function stripBase(pathname: string | null | undefined): string {
+  const p = pathname || '/'
+  if (p === BASE_PATH) return '/'
+  return p.startsWith(`${BASE_PATH}/`) ? p.slice(BASE_PATH.length) : p
+}

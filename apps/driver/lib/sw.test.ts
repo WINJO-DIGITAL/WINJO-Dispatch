@@ -29,7 +29,7 @@ function load() {
     fetch: async () => ({ ok: true, clone: () => ({}) }),
     console,
   }
-  vm.runInNewContext(readFileSync(join(__dirname, '../public/sw.js'), 'utf8'), sandbox)
+  vm.runInNewContext(readFileSync(join(__dirname, '../public/driver/sw.js'), 'utf8'), sandbox)
   return { handlers, shown, opened, navigated, focused, setTabs: (t: Array<{ url: string }>) => { tabs = t } }
 }
 const push = async (sw: ReturnType<typeof load>, payload: object) => {
