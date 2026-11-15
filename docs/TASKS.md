@@ -27,7 +27,7 @@ A multi-tenant booking, dispatch and payments platform (website, Operator app, D
 ## Open: needs the owner's approval
 
 - [ ] **Production deploy of the website + Operator app** so the new Settings, Website editor goes live (built and tested on the branch, 15/11/2026).
-- [ ] **Finish the end-to-end test on the sample business** (`sample-cars-test`, booking `SAMP-000001`, on live): the owner connects Stripe from Settings, Payments (Stripe's own onboarding page, test details) and pays the test checkout with card 4242 4242 4242 4242. Stripe's pages block automated browsers, so a person must do these two steps. Then remove the sample business.
+- [ ] **Finish the end-to-end test on the sample business** (`sample-cars-test`, booking `SAMP-000001`, on live). Done by automation (15/11/2026): a Stripe test connected account (sole trader, test details, charges enabled) is linked to the sample business, and the live site creates the £25 checkout on that account. Left for a person: pay the checkout with test card 4242 4242 4242 4242 (Stripe's card page refuses automated browsers), then check the booking shows Paid, then remove the sample business and its test Stripe account.
 - [ ] Merge and deploy the Connect fix (Accounts v2) so Settings, Payments can connect an account on live.
 - [ ] The connected-accounts webhook was recreated after Connect was switched on (15/11/2026, it now listens to connected accounts) and its new signing secret is saved on Vercel; it takes effect at the next production deploy of the main site.
 - [ ] Old profile and activity rows still filed under the removed seed business: clear them or leave them (data deletion).
