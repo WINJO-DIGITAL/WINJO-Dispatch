@@ -22,17 +22,20 @@ A multi-tenant booking, dispatch and payments platform (website, Operator app, D
 - **Settings, Website editor** in the Operator app (15/11/2026): design direction, home page words, about, services, vehicles, areas, reviews, questions, contact, search wording, photos (own folder only, PNG/JPG/WebP up to 5 MB), save draft / publish. Saves through `update_tenant_site`. On the branch, not yet deployed.
 - `DRIVER_APP_URL` and `NEXT_PUBLIC_DRIVER_APP_URL` on the main project include `/driver` (checked 15/11/2026).
 
+- **Stripe test mode set up** (15/11/2026): test secret key and two webhook signing secrets on the main Vercel project (Sensitive, Production); test webhook endpoints in Stripe for `/api/payment/stripe-webhook`. Two bugs found by testing against Stripe and fixed: Checkout Sessions no longer accept `payment_method_types` (every card link failed), and new connected accounts must be created with Stripe's Accounts v2 call (the "Connect Stripe" button would have failed for every business). The live site now creates a test checkout.
+
 ## Open: needs the owner's approval
 
 - [ ] **Production deploy of the website + Operator app** so the new Settings, Website editor goes live (built and tested on the branch, 15/11/2026).
-- [ ] **A test business on live**, to run sign-up, set-up, a booking, emails and a push alert end to end (creates live data).
+- [ ] **Finish the end-to-end test on the sample business** (`sample-cars-test`, booking `SAMP-000001`, on live): the owner connects Stripe from Settings, Payments (Stripe's own onboarding page, test details) and pays the test checkout with card 4242 4242 4242 4242. Stripe's pages block automated browsers, so a person must do these two steps. Then remove the sample business.
+- [ ] Merge and deploy the Connect fix (Accounts v2) so Settings, Payments can connect an account on live.
+- [ ] Check in Stripe (Developers, Webhooks) that the "connected accounts" endpoint listens to connected accounts; the payment page's own check records a payment either way.
 - [ ] Old profile and activity rows still filed under the removed seed business: clear them or leave them (data deletion).
 - [ ] Automatic monthly billing of operators (Stripe Billing has its own fees). Live mode for Stripe Connect (after a test payment passes). Anything that costs money or turns Twilio on.
 - [ ] Owner actions: revoke the temporary Supabase access token and the full-access Resend key when go-live is finished; GitHub repository variables `VERCEL_ORG_ID` / `VERCEL_PROJECT_ID` and secret `VERCEL_TOKEN` if the manual deploy workflow is wanted; link `/signup` from wherever it should be found; put the platform's home page copy in place (the home page is a neutral placeholder).
 
 ## Open: engineering
 
-- [ ] One test-mode card payment through a second business on its connected account (needs Stripe test keys and a test operator).
 - [ ] More design directions and separate pages for the site builder.
 - [ ] Review the Connect payment code before live mode.
 - [ ] Driver App lint warnings (the Operator app is clean).

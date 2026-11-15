@@ -64,6 +64,12 @@ const status = (a: StripeBody): ConnectStatus => ({
   requirementsDue: Array.isArray(a.requirements?.currently_due) ? a.requirements.currently_due.map(String) : [],
 });
 
+// Stripe refuses new connected accounts on the old /v1/accounts call, so accounts
+// are created with Accounts v2 (JSON). Everything else (onboarding links, status,
+// payments with the Stripe-Account header) still uses v1, which v2 accounts accept.
+const STRIPE_V2_ACCOUNTS = "https://api.stripe.com/v2/core/accounts";
+const STRIPE_V2_VERSION = "2026-03-25.preview";
+
 /**
  * A new connected account for a business. Behaves like a Standard account:
  * full Stripe Dashboard, the operator pays Stripe's fees, Stripe is liable for
@@ -73,19 +79,26 @@ export async function createConnectedAccount(
   p: { tenantId: string; businessName: string; email?: string; country?: string },
   f: Fetch = fetch,
 ): Promise<ConnectStatus> {
-  const form: Record<string, string> = {
-    country: p.country || "GB",
-    "controller[stripe_dashboard][type]": "full",
-    "controller[fees][payer]": "account",
-    "controller[losses][payments]": "stripe",
-    "controller[requirement_collection]": "stripe",
-    "capabilities[card_payments][requested]": "true",
-    "capabilities[transfers][requested]": "true",
-    "business_profile[name]": p.businessName.slice(0, 100),
-    "metadata[tenant_id]": p.tenantId,
+  const key = connectKey();
+  if (!/^sk_(test|live)_/.test(key)) throw new ConnectError("Stripe is not set up on this platform yet.", 503);
+  const payload = {
+    display_name: p.businessName.slice(0, 100),
+    ...(p.email ? { contact_email: p.email } : {}),
+    dashboard: "full",
+    identity: { country: (p.country || "GB").toLowerCase() },
+    defaults: { responsibilities: { fees_collector: "stripe", losses_collector: "stripe" } },
+    configuration: { merchant: { capabilities: { card_payments: { requested: true } } } },
+    metadata: { tenant_id: p.tenantId },
   };
-  if (p.email) form.email = p.email;
-  return status(await call(f, "POST", "/accounts", form));
+  const res = await f(STRIPE_V2_ACCOUNTS, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json", "Stripe-Version": STRIPE_V2_VERSION },
+    body: JSON.stringify(payload),
+  });
+  const body = (await res.json().catch(() => ({}))) as StripeBody;
+  if (!res.ok || !body.id) throw new ConnectError(body?.error?.message || `Stripe error ${res.status}`, res.status >= 500 ? 502 : 400);
+  // A brand-new account can never take payments yet; its real state is read by connectStatus().
+  return { accountId: String(body.id), chargesEnabled: false, detailsSubmitted: false, payoutsEnabled: false, requirementsDue: [] };
 }
 
 /** A one-time Stripe-hosted onboarding link for the connected account. */

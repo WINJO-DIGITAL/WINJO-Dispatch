@@ -37,16 +37,18 @@ describe("Stripe Connect helper", () => {
     const { f, calls } = fakeStripe({ id: "acct_123", charges_enabled: false, details_submitted: false });
     const s = await createConnectedAccount({ tenantId: "ten-1", businessName: "Acme Cars", email: "a@acme.invalid" }, f);
     expect(s).toMatchObject({ accountId: "acct_123", chargesEnabled: false });
-    const body = new URLSearchParams(calls[0].body);
-    expect(calls[0].url).toBe("https://api.stripe.com/v1/accounts");
+    const body = JSON.parse(calls[0].body ?? "{}");
+    expect(calls[0].url).toBe("https://api.stripe.com/v2/core/accounts");
     expect(calls[0].headers.Authorization).toBe("Bearer sk_test_abc123");
-    expect(body.get("controller[stripe_dashboard][type]")).toBe("full");
-    expect(body.get("controller[fees][payer]")).toBe("account");
-    expect(body.get("controller[losses][payments]")).toBe("stripe");
-    expect(body.get("controller[requirement_collection]")).toBe("stripe");
-    expect(body.get("capabilities[card_payments][requested]")).toBe("true");
-    expect(body.get("metadata[tenant_id]")).toBe("ten-1");
-    expect([...body.keys()].some((k) => k.includes("application_fee"))).toBe(false);
+    expect(calls[0].headers["Content-Type"]).toBe("application/json");
+    expect(calls[0].headers["Stripe-Version"]).toBeTruthy();
+    expect(body.dashboard).toBe("full");
+    expect(body.defaults.responsibilities).toEqual({ fees_collector: "stripe", losses_collector: "stripe" });
+    expect(body.configuration.merchant.capabilities.card_payments.requested).toBe(true);
+    expect(body.identity.country).toBe("gb");
+    expect(body.contact_email).toBe("a@acme.invalid");
+    expect(body.metadata.tenant_id).toBe("ten-1");
+    expect(JSON.stringify(body)).not.toContain("application_fee");
   });
 
   it("creates a hosted onboarding link", async () => {
