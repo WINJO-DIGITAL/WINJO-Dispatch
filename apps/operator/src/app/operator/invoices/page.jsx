@@ -99,7 +99,7 @@ function journeyLines(j) {
 
 const inputCls =
   "w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-[#0F1B33] placeholder:text-slate-400 outline-none transition focus:border-amber-400/40";
-const labelCls = "mb-1.5 text-[10px] uppercase tracking-[0.2em] text-slate-500";
+const labelCls = "mb-1.5 text-[10px] uppercase tracking-[0.06em] text-slate-500";
 
 // The business's logo (Settings → Branding); otherwise the business name as a
 // wordmark. Uploaded logos load with CORS so they appear in the downloaded PDF too.
@@ -115,10 +115,10 @@ function InvoiceLogo({ company = COMPANY, brand }) {
         // eslint-disable-next-line @next/next/no-img-element
         <img src={src} alt={company.name || "Logo"} crossOrigin={brand.logoUrl ? "anonymous" : undefined} className="h-16 w-auto max-w-[220px] object-contain sm:h-20" />
       ) : (
-        <p className="text-xl font-semibold tracking-[0.2em] sm:text-2xl" style={{ color: brand.accent }}>{(company.name || "").toUpperCase()}</p>
+        <p className="text-xl font-semibold tracking-[0.06em] sm:text-2xl" style={{ color: brand.accent }}>{(company.name || "").toUpperCase()}</p>
       )}
       <div className="mt-1 h-px w-28 sm:w-36" style={{ background: brand.accent, opacity: 0.55 }} />
-      <p className="mt-1.5 text-[8px] font-semibold leading-relaxed tracking-[0.24em] sm:text-[9px]" style={{ color: brand.accent }}>
+      <p className="mt-1.5 text-[8px] font-semibold leading-relaxed tracking-[0.06em] sm:text-[9px]" style={{ color: brand.accent }}>
         {company.tagline1}<br />{company.tagline2}
       </p>
     </div>
@@ -401,7 +401,7 @@ function InvoiceModal({ open, onClose, onCreate, bookings, jobsLoading, invoiceF
 
           {/* Journey details */}
           <div className="rounded-2xl border border-slate-100 bg-slate-50 p-3">
-            <p className="mb-2 flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-amber-600/80">
+            <p className="mb-2 flex items-center gap-1.5 text-[10px] uppercase tracking-[0.06em] text-amber-600/80">
               <MapPin className="h-3 w-3" /> Journey details
             </p>
             <div className="grid grid-cols-2 gap-3">
@@ -740,7 +740,7 @@ function InvoicePreview({ invoice, onClose, onStatus, onDelete, onEmailed }) {
             <div className="flex items-start justify-between gap-3">
               <InvoiceLogo company={company} brand={brand} />
               <div className="text-right">
-                <p className="text-xl font-light tracking-[0.3em] sm:text-3xl sm:tracking-[0.35em]" style={{ color: GOLD }}>INVOICE</p>
+                <p className="text-xl font-light tracking-[0.06em] sm:text-3xl sm:tracking-[0.06em]" style={{ color: GOLD }}>INVOICE</p>
                 <div className="ml-auto mt-2 h-0.5 w-16 sm:w-24" style={{ background: GOLD }} />
               </div>
             </div>
@@ -754,7 +754,7 @@ function InvoicePreview({ invoice, onClose, onStatus, onDelete, onEmailed }) {
           {/* ── Bill-to + meta ── */}
           <div className="grid grid-cols-2 gap-4 px-5 pt-5 text-sm sm:gap-6 sm:px-10">
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Invoice to</p>
+              <p className="text-[11px] font-bold uppercase tracking-[0.06em] text-slate-500">Invoice to</p>
               <p className="mt-2 text-lg font-bold text-slate-900">{inv.customer}</p>
               {inv.address && inv.address.split(/,\s*/).map((ln, i) => (
                 <p key={i} className="text-slate-600">{ln}</p>
@@ -766,7 +766,7 @@ function InvoicePreview({ invoice, onClose, onStatus, onDelete, onEmailed }) {
               <div className="flex items-start gap-3">
                 <Calendar className="mt-0.5 h-5 w-5" style={{ color: GOLD }} />
                 <div>
-                  <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Date</p>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.06em] text-slate-500">Date</p>
                   <p className="mt-0.5 font-medium text-slate-800">{longDate(inv.issueDate) || inv.issueDate || "—"}</p>
                 </div>
               </div>
@@ -774,7 +774,7 @@ function InvoicePreview({ invoice, onClose, onStatus, onDelete, onEmailed }) {
               <div className="flex items-start gap-3">
                 <FileText className="mt-0.5 h-5 w-5" style={{ color: GOLD }} />
                 <div>
-                  <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Invoice number</p>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.06em] text-slate-500">Invoice number</p>
                   <p className="mt-0.5 font-medium text-slate-800">{inv.number}</p>
                   {inv.status !== "Draft" && (
                     <span className={`mt-1 inline-block rounded-full border px-2 py-0.5 text-[10px] font-semibold ${
@@ -853,7 +853,7 @@ function InvoicePreview({ invoice, onClose, onStatus, onDelete, onEmailed }) {
                 <CreditCard className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: GOLD }} />
               </span>
               <div>
-                <p className="text-[12px] font-bold uppercase tracking-[0.15em] text-slate-800">Payment terms</p>
+                <p className="text-[12px] font-bold uppercase tracking-[0.06em] text-slate-800">Payment terms</p>
                 <p className="mt-1 whitespace-pre-wrap text-xs leading-relaxed text-slate-600">{terms}</p>
               </div>
             </div>
@@ -862,7 +862,7 @@ function InvoicePreview({ invoice, onClose, onStatus, onDelete, onEmailed }) {
                 <Gem className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: GOLD }} />
               </span>
               <div>
-                <p className="text-[12px] font-bold uppercase tracking-[0.15em] text-slate-800">Thank you</p>
+                <p className="text-[12px] font-bold uppercase tracking-[0.06em] text-slate-800">Thank you</p>
                 <p className="mt-1 text-xs leading-relaxed text-slate-600">We appreciate your business and look forward to our continued partnership.</p>
               </div>
             </div>
@@ -883,7 +883,7 @@ function InvoicePreview({ invoice, onClose, onStatus, onDelete, onEmailed }) {
               style={{ opacity: 0.06 }}
             />}
             <div className="relative text-center">
-              <p className="text-[15px] font-semibold uppercase tracking-[0.18em] sm:text-base" style={{ color: NAVY }}>
+              <p className="text-[15px] font-semibold uppercase tracking-[0.06em] sm:text-base" style={{ color: NAVY }}>
                 Thank you for choosing {company.name}
               </p>
               <div className="mx-auto mt-2.5 h-px w-20" style={{ background: GOLD }} />
@@ -1048,10 +1048,7 @@ export default function InvoicesPage() {
 
         {/* Header + New */}
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-xs uppercase tracking-[0.28em] text-amber-600">Billing</p>
-            <h2 className="mt-1 text-2xl font-semibold text-[#0F1B33]">Invoices</h2>
-          </div>
+          <h2 className="text-base font-semibold text-[#0F1B33]">All invoices</h2>
           <button onClick={() => setModalOpen(true)} className="flex items-center gap-2 rounded-2xl bg-amber-500 px-4 py-2.5 text-sm font-semibold text-black transition hover:bg-amber-400 sm:px-5 sm:py-3">
             <Plus className="h-4 w-4" /> New Invoice
           </button>

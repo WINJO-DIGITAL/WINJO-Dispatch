@@ -36,6 +36,16 @@
   box-sizing: border-box;
 }
 
+/* The one surface for grouped content: a white panel with a hairline edge. Used as
+   className="card ..." across the screens; padding comes from the utility classes beside it. */
+@layer components {
+  .card {
+    background: #ffffff;
+    border: 1px solid #e2e6ee;
+    border-radius: 16px;
+  }
+}
+
 html,
 body {
   height: 100%;

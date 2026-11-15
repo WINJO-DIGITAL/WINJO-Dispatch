@@ -13,7 +13,7 @@ import {
 // text and photos from the business's own folder; the website cleans it again
 // when it draws a page. Only an operator admin can save.
 
-const LABEL = "mb-2 block text-xs uppercase tracking-[0.2em] text-slate-500";
+const LABEL = "mb-2 block text-xs uppercase tracking-[0.06em] text-slate-500";
 const INPUT = "mt-2 block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm normal-case tracking-normal text-[#0F1B33] outline-none placeholder:text-slate-400 transition focus:border-amber-400/40 disabled:opacity-60";
 const GROUP = "rounded-2xl border border-slate-100 bg-white p-4 sm:p-5";
 

@@ -234,7 +234,7 @@ export default function PlatformSettings() {
     <div className="space-y-8">
       <div>
         <div className="mb-3 flex items-center justify-between">
-          <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">Businesses</p>
+          <p className="text-[10px] uppercase tracking-[0.06em] text-slate-500">Businesses</p>
           <button
             onClick={loadTenants}
             className="flex items-center gap-1.5 text-xs text-slate-500 transition hover:text-amber-600"
@@ -285,22 +285,22 @@ export default function PlatformSettings() {
       </div>
 
       <div>
-        <p className="mb-3 text-[10px] uppercase tracking-[0.2em] text-slate-500">Applications</p>
+        <p className="mb-3 text-[10px] uppercase tracking-[0.06em] text-slate-500">Applications</p>
         <ApplicationsSection toast={toast} onApproved={loadTenants} />
       </div>
 
       <div>
-        <p className="mb-3 text-[10px] uppercase tracking-[0.2em] text-slate-500">Fees</p>
+        <p className="mb-3 text-[10px] uppercase tracking-[0.06em] text-slate-500">Fees</p>
         <FeesSection toast={toast} />
       </div>
 
       <div>
-        <p className="mb-3 text-[10px] uppercase tracking-[0.2em] text-slate-500">Set up a business</p>
+        <p className="mb-3 text-[10px] uppercase tracking-[0.06em] text-slate-500">Set up a business</p>
         <CreateTenantForm onCreated={loadTenants} toast={toast} />
       </div>
 
       <div>
-        <p className="mb-3 flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-slate-500">
+        <p className="mb-3 flex items-center gap-1.5 text-[10px] uppercase tracking-[0.06em] text-slate-500">
           <Users className="h-3 w-3" />
           Invite a business's first admin
         </p>

@@ -28,7 +28,7 @@ const pageMeta = {
   "/operator/bookings": { label: "Operations", title: "Bookings" },
   "/operator/inbox": { label: "Requests", title: "Inbox" },
   "/operator/customers": { label: "People", title: "Customers" },
-  "/operator/drivers": { label: "Fleet", title: "Driver Management" },
+  "/operator/drivers": { label: "Fleet", title: "Drivers" },
   "/operator/invoices": { label: "Billing", title: "Invoices" },
   "/operator/analytics": { label: "Insights", title: "Analytics" },
   "/operator/settings": { label: "System", title: "Settings" },
@@ -60,7 +60,7 @@ function NotificationPopover({
       className="absolute right-0 top-full z-50 mt-2 w-72 rounded-2xl border border-slate-200 bg-white shadow-2xl sm:w-80"
     >
       <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-600">Notifications</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.06em] text-amber-600">Notifications</p>
         <div className="flex items-center gap-2">
           {total > 0 && (
             <button
@@ -85,7 +85,7 @@ function NotificationPopover({
         {/* New bookings */}
         {newBookings.length > 0 && (
           <>
-            <p className="px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-600/80">
+            <p className="px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.06em] text-emerald-600/80">
               New bookings
             </p>
             {newBookings.map((b) => (
@@ -295,8 +295,7 @@ export default function Layout({ children, onSignOut }) {
 
             {/* Page title — hidden when mobile search is open */}
             <div className={`min-w-0 flex-1 sm:flex-none ${searchOpen ? "hidden sm:block" : ""}`}>
-              <p className="text-xs uppercase tracking-[0.3em] text-amber-600">{meta.label}</p>
-              <h1 className="mt-1 text-xl font-semibold tracking-tight text-[#0F1B33] sm:text-3xl">
+              <h1 className="text-xl font-semibold tracking-tight text-[#0F1B33] sm:text-2xl">
                 {meta.title}
               </h1>
             </div>
