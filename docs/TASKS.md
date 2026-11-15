@@ -45,6 +45,13 @@ A multi-tenant booking, dispatch and payments platform (website, Operator app, D
 
 ## Needs the owner's decision
 
+Recommendations recorded 15/11/2026 (the owner asked for the recommended course; these are owner decisions, so nothing has been decided for the owner):
+- Data terms: keep the "draft" label until the owner signs them off. Do not publish as final.
+- Support hours: keep unpublished. No hours are invented for any business.
+- VAT wording: keep the current wording. A tax statement changes only on the owner's decision.
+- Live Stripe: keep test mode. Live only after a full test payment passes and the owner says so.
+- Push alert on a real phone: needs a subscribed device. Not testable from the platform side alone.
+
 - [ ] Support hours for operators (the Order Details decide these; none are published).
 - [ ] VAT wording on the platform page.
 - [ ] Data terms: still labelled "draft" until the owner signs them off.
