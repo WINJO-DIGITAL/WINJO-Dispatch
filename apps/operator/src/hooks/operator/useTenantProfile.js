@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { supabase, isConfigured } from "@/lib/supabase";
+import { photoFileName, photoPath } from "@/lib/operator/site";
 
 /**
  * The signed-in staff member's operator business (their public.tenants row):
@@ -164,5 +165,38 @@ export function useTenantProfile() {
     return data;
   }, [tenant]);
 
-  return { tenant, canEdit, user, loading, error, save, savePricing, uploadLogo, saveBranding, saveLegal, saveLicence, reload: load };
+  // Website content (brand.site, brand.site_published) through update_tenant_site:
+  // admins only, checked again in the database. Photos go in the business's own
+  // folder of the public brand-assets bucket (see lib/operator/site.js).
+  const uploadSitePhoto = useCallback(async (file) => {
+    if (!tenant) throw new Error("No business to update.");
+    const path = `${tenant.id}/${photoFileName(file)}`;
+    const { error: upErr } = await supabase.storage.from("brand-assets").upload(path, file, {
+      contentType: file.type,
+      cacheControl: "31536000",
+      upsert: false,
+    });
+    if (upErr) throw new Error(upErr.message);
+    return supabase.storage.from("brand-assets").getPublicUrl(path).data.publicUrl;
+  }, [tenant]);
+
+  const removeSitePhotos = useCallback(async (urls) => {
+    if (!tenant) return;
+    const paths = (urls || []).map((u) => photoPath(u, tenant.id)).filter(Boolean);
+    if (paths.length) await supabase.storage.from("brand-assets").remove(paths).catch(() => {});
+  }, [tenant]);
+
+  const saveSite = useCallback(async (site, published) => {
+    if (!tenant) throw new Error("No business to update.");
+    const { data, error: rpcErr } = await supabase.rpc("update_tenant_site", {
+      p_tenant_id: tenant.id,
+      p_site: site,
+      p_published: published === true,
+    });
+    if (rpcErr) throw new Error(rpcErr.message);
+    setTenant((t) => (t ? { ...t, brand: data.brand } : t));
+    return data;
+  }, [tenant]);
+
+  return { tenant, canEdit, user, loading, error, save, savePricing, uploadLogo, saveBranding, saveLegal, saveLicence, uploadSitePhoto, removeSitePhotos, saveSite, reload: load };
 }

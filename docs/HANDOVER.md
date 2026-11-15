@@ -50,15 +50,21 @@ The visitor's domain is matched to the business whose website address (`tenants.
 - Stripe: not set up yet. Without `STRIPE_PLATFORM_SECRET_KEY` (and `STRIPE_WEBHOOK_SECRET` / `STRIPE_CONNECT_WEBHOOK_SECRET` for the webhook) no card payment is taken; cash works. Test mode first, never live without the owner's go-ahead. Sensitive variables must be created as "Sensitive" in Vercel.
 - The temporary Supabase access token and the full-access Resend key used for set-up are still held; the owner keeps them until go-live is finished.
 
-## Operator push alerts
+## Push alerts
 
-New-booking and no-show database triggers post to `https://winjo-dispatch.vercel.app/api/push/dispatch` with the shared secret from `public.push_config`. **`push_config` currently has no row, so the triggers send nothing** (they stop when there is no secret). The Operator app's dispatch route checks the same secret, so a row (with a generated secret and the VAPID keys) must exist before alerts work. Creating it is a live change that needs the owner's approval.
+- `public.push_config` holds one row (set 15/11/2026): the VAPID key pair, the subject `mailto:hello@winjodigital.co.uk` and the shared secret the database triggers send. New-booking and no-show triggers post to `https://winjo-dispatch.vercel.app/api/push/dispatch`, which checks that secret.
+- Driver alerts: triggers call the edge functions `send-push` and `notify-job-update` on this Supabase project with the vault secret `driver_alert_webhook_secret`. The functions read `VAPID_PUBLIC_KEY` and `VAPID_PRIVATE_KEY` from the project's Edge Function secrets (the same pair as `push_config`). The Driver App's public key is in `apps/driver/lib/config.ts`; if the pair ever changes, change all three places and redeploy the Driver App.
+- Nothing has been pushed to a real device yet: there is no business, driver or subscribed device on live.
+
+## Deploying from a session
+
+The cloud environment holds saved credentials for `api.vercel.com` and `api.supabase.com` (entered by the owner through the secure form, never visible to the session). Deploys and read-only database checks can be made with plain HTTPS calls to those APIs; the Vercel and Supabase connectors are not needed. A production deploy: clear the project's ignore-build-step, create the deployment with `target: production`, wait for READY, put the ignore-build-step back.
 
 ## How to run the tests
 
 - Website: `npm run test:unit` (265 tests; Node 24 per `.nvmrc`) and `npm run test:browser` (Chromium; screenshots in `tests/browser/out/`).
 - Database: `bash scripts/db-test.sh` (builds a throwaway Postgres 17 from `supabase/baseline/schema.sql`; pgTAP). It needs Postgres 17 and pgTAP from the PostgreSQL apt repository (see `.github/workflows/db-tests.yml`). Docker is not used. If Postgres 17 is missing it exits 2 with a message.
-- Operator app (`apps/operator`): `npm test`, `npx tsc --noEmit`, `npm run lint`.
+- Operator app (`apps/operator`): `npm test` (428 tests), `npx tsc --noEmit`, `npm run lint`.
 - Driver App (`apps/driver`): `npm test`, `npm run test:functions`, `npx tsc --noEmit`, `npm run lint`.
 
 ## Known limits (honest list)

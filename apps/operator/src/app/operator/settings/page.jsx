@@ -45,11 +45,13 @@ import AuditLogTab from "@/components/AuditLogTab";
 import TeamSettings from "@/components/operator/TeamSettings";
 import LegalSettings from "@/components/operator/LegalSettings";
 import PaymentsSettings from "@/components/operator/PaymentsSettings";
+import WebsiteSettings from "@/components/operator/WebsiteSettings";
 import { useAuditLog } from "@/hooks/useAuditLog";
 
 const SECTIONS = [
   { key: "business", label: "Business", icon: Building2 },
   { key: "branding", label: "Branding", icon: Palette },
+  { key: "website", label: "Website", icon: Globe },
   { key: "team", label: "Team", icon: UsersRound },
   { key: "notifications", label: "Notifications", icon: Bell },
   { key: "prices", label: "Prices", icon: Car },
@@ -1013,6 +1015,7 @@ export default function Settings() {
   const sectionContent = {
     business: <BusinessSettings toast={toast} />,
     branding: <BrandingSettings toast={toast} />,
+    website: <WebsiteSettings toast={toast} />,
     team: <TeamSettings toast={toast} />,
     notifications: <NotificationCenter />,
     prices: <PriceSettings toast={toast} />,
