@@ -16,27 +16,26 @@
 <script src="/public/js/consent.js" defer></script>
 <style>
 :root{
-  --bg:#020813;
-  --gold:#d5a538;
-  --line:rgba(255,255,255,.12);
+  --bg:#eef0f5; --navy:#0B132B; --ink:#0f1b33;
+  --gold:#7a5c14; --gold2:#C9A550;
+  --line:#dfe3ec; --muted:#4d5a72; --muted-dim:#66728a;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{
   margin:0;
-  background:
-    radial-gradient(circle at 65% 5%, rgba(48,99,160,.22), transparent 30%),
+  background:radial-gradient(circle at 65% 5%, rgba(48,99,160,.22), transparent 30%),
     radial-gradient(circle at 25% 20%, rgba(213,165,56,.08), transparent 28%),
     #020813;
   background-attachment:fixed;
-  color:#fff;
+  color:var(--ink);
   font-family:Jost,Arial,sans-serif;
   min-height:100vh;
 }
 .serif{font-family:Jost,Arial,sans-serif}
 .gold{color:var(--gold)}
 .glass{
-  background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.035));
+  background:linear-gradient(180deg,#f3f5f9,#f3f5f9);
   border:1px solid var(--line);
   box-shadow:0 22px 70px rgba(0,0,0,.35);
   backdrop-filter:blur(18px);
@@ -44,7 +43,7 @@ body{
 .btn-gold{
   background:linear-gradient(180deg,#dcb354,#c99a35);
   color:#06101c;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.22);
+  box-shadow:inset 0 1px 0 #dfe3ec;
   transition:all .28s ease;
   border:none;cursor:pointer;
 }
@@ -53,24 +52,24 @@ body{
 .btn-outline{
   background:transparent;
   border:1px solid rgba(213,165,56,.65);
-  color:#fff;
+  color:var(--ink);
   transition:all .28s ease;cursor:pointer;
 }
 .btn-outline:hover:not(:disabled){background:rgba(213,165,56,.08);border-color:var(--gold)}
 .btn-outline:disabled{opacity:.5;cursor:not-allowed}
-.detail-row{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.07)}
+.detail-row{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #dfe3ec}
 .detail-row:last-child{border-bottom:0}
-.detail-label{color:rgba(255,255,255,.45);font-size:12px;text-transform:uppercase;letter-spacing:.12em;width:110px;flex-shrink:0;padding-top:2px}
-.detail-value{color:rgba(255,255,255,.88)}
-.route-block{padding-bottom:18px;margin-bottom:6px;border-bottom:1px solid rgba(255,255,255,.07)}
+.detail-label{color:var(--muted-dim);font-size:12px;text-transform:uppercase;letter-spacing:.12em;width:110px;flex-shrink:0;padding-top:2px}
+.detail-value{color:var(--muted)}
+.route-block{padding-bottom:18px;margin-bottom:6px;border-bottom:1px solid #dfe3ec}
 .route-point{display:flex;gap:14px}
 .route-markers{display:flex;flex-direction:column;align-items:center;flex-shrink:0;padding-top:4px}
 .route-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0}
 .route-dot.pickup{background:#60a5fa;box-shadow:0 0 0 3px rgba(96,165,250,.18)}
 .route-dot.dropoff{background:var(--gold);box-shadow:0 0 0 3px rgba(213,165,56,.18)}
-.route-line{width:2px;flex:1;min-height:26px;background:rgba(255,255,255,.14);margin:4px 0}
-.route-label{color:rgba(255,255,255,.45);font-size:11px;text-transform:uppercase;letter-spacing:.12em;font-weight:700;margin-bottom:3px}
-.route-value{color:rgba(255,255,255,.92);font-size:15px;line-height:1.45;font-weight:600}
+.route-line{width:2px;flex:1;min-height:26px;background:#e3e7ef;margin:4px 0}
+.route-label{color:var(--muted-dim);font-size:11px;text-transform:uppercase;letter-spacing:.12em;font-weight:700;margin-bottom:3px}
+.route-value{color:var(--muted);font-size:15px;line-height:1.45;font-weight:600}
 .route-stop{padding:12px 0}
 .status-pill{
   display:inline-flex;align-items:center;gap:6px;
@@ -82,7 +81,7 @@ body{
 .status-confirmed{background:rgba(34,197,94,.12);color:#4ade80;border:1px solid rgba(34,197,94,.30)}
 .status-rejected{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.30)}
 .skeleton{
-  background:linear-gradient(90deg,rgba(255,255,255,.04) 25%,rgba(255,255,255,.08) 50%,rgba(255,255,255,.04) 75%);
+  background:linear-gradient(90deg,#f3f5f9 25%,#f3f5f9 50%,#f3f5f9 75%);
   background-size:200% 100%;
   animation:shimmer 1.4s infinite;
   border-radius:6px;
@@ -92,12 +91,54 @@ body{
 @media(max-width:640px){
   .payment-grid{grid-template-columns:1fr!important}
 }
+
+/* ── light theme: navy header, white cards, gold accent (same look as the emails and the office app) ── */
+body{background:var(--bg);color:var(--ink)}
+body>header{background:var(--navy);color:#fff;border-bottom:3px solid var(--gold2)!important}
+.glass{background:#fff;border:1px solid var(--line);box-shadow:none;backdrop-filter:none}
+.btn-gold{background:var(--gold2);color:var(--navy);box-shadow:none}
+.btn-gold:hover:not(:disabled){background:#d4b160}
+.btn-outline{background:#fff;border:1px solid #c5ccd9;color:var(--ink)}
+.btn-outline:hover:not(:disabled){background:#f3f5f9;border-color:var(--navy)}
+.detail-row,.route-block{border-color:#eef0f3}
+.detail-label,.route-label{color:var(--muted-dim);letter-spacing:.06em}
+.detail-value,.route-value{color:var(--ink)}
+.route-dot.pickup{background:#1e4a8a;box-shadow:0 0 0 3px #e6effb}
+.route-dot.dropoff{background:var(--gold2);box-shadow:0 0 0 3px #fbf3e0}
+.route-line{background:#d5dae5}
+.status-pill{letter-spacing:.04em}
+.status-pending{background:#fbf3e0;color:#7a5c14;border:1px solid #e6d3a1}
+.status-accepted{background:#e6effb;color:#1e4a8a;border:1px solid #c3d6f2}
+.status-confirmed{background:#dcfce7;color:#166534;border:1px solid #bbe5c8}
+.status-rejected{background:#fee2e2;color:#991b1b;border:1px solid #f4c7c3}
+.skeleton{background:linear-gradient(90deg,#e6e9f0 25%,#f3f5f9 50%,#e6e9f0 75%);background-size:200% 100%}
+.clean-icon{color:var(--gold)}
+h1.serif{font-weight:600;letter-spacing:-.01em}
+/* utility classes written for the old dark page */
+body .text-white{color:var(--ink)}
+body .text-white\/80,body .text-white\/70,body .text-white\/65{color:var(--muted)}
+body .text-white\/55,body .text-white\/50,body .text-white\/45{color:var(--muted-dim)}
+body .placeholder-white\/30::placeholder{color:#8a94a8}
+body .bg-white\/5{background:#fff}
+body .border-white\/15,body .border-white\/10{border-color:#c5ccd9}
+body .text-red-400{color:#b42318}
+body .text-yellow-400,body .text-yellow-300\/80{color:#7a5c14}
+body .text-blue-400{color:#1e4a8a}
+body .text-\[\#d5a538\]{color:#7a5c14}
+body .border-\[\#d5a538\]{border-color:var(--gold2)}
+body .bg-yellow-500\/15{background:#fbf3e0}body .border-yellow-500\/30{border-color:#e6d3a1}
+body .bg-red-500\/15{background:#fee2e2}body .border-red-500\/30{border-color:#f4c7c3}
+body .bg-green-500\/15{background:#dcfce7}body .border-green-500\/30{border-color:#bbe5c8}
+body .bg-blue-500\/15{background:#e6effb}body .border-blue-500\/30{border-color:#c3d6f2}
+input:focus{border-color:var(--navy)!important;box-shadow:0 0 0 3px rgba(201,165,80,.35)}
+:focus-visible{outline:3px solid var(--gold2);outline-offset:2px}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 
 <body>
 
-<header style="padding:16px 20px;border-bottom:1px solid #2F3742"><a href="/" style="color:inherit;text-decoration:none;font-weight:600">Your booking</a></header>
+<header style="padding:16px 20px"><a href="/" style="color:inherit;text-decoration:none;font-weight:600">Your booking</a></header>
 <div class="header-space"></div>
 
 <main class="max-w-3xl mx-auto px-4 md:px-6 py-10">
@@ -152,9 +193,9 @@ body{
     </div>
     <h1 class="serif text-4xl md:text-5xl font-bold leading-tight" id="bookingHeadline">Your Airport Transfer</h1>
     <p class="text-white/55 mt-2 text-sm" id="bookingSubline"></p>
-    <div class="mt-4 hidden" id="refBadge" style="background:rgba(213,165,56,.08);border:1px solid rgba(213,165,56,.35);border-radius:10px;padding:14px 16px;max-width:420px">
-      <p class="text-xs uppercase tracking-[.1em] font-bold" style="color:#d5a538;margin:0 0 4px">Your Booking Reference</p>
-      <p class="font-mono font-black" style="color:#fff;font-size:22px;letter-spacing:.05em;margin:0 0 6px" id="bookingRef"></p>
+    <div class="mt-4 hidden" id="refBadge" style="background:#fbf3e0;border:1px solid #e6d3a1;border-radius:10px;padding:14px 16px;max-width:420px">
+      <p class="text-xs uppercase tracking-[.1em] font-bold" style="color:#7a5c14;margin:0 0 4px">Your Booking Reference</p>
+      <p class="font-mono font-black" style="color:#0f1b33;font-size:22px;letter-spacing:.05em;margin:0 0 6px" id="bookingRef"></p>
       <p class="text-white/55" style="font-size:12px;line-height:1.5;margin:0">Save this. You'll need it, along with your phone number, to check your booking anytime on your booking page.</p>
     </div>
   </div>
@@ -187,11 +228,11 @@ body{
   <!-- Accepted: payment options -->
   <div id="panelPayment" class="hidden">
     <p class="text-white/65 mb-5 leading-relaxed">Your transfer has been accepted. Please choose how you'd like to pay:</p>
-    <div class="glass rounded-xl p-5 mb-5" style="border-color:rgba(213,165,56,.35)">
-      <p class="font-bold text-sm mb-1" style="color:#d5a538">Before you pay: cancellations</p>
+    <div class="glass rounded-xl p-5 mb-5" style="border-color:#e6d3a1">
+      <p class="font-bold text-sm mb-1" style="color:#7a5c14">Before you pay: cancellations</p>
       <p class="text-white/70 text-sm leading-relaxed" id="policySummary">Free more than 48 hours before pickup. 25% of the fare from 48 hours before, 50% from 24 hours before, and the full fare from 2 hours before, once the driver has set off, or if no one is there to be picked up. If someone you booked for cancels, it counts as your cancellation. Changing flight details or the passenger's name is free. If we cancel, you get a full refund. <a class="gold" id="policyLink" href="/terms#cancellation">Full policy</a></p>
       <label id="policyAcceptRow" class="hidden flex items-start gap-3 mt-4 text-sm text-white/80" style="cursor:pointer">
-        <input type="checkbox" id="policyAccept" style="width:18px;height:18px;margin-top:2px;accent-color:#d5a538;flex-shrink:0">
+        <input type="checkbox" id="policyAccept" style="width:18px;height:18px;margin-top:2px;accent-color:#0B132B;flex-shrink:0">
         <span>I have read and accept the <a class="gold" href="/terms#cancellation" target="_blank" rel="noopener">Booking, Payment, Changes and Cancellation Policy</a> and the <a class="gold" href="/terms" target="_blank" rel="noopener">Terms &amp; Conditions</a>, including the cancellation charges above.</span>
       </label>
       <p id="policyError" class="text-red-400 text-xs mt-2 hidden">Please confirm you accept the cancellation policy to continue.</p>
@@ -230,7 +271,7 @@ body{
   </div>
 
   <!-- Confirmed state -->
-  <div id="panelConfirmed" class="hidden glass rounded-xl p-6 mb-5" style="border-color:rgba(34,197,94,.25);background:linear-gradient(180deg,rgba(34,197,94,.05),rgba(255,255,255,.025))">
+  <div id="panelConfirmed" class="hidden glass rounded-xl p-6 mb-5" style="border-color:#bbe5c8;background:#f0fdf4">
     <div class="flex gap-4">
       <div class="w-10 h-10 rounded-full bg-green-500/15 border border-green-500/30 flex items-center justify-center flex-shrink-0"><svg aria-hidden="true" style="width:18px;height:18px;stroke:#4ade80;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><path d="m5 12.5 4.2 4.2L19 7"></path></svg></div>
       <div>
@@ -249,9 +290,9 @@ body{
   </div>
 
   <!-- Claim-to-account panel (shown when user is signed into My Account) -->
-  <div id="panelClaim" class="hidden glass rounded-xl p-6 mb-5" style="border-color:rgba(213,165,56,.22)">
+  <div id="panelClaim" class="hidden glass rounded-xl p-6 mb-5" style="border-color:#e6d3a1">
     <div class="flex gap-4 items-start">
-      <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-xl" style="background:rgba(213,165,56,.12);border:1px solid rgba(213,165,56,.3);color:#d5a538">★</div>
+      <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-xl" style="background:#fbf3e0;border:1px solid #e6d3a1;color:#7a5c14">★</div>
       <div style="flex:1">
         <h2 class="font-bold text-lg mb-1">Earn Privilege Points</h2>
         <p class="text-white/65 text-sm leading-relaxed mb-3">Link this booking to your account to earn Privilege Points and track your journey history.</p>
@@ -472,7 +513,7 @@ body{
               var h2 = pendingEl.querySelector('h2');
               var p  = pendingEl.querySelector('p');
               if (h2) h2.textContent = 'Payment is taking longer than expected';
-              if (p)  p.innerHTML = 'Your payment was received but confirmation is taking a moment. Please ' + (BIZ.tel ? '<a style="color:#d5a538" href="https://wa.me/' + BIZ.tel + '">WhatsApp us</a> or call <a style="color:#d5a538" href="tel:+' + BIZ.tel + '">' + BIZ.phone + '</a>' : 'contact the business') + ' to confirm.';
+              if (p)  p.innerHTML = 'Your payment was received but confirmation is taking a moment. Please ' + (BIZ.tel ? '<a style="color:#7a5c14" href="https://wa.me/' + BIZ.tel + '">WhatsApp us</a> or call <a style="color:#7a5c14" href="tel:+' + BIZ.tel + '">' + BIZ.phone + '</a>' : 'contact the business') + ' to confirm.';
             }
             return;
           }
