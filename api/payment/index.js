@@ -55,7 +55,8 @@ function routeName(req) {
 
 async function createStripeSession({ price, description, productName, bookingId, customerEmail, successUrl, cancelUrl, ctx }) {
   const params = new URLSearchParams();
-  params.set('payment_method_types[]', 'card');
+  // No payment_method_types: Stripe rejects it on Checkout Sessions now. Which methods
+  // show (card, and any others the owner enables) is set in the Stripe dashboard.
   params.set('line_items[0][price_data][currency]', 'gbp');
   params.set('line_items[0][price_data][product_data][name]', productName || 'Airport Transfer');
   params.set('line_items[0][price_data][product_data][description]', description);
