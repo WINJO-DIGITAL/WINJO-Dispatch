@@ -29,7 +29,7 @@ A multi-tenant booking, dispatch and payments platform (website, Operator app, D
 - [ ] **Production deploy of the website + Operator app** so the new Settings, Website editor goes live (built and tested on the branch, 15/11/2026).
 - [ ] **Finish the end-to-end test on the sample business** (`sample-cars-test`, booking `SAMP-000001`, on live): the owner connects Stripe from Settings, Payments (Stripe's own onboarding page, test details) and pays the test checkout with card 4242 4242 4242 4242. Stripe's pages block automated browsers, so a person must do these two steps. Then remove the sample business.
 - [ ] Merge and deploy the Connect fix (Accounts v2) so Settings, Payments can connect an account on live.
-- [ ] Check in Stripe (Developers, Webhooks) that the "connected accounts" endpoint listens to connected accounts; the payment page's own check records a payment either way.
+- [ ] The connected-accounts webhook was recreated after Connect was switched on (15/11/2026, it now listens to connected accounts) and its new signing secret is saved on Vercel; it takes effect at the next production deploy of the main site.
 - [ ] Old profile and activity rows still filed under the removed seed business: clear them or leave them (data deletion).
 - [ ] Automatic monthly billing of operators (Stripe Billing has its own fees). Live mode for Stripe Connect (after a test payment passes). Anything that costs money or turns Twilio on.
 - [ ] Owner actions: revoke the temporary Supabase access token and the full-access Resend key when go-live is finished; GitHub repository variables `VERCEL_ORG_ID` / `VERCEL_PROJECT_ID` and secret `VERCEL_TOKEN` if the manual deploy workflow is wanted; link `/signup` from wherever it should be found; put the platform's home page copy in place (the home page is a neutral placeholder).
@@ -38,7 +38,7 @@ A multi-tenant booking, dispatch and payments platform (website, Operator app, D
 
 - [ ] More design directions and separate pages for the site builder.
 - [ ] Review the Connect payment code before live mode.
-- [ ] Driver App lint warnings (the Operator app is clean).
+- [ ] Driver App: 21 lint warnings (no errors), all React compiler style rules, mostly in the job screen. Left alone on purpose until the job screens have better test cover, because changing them blind risks breaking a working screen.
 - [ ] Driver App: coverage of the job screens is thin.
 - [ ] Supabase size: needs owner approval for VACUUM FULL, a 5-minute job schedule and a keep period.
 - [ ] Optional later: card payment of the set-up fee (adds fees and touches the payment webhook, so ask first); an email to the applicant when approved or rejected.
