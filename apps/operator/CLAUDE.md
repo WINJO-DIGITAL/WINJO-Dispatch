@@ -24,6 +24,16 @@ Part of the platform's single site: pages under `/operator/*`, public files unde
 - **Texts to send** (Today): pending `operator_sms_tasks` plus partner jobs' `driver_sms_reminders`, as pre-written `sms:` links with "Mark as sent". `queueCustomerText` (`src/lib/server/smsTask.ts`) replaces an earlier text of the same kind and never duplicates an identical one.
 - **Push**: `/api/push/dispatch` checks the shared secret from `push_config` through `get_push_dispatch_bundle(_for_tenant)` and sends Web Push to the business's subscribed office devices.
 - **Calendar** (`src/components/operator/calendar/`, rules in `src/lib/operator/calendarModel.js`): month / week / day / list, UK date keys, "possible" clash flags (bookings have no journey length), tokens `cal-*` in `tailwind.config.ts`.
-- **Look and feel**: one font (Manrope, self-hosted under `public/operator/fonts`), the soft gold scale in `tailwind.config.ts`, status pills with dark text on pale fills.
+- **Look and feel**: one font (Manrope, self-hosted under `public/operator/fonts`), the soft gold scale in `tailwind.config.ts`, status pills with dark text on pale fills. Grouped content sits in `className="card ..."` (white panel, hairline border, defined in `src/app/globals.css`); the top bar shows the page title once, so screens do not repeat it; small upper-case labels use `tracking-[0.06em]`.
 - **Emails** use the shared template and wording copies in `src/lib/email/` (identical to the website's `lib/emailTemplate.js`, `lib/emailContent.js`, `lib/cancellation.js`); keep them in step.
 - Tests: `npm test` (vitest), plus `npx tsc --noEmit`.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
