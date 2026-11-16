@@ -28,9 +28,21 @@ export function useAuth() {
     return error?.message ?? null;
   }, []);
 
+  // The six-digit code from the sign-in email. The session is stored by this app itself, so a
+  // Home Screen app on an iPhone is signed in where it is, not in Safari.
+  const verifyCode = useCallback(async (email: string, code: string) => {
+    const token = code.replace(/\D/g, "");
+    if (token.length < 6) return "Enter the 6-digit code from the email.";
+    const first = await supabase.auth.verifyOtp({ email: email.trim(), token, type: "email" });
+    if (!first.error) return null;
+    const second = await supabase.auth.verifyOtp({ email: email.trim(), token, type: "magiclink" });
+    if (!second.error) return null;
+    return "That code didn't work. It may have expired or already been used: ask for a new one.";
+  }, []);
+
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
   }, []);
 
-  return { session, loading, signIn, signOut };
+  return { session, loading, signIn, verifyCode, signOut };
 }

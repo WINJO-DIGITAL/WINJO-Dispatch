@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import LoginScreen from "@/components/LoginScreen";
 
 export default function OperatorLayout({ children }) {
-  const { session, loading, signIn, signOut } = useAuth();
+  const { session, loading, signIn, verifyCode, signOut } = useAuth();
 
   if (loading) {
     return (
@@ -18,7 +18,7 @@ export default function OperatorLayout({ children }) {
   }
 
   if (!session) {
-    return <LoginScreen onSignIn={signIn} />;
+    return <LoginScreen onSignIn={signIn} onVerifyCode={verifyCode} />;
   }
 
   return (

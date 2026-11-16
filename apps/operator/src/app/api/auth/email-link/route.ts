@@ -1,5 +1,6 @@
-// "Email me a sign-in link" on the operator sign-in screen: no password needed. Emails a one-time
-// link to /set-password?type=magiclink, which signs the person in. Only people who already have a
+// "Email me a sign-in code" on the operator sign-in screen: no password needed. Emails a six-digit
+// code (typed into the app) and, as a fallback for computers, a one-time link to
+// /set-password?type=magiclink, which signs the person in. Only people who already have a
 // staff role (or the platform owner) get an email; everyone else gets the same reply and nothing is
 // sent, so the form cannot be used to find out who has an account, and it never creates an account.
 import { signInLink } from "@/lib/email/staff.js";
@@ -10,7 +11,7 @@ import { adminClient, appOrigin, isEmail, json, sendEmail, sendPlatformEmail, se
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const DONE = { ok: true, message: "If that email belongs to a team member, a sign-in link is on its way. It works once and expires in an hour." };
+const DONE = { ok: true, message: "If that email belongs to a team member, a sign-in code is on its way. It works once and expires in an hour." };
 
 // A small best-effort limit so the form cannot be used to flood someone's inbox: at most 5 requests
 // per address and 20 per visitor in 15 minutes. Kept in memory, so it slows a flood rather than
@@ -46,15 +47,18 @@ export async function POST(req: Request) {
 
     const link = await admin.auth.admin.generateLink({ type: "magiclink", email });
     const token = link.data?.properties?.hashed_token;
+    // The six-digit code for the same one-time sign-in: typed into the app, so an iPhone's
+    // Home Screen app never has to hand over to Safari.
+    const code = link.data?.properties?.email_otp ?? "";
     if (link.error || !token) return json(DONE);
     const url = setPasswordUrl(appOrigin(req), token, "magiclink");
 
     if (staff.tenant_id) {
       const { data: tenant } = await admin.from("tenants").select("name").eq("id", staff.tenant_id).maybeSingle();
       await loadBrand(admin, staff.tenant_id);
-      await sendEmail(email, signInLink({ tenant_id: staff.tenant_id, businessName: tenant?.name || "your", url }), staff.tenant_id);
+      await sendEmail(email, signInLink({ tenant_id: staff.tenant_id, businessName: tenant?.name || "your", url, code }), staff.tenant_id);
     } else {
-      await sendPlatformEmail(email, signInLinkPlatform({ url }));
+      await sendPlatformEmail(email, signInLinkPlatform({ url, code }));
     }
   } catch (e) {
     console.error("[email-link]", (e as Error).message);

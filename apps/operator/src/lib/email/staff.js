@@ -36,14 +36,30 @@ function passwordReset__build({ businessName, url }) {
   });
 }
 
-function signInLink__build({ businessName, url }) {
-  return build(`Your ${businessName} operator sign-in link`, {
-    audience: 'staff', preheader: 'Use this link to sign in to the operator app.',
+// A six-digit code is the main way in: on an iPhone, a link in an email opens Safari, not the
+// Home Screen app, so the person would be signed in in the wrong place. The button stays as a
+// fallback for computers.
+const codeBlock = (code) => ({
+  html: `<span style="display:inline-block;font-size:34px;line-height:40px;font-weight:800;letter-spacing:.28em;color:#0B132B;background:#F5F6F9;border:1px solid #DCE0E8;border-radius:10px;padding:10px 18px">${String(code).replace(/[^0-9]/g, '')}</span>`,
+  text: `Your sign-in code: ${String(code).replace(/[^0-9]/g, '')}`,
+});
+
+function signInLink__build({ businessName, url, code }) {
+  const hasCode = /^[0-9]{6,10}$/.test(String(code || ''));
+  return build(`Your ${businessName} operator sign-in ${hasCode ? 'code' : 'link'}`, {
+    audience: 'staff', preheader: hasCode ? `Your sign-in code is ${code}.` : 'Use this link to sign in to the operator app.',
     status: { label: 'Sign in', tone: 'gold' }, title: 'Sign in to the operator app',
-    intro: [
-      `Use the button to sign in to the ${businessName} operator app. You do not need a password. The link works once and expires in an hour.`,
-      "If you didn't ask for it, ignore this email; nobody can sign in without it.",
-    ],
+    intro: hasCode
+      ? [
+        `Type this code into the ${businessName} operator app to sign in. You do not need a password. It works once and expires in an hour.`,
+        codeBlock(code),
+        'On a computer you can use the button instead. On an iPhone, type the code in the app: the button would open Safari.',
+        "If you didn't ask for it, ignore this email; nobody can sign in without it.",
+      ]
+      : [
+        `Use the button to sign in to the ${businessName} operator app. You do not need a password. The link works once and expires in an hour.`,
+        "If you didn't ask for it, ignore this email; nobody can sign in without it.",
+      ],
     button: { label: 'Sign in', url },
   });
 }

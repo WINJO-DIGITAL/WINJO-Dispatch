@@ -27,7 +27,7 @@ vi.mock("@supabase/supabase-js", () => ({
           db.calls.push({ type, email });
           const id = db.users[email];
           if (!id) return { data: null, error: { message: "User not found" } };
-          return { data: { user: { id }, properties: { hashed_token: type === "magiclink" ? "magic-token-1" : "recovery-token-1" } }, error: null };
+          return { data: { user: { id }, properties: { hashed_token: type === "magiclink" ? "magic-token-1" : "recovery-token-1", ...(type === "magiclink" ? { email_otp: "482916" } : {}) } }, error: null };
         },
       },
     },
@@ -73,6 +73,18 @@ describe("POST /api/auth/email-link", () => {
     expect(db.sent[0].subject).toContain("Moor Cars Ltd");
   });
 
+  it("puts a six-digit code in the email, so an iPhone Home Screen app can sign in without Safari", async () => {
+    db.users["sam@moor.test"] = "u1"; db.roles = [{ user_id: "u1", tenant_id: T1, role: "operator_admin" }];
+    const r = await post("sam@moor.test");
+    expect(r.status).toBe(200);
+    expect(r.body.message).toMatch(/sign-in code/);
+    expect(db.sent[0].subject).toMatch(/sign-in code/);
+    expect(db.sent[0].html).toContain("482916");
+    expect(db.sent[0].text).toContain("Your sign-in code: 482916");
+    // The link stays as a fallback for computers.
+    expect(db.sent[0].html).toContain("type=magiclink");
+  });
+
   it("emails the platform owner (no business) from the platform sender, with no business branding", async () => {
     db.users["hello@winjodigital.co.uk"] = "owner"; db.roles = [{ user_id: "owner", tenant_id: null, role: "super_admin" }];
     const r = await post("hello@winjodigital.co.uk");
@@ -80,6 +92,8 @@ describe("POST /api/auth/email-link", () => {
     expect(db.sent).toHaveLength(1);
     expect(db.sent[0].from).toBe("Winjo Digital <hello@platform.test>");
     expect(db.sent[0].html).toContain("type=magiclink");
+    expect(db.sent[0].html).toContain("482916");
+    expect(db.sent[0].text).toContain("Your sign-in code: 482916");
     expect(JSON.stringify(db.sent[0])).not.toMatch(/Acme Cars/i);
   });
 
