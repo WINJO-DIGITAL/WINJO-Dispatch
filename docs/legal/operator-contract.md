@@ -1,4 +1,4 @@
-# Operator Services Agreement (version 2, 14/11/2026)
+# Operator Services Agreement (version 3, 16/11/2026)
 
 **Not legal advice and not a guarantee. No solicitor was used (owner decision).** Drafted from, and checked against, official UK sources: Unfair Contract Terms Act 1977 ss.2, 3, 11 and Sch.2; Late Payment of Commercial Debts (Interest) Act 1998 ss.1, 6, 7, 8; UK GDPR Art 28 (in the separate data terms); and the sources listed in `operator-responsibilities.md`. The Supplier's details are taken from its published terms (https://winjodigital.co.uk/terms, version 2026-11-12.1).
 
@@ -32,7 +32,7 @@
 
 3.2 **Monthly fee: £99 per month**, for as long as this agreement runs, paid monthly in advance from the date your Service is made available to you.
 
-3.3 We are not registered for VAT, so no VAT is charged. We will invoice you; you pay within 14 days of the invoice date by the method on the invoice.
+3.3 We are not VAT registered, so no VAT is charged. We will invoice you; you pay within 14 days of the invoice date by the method on the invoice.
 
 3.4 **Late payment.** If you do not pay on time, we may charge statutory interest and compensation under the Late Payment of Commercial Debts (Interest) Act 1998 and may suspend the Service after 7 days' written notice until you pay.
 
@@ -68,7 +68,7 @@
 
 7.1 We will provide the Service with reasonable skill and care and will work to keep it available. We **do not promise** that it will be uninterrupted or error free. The Service depends on third-party services (for example hosting, database, email and payment providers). We are not responsible for their failures, but we will help you work around them where we reasonably can.
 
-7.2 Support is by email at hello@winjodigital.co.uk. The support hours, reply times and what support covers are set out in the Order Details for your business, in the same way as Winjo Digital's published terms leave booking systems and apps to their own written proposal (section 20 of those terms). We may update, improve or change the Service from time to time. If a change would seriously reduce what you are paying for, we will give you reasonable notice.
+7.2 Support is by email at hello@winjodigital.co.uk. **Support hours are 24 hours a day, every day.** Reply times and what support covers are set out in the Order Details for your business, in the same way as Winjo Digital's published terms leave booking systems and apps to their own written proposal (section 20 of those terms). We may update, improve or change the Service from time to time. If a change would seriously reduce what you are paying for, we will give you reasonable notice.
 
 7.3 You are responsible for having a way to take and run bookings if the Service is unavailable (for example by phone).
 
@@ -143,7 +143,7 @@
 | Contact name and email for notices | |
 | Start Date | |
 | What is set up (website pages, booking form, Operator app, Driver App, number of driver logins) | |
-| Support hours and contact | |
+| Support hours and contact | 24 hours a day, every day, by email: hello@winjodigital.co.uk |
 | Anything extra agreed in writing | |
 | Operator's licensing authority and operator licence number | |
 | Signed for the Operator (name, date) | |
@@ -168,12 +168,14 @@ No VAT is charged (clause 3.3). Changes to the monthly fee: clause 3.5.
 
 ## Fill in before first use
 
-1. **Winjo Digital:** all supplier details are now filled in from its terms. Company number: none (sole trader). VAT: not registered. Phone for notices is not in its terms (its website call link is +44 7474 144600); add it if you want it on the contract.
+1. **Winjo Digital:** all supplier details are now filled in from its terms. Company number: none (sole trader). VAT: not registered (confirmed by the owner 16/11/2026). Phone for notices is not in its terms (its website call link is +44 7474 144600); add it if you want it on the contract.
 2. **Each Operator:** complete its Order Details table (copy the template above).
 3. The same supplier name must be used in `operator-data-terms.md` section 1 and `brand.legal.platform_provider` for each business that publishes customer terms.
 
 ## Notes on how this was built (honest limits)
 
+- **Support hours** (24 hours a day, every day, by email) were decided by the owner on 16/11/2026 and are stated in clause 7.2. No reply time is promised there; reply times stay in each Order Details table.
+- **VAT:** the owner confirmed on 16/11/2026 that Winjo Digital is not VAT registered. This is the owner's statement of fact and must be kept true: if registration is ever required or chosen, clause 3.3, Schedule A and the sign-up page must change and the version must be bumped. The registration threshold was **not** looked up for this change.
 - **Fees** are the owner's decision: £999 up front (12/11/2026); the monthly fee was changed from £49 to £99 on 13/11/2026.
 - **Liability and reimbursement (clauses 10, 11)** are business-to-business terms on the Supplier's standard terms, so they must pass the reasonableness test in the Unfair Contract Terms Act 1977 (ss.3 and 11; the burden is on the party relying on the term, s.11(5)). The cap is in a fixed sum, which s.11(4) says the court looks at against the resources and insurance available. Death or personal injury caused by negligence cannot be excluded at all (s.2(1)); clause 10.1 says so. Whether a court would find the cap reasonable cannot be promised.
 - **Late payment (clause 3.4)** uses statutory interest under the 1998 Act (s.1). The rate is set by an order under s.6, which was **not** read, so no rate is quoted.

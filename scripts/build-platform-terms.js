@@ -15,7 +15,7 @@ const { render, sections, esc } = require('../lib/markdown');
 const ROOT = path.join(__dirname, '..');
 const read = (f) => fs.readFileSync(path.join(ROOT, 'docs', 'legal', f), 'utf8');
 
-const OMIT_TOP = [/^Fill in before first use$/i, /^Notes on how this was built/i, /^What the owner must fill in or check before use/i];
+const OMIT_TOP = [/^Fill in before first use$/i, /^Notes on how this was built/i, /^What the owner must fill in or check before use/i, /^Decisions recorded/i];
 
 /** The agreement as published: without the internal notes. */
 function contractForPage(md) { return omitInternal(md); }
