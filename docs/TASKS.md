@@ -43,18 +43,12 @@ A multi-tenant booking, dispatch and payments platform (website, Operator app, D
 - [ ] Supabase size: needs owner approval for VACUUM FULL, a 5-minute job schedule and a keep period.
 - [ ] Optional later: card payment of the set-up fee (adds fees and touches the payment webhook, so ask first); an email to the applicant when approved or rejected.
 
-## Needs the owner's decision
+## Owner decisions made 16/11/2026
 
-Recommendations recorded 15/11/2026 (the owner asked for the recommended course; these are owner decisions, so nothing has been decided for the owner):
-- Data terms: keep the "draft" label until the owner signs them off. Do not publish as final.
-- Support hours: keep unpublished. No hours are invented for any business.
-- VAT wording: keep the current wording. A tax statement changes only on the owner's decision.
-- Live Stripe: keep test mode. Live only after a full test payment passes and the owner says so.
-- Push alert on a real phone: needs a subscribed device. Not testable from the platform side alone.
-
-- [ ] Support hours for operators (the Order Details decide these; none are published).
-- [ ] VAT wording on the platform page.
-- [ ] Data terms: still labelled "draft" until the owner signs them off.
+- Data terms: signed off by the owner (version 1, 16/11/2026); the draft label is gone.
+- Support hours: 24 hours a day, every day, by email (contract version 3, clause 7.2).
+- VAT: not VAT registered (clause 3.3 and the sign-up page). The statement must be kept true.
+- Recorded with sources and residual risks in `docs/legal/audit-2026-11-12.md`.
 
 ## Test results (15/11/2026)
 

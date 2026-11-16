@@ -50,7 +50,7 @@ test('a valid application is stored with the current fees and the accepted versi
   assert.equal(db.saved.length, 1);
   const s = db.saved[0];
   assert.equal(s.slug, 'moor-cars'); assert.equal(s.setup_pence, 99900); assert.equal(s.monthly_pence, 9900);
-  assert.equal(s.contract_version, '2'); assert.equal(s.responsibilities_version, '2');
+  assert.equal(s.contract_version, '3'); assert.equal(s.responsibilities_version, '2');
   assert.equal(r.headers['Cache-Control'], 'no-store');
 });
 

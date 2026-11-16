@@ -4,11 +4,8 @@ Only open items are listed here. Completed work is recorded in `docs/TASKS.md` a
 
 ## Waiting on the owner
 
-- [ ] **Data terms:** sign off, or keep the "draft" label. Recommendation: keep the label.
-- [ ] **Support hours:** decide what to publish. Recommendation: leave unpublished.
-- [ ] **VAT wording:** confirm or change. Recommendation: keep the current wording.
-- [ ] **Live Stripe keys:** only after the test payment passes and the owner says go live. Recommendation: stay in test mode until then.
-- [ ] **Push alert on a real phone:** subscribe a driver or office device in the app, then send a test alert.
+- [ ] **Live Stripe keys:** the test payment has passed. Switch to live only when the owner says go live. Recommendation: stay in test mode until the first real customer is ready.
+- [ ] **Push alert on a real phone:** the owner signs in at `/operator` on a phone, opens Settings, Notifications, turns on alerts on that device, allows notifications, and tells Claude, who then sends a test alert.
 
 ## Owner housekeeping
 

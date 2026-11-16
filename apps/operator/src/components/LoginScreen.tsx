@@ -1,17 +1,18 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, KeyRound } from "lucide-react";
 import { DEPLOYMENT_BRAND } from "@/lib/deploymentBrand";
 
 interface Props {
   onSignIn: (email: string, password: string) => Promise<string | null>;
+  onVerifyCode: (email: string, code: string) => Promise<string | null>;
 }
 
 const inputCls =
   "w-full bg-slate-100 border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-gold/40 transition-colors";
 
-export default function LoginScreen({ onSignIn }: Props) {
+export default function LoginScreen({ onSignIn, onVerifyCode }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -22,6 +23,9 @@ export default function LoginScreen({ onSignIn }: Props) {
   // Email sign-in is the main way in; a password is the alternative.
   const [usePassword, setUsePassword] = useState(false);
   const [linking, setLinking] = useState(false);
+  // After a code is requested, the screen asks for it (typed here, so nothing leaves the app).
+  const [awaitingCode, setAwaitingCode] = useState(false);
+  const [code, setCode] = useState("");
 
   // Emails a reset link (only sent if the address belongs to a team member;
   // the reply is the same either way). See /api/auth/forgot.
@@ -65,10 +69,14 @@ export default function LoginScreen({ onSignIn }: Props) {
         body: JSON.stringify({ email: addr }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) setError(data?.error ?? "Couldn't send a sign-in link. Try again.");
-      else setNotice(data?.message ?? "If that email belongs to a team member, a sign-in link is on its way.");
+      if (!res.ok) setError(data?.error ?? "Couldn't send a sign-in code. Try again.");
+      else {
+        setNotice(data?.message ?? "If that email belongs to a team member, a sign-in code is on its way.");
+        setAwaitingCode(true);
+        setCode("");
+      }
     } catch {
-      setError("Couldn't send a sign-in link. Check your connection and try again.");
+      setError("Couldn't send a sign-in code. Check your connection and try again.");
     } finally {
       setLinking(false);
     }
@@ -76,6 +84,13 @@ export default function LoginScreen({ onSignIn }: Props) {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (!usePassword && awaitingCode) {
+      setSubmitting(true);
+      setError(null);
+      const err = await onVerifyCode(email, code);
+      if (err) { setError(err); setSubmitting(false); }
+      return;
+    }
     if (!usePassword) { await handleEmailLink(); return; }
     setSubmitting(true);
     setError(null);
@@ -150,6 +165,28 @@ export default function LoginScreen({ onSignIn }: Props) {
           </div>
           )}
 
+          {!usePassword && awaitingCode && (
+            <div className="space-y-1.5">
+              <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                <KeyRound size={11} className="text-amber-600/80" />
+                6-digit code from the email
+              </label>
+              <input
+                type="text"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                pattern="[0-9]*"
+                maxLength={8}
+                required
+                autoFocus
+                value={code}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                className={inputCls + " text-center text-xl tracking-[0.3em] font-semibold"}
+                placeholder="000000"
+              />
+            </div>
+          )}
+
           {notice && (
             <p role="status" className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
               {notice}
@@ -167,12 +204,24 @@ export default function LoginScreen({ onSignIn }: Props) {
             disabled={submitting || linking}
             className="w-full py-3 rounded-2xl text-sm font-semibold bg-gold-gradient text-navy-900 hover:opacity-90 active:scale-[0.98] disabled:opacity-60 transition-all"
           >
-            {usePassword ? (submitting ? "Signing in…" : "Sign In") : (linking ? "Sending…" : "Email me a sign-in link")}
+            {usePassword
+              ? (submitting ? "Signing in…" : "Sign In")
+              : awaitingCode
+                ? (submitting ? "Signing in…" : "Sign in")
+                : (linking ? "Sending…" : "Email me a sign-in code")}
           </button>
+
+          {!usePassword && awaitingCode && (
+            <p className="text-center text-xs">
+              <button type="button" onClick={handleEmailLink} disabled={linking} className="text-amber-600 hover:underline disabled:opacity-50">
+                {linking ? "Sending…" : "Send a new code"}
+              </button>
+            </p>
+          )}
 
           <p className="text-center text-xs">
             <button type="button" onClick={() => { setUsePassword((v) => !v); setError(null); setNotice(null); }} className="text-amber-600 hover:underline">
-              {usePassword ? "Email me a sign-in link instead" : "Use a password instead"}
+              {usePassword ? "Email me a sign-in code instead" : "Use a password instead"}
             </button>
           </p>
 

@@ -1,6 +1,6 @@
-# Data processing terms for operators (draft, 12/11/2026)
+# Data processing terms for operators (version 1, 16/11/2026)
 
-**Status: draft template, not legal advice. No solicitor is used (owner decision).** Drafted from Article 28 of the UK GDPR (legislation.gov.uk, UK GDPR Art 28(3)). Every item below is a requirement the law sets for a controller and processor contract, and each one is covered. Before use, the owner must fill in the placeholders in square brackets and confirm the sub-processor list.
+**Status: approved by the platform owner on 16/11/2026. Not legal advice and not a guarantee. No solicitor is used (owner decision).** Drafted from Article 28 of the UK GDPR (legislation.gov.uk, UK GDPR Art 28(3)). Every item below is a requirement the law sets for a controller and processor contract, and each one is covered.
 
 ## 1. Who is who
 
@@ -52,11 +52,11 @@ h. **Make information available and allow audits (Art 28(3)(h)).** The processor
 
 | Service | What it does | Where data is held | Transfer safeguard |
 |---|---|---|---|
-| Supabase | Database, sign-in and file storage | Frankfurt, Germany (EEA) | Within the EEA (UK adequacy) |
-| Vercel | Website and app hosting | [Confirm current region and transfer basis] | UK–US data bridge or contract clauses |
-| Resend | Sends emails | [Confirm] | UK–US data bridge or contract clauses |
-| Google | Address search in the booking form (Maps); analytics only if the customer accepts | [Confirm] | UK–US data bridge or contract clauses |
-| AeroDataBox | Flight times (flight number and date only); off by default | [Confirm] | [Confirm] |
+| Supabase | Database, sign-in and file storage | Stockholm, Sweden (EEA), project region eu-north-1 | Within the EEA (UK adequacy) |
+| Vercel | Website and app hosting | Washington DC, USA (functions run in region iad1) | UK–US data bridge or contract clauses |
+| Resend | Sends emails | Ireland (EU), sending region eu-west-1 | UK–US data bridge or contract clauses |
+| Google | Address search in the booking form (Maps); analytics only if the customer accepts | Wherever Google handles the request; not fixed by the platform | UK–US data bridge or contract clauses |
+| AeroDataBox | Flight times (flight number and date only); off by default | Not used unless the operator turns it on; not fixed by the platform | None needed while it is off |
 
 Stripe is not a sub-processor of the platform: each operator connects its own Stripe account, so Stripe holds card payment data as the operator's own provider.
 
@@ -74,9 +74,9 @@ Where data leaves the UK, it is protected by the UK–US data bridge or the UK's
 - Operator: [legal name], by [name, role], signature, date (DD/MM/YYYY).
 - Processor: [legal name], by [name, role], signature, date (DD/MM/YYYY).
 
-## What the owner must fill in or check before use
+## Decisions recorded (internal; not shown on the public page)
 
-1. The processor's legal name and trading name (section 1).
-2. The breach notice period (24 hours is proposed) and the response times (five working days, 30 days) in sections 4e, 4g and 4h.
-3. The sub-processor table: confirm the hosting regions and transfer basis for Vercel, Resend, Google and AeroDataBox (section 6).
-4. A decision on whether card payments need anything extra here, since Stripe is the operator's own provider.
+1. **Approval:** the platform owner approved these terms on 16/11/2026 and removed the draft label.
+2. **Breach notice and response times:** 24 hours, five working days and 30 days (sections 4e, 4g and 4h) stand as written.
+3. **Sub-processor table (section 6):** filled in on 16/11/2026 from the live set-up (database project region eu-north-1, hosting function region iad1, email sending region eu-west-1). The Supabase row said Frankfurt before; the live project is in Stockholm, so it was corrected. **Not verified:** the transfer safeguards ("UK–US data bridge or contract clauses") were carried over from the earlier text and were not re-checked against the providers' current terms or the ICO's guidance.
+4. **Card payments:** nothing extra is needed here, since Stripe is the operator's own provider (see the note under section 6).
