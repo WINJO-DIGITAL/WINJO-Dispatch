@@ -5,6 +5,7 @@ import { freeCancellationLine } from "@/lib/email/cancellation.js";
 import { brandFor } from "@/lib/email/brand.js";
 import { loadBrand } from "@/lib/server/brands";
 import { bookingResponseText } from "@/lib/bookingResponseText";
+import { skipReserved } from "@/lib/server/reserved-mail";
 import { adminClient, getCaller } from "@/lib/server/staff";
 import { queueCustomerText, wantsCustomerText } from "@/lib/server/smsTask";
 
@@ -108,7 +109,9 @@ export async function POST(req: Request) {
   // ── Email first ────────────────────────────────────────────────────────────
   let emailed = false;
   let emailError = "";
-  if (RESEND_API_KEY && email && isEmail(email)) {
+  if (RESEND_API_KEY && email && isEmail(email) && skipReserved(email, "Booking email")) {
+    emailed = true;
+  } else if (RESEND_API_KEY && email && isEmail(email)) {
     // Same email as the website sends (src/lib/email, copied from the website's lib/).
     const mail = accepted ? bookingConfirmed(b, { payUrl }) : bookingUnavailable(b);
     try {
