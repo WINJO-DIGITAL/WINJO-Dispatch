@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   title: `${DEPLOYMENT_BRAND.name} | Operator`,
   description: `Booking and dispatch management for ${DEPLOYMENT_BRAND.name} operators.`,
   applicationName: `${DEPLOYMENT_BRAND.name} Operator`,
+  // The office app is for signed-in staff: never offered to search engines.
+  robots: { index: false, follow: false },
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,

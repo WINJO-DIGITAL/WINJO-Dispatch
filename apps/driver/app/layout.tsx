@@ -8,6 +8,8 @@ export const metadata: Metadata = {
   title: `${BRAND.name} Driver`,
   description: `Driver portal for ${BRAND.name} ${BRAND.tagline}`,
   manifest: withBase('/manifest.json'),
+  // The driver app is for signed-in drivers: never offered to search engines.
+  robots: { index: false, follow: false },
   // App icon: gold steering wheel on navy (user choice 17/10/2026), in public/icons.
   icons: {
     icon: [

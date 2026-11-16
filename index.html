@@ -3,10 +3,159 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex">
-<title>Booking platform</title>
+<title>Winjo Dispatch: booking website, office app and driver app for private hire operators</title>
+<meta name="description" content="Your own branded booking website, office app and driver app for private hire and transfer businesses. Card payments go straight to your own Stripe account, with no cut taken.">
+<link rel="canonical" href="https://winjo-dispatch.vercel.app/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Winjo Digital">
+<meta property="og:title" content="Winjo Dispatch: booking website, office app and driver app for private hire operators">
+<meta property="og:description" content="Customers book and pay on your own website. Your office dispatches from the Operator app, your drivers use the Driver App, and card payments go to your own Stripe account.">
+<meta property="og:url" content="https://winjo-dispatch.vercel.app/">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#f6f1e7">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0B132B;color:#fff;font:16px/1.5 system-ui,sans-serif}main{max-width:32rem;padding:24px}h1{font-size:1.5rem;margin:0 0 8px}p{color:#c9d1e3;margin:0}</style>
+<link rel="stylesheet" href="/public/css/fonts.css">
+<link rel="stylesheet" href="/public/css/platform.css">
+<link rel="stylesheet" href="/public/css/home.css">
 </head>
-<body><main><h1>Booking platform</h1><p>This is the booking system for private hire and transfer businesses. Each business has its own website address. If you were sent a booking link, open it from your email or text message.</p></main></body>
+<body class="home">
+<a class="skip" href="#main">Skip to the content</a>
+
+<header class="topbar">
+  <a class="mark" href="/">Winjo Digital</a>
+  <nav class="topnav" aria-label="Main">
+    <a href="#how">How it works</a>
+    <a href="#included">What is included</a>
+    <a href="#questions">Questions</a>
+    <a class="join" href="/signup">Apply to join</a>
+  </nav>
+</header>
+
+<main id="main">
+  <div class="wrap">
+    <section class="hero" aria-labelledby="top">
+      <div>
+        <h1 id="top">Your own booking website, office app and driver app.</h1>
+        <p class="lead">For private hire and transfer businesses. Customers book and pay on a website with your name, prices and logo. Your office dispatches from the Operator app, your drivers work from the Driver App, and card payments go straight to your own Stripe account.</p>
+        <div class="actions">
+          <a class="btn" href="/signup">Apply to join</a>
+          <a class="textlink" href="#how">See how it works</a>
+        </div>
+      </div>
+      <aside class="ledger" aria-labelledby="cost">
+        <h2 id="cost">What it costs</h2>
+        <dl>
+          <div class="row"><dt>Set-up, once</dt><dd class="big">£999</dd></div>
+          <div class="row"><dt>Monthly, once you are live</dt><dd class="big">£99</dd></div>
+          <div class="row"><dt>Cut of your card payments</dt><dd>None</dd></div>
+          <div class="row"><dt>VAT</dt><dd>Not VAT registered</dd></div>
+        </dl>
+        <p>Stripe charges its own processing fees to your Stripe account. You buy your own domain name.</p>
+      </aside>
+    </section>
+  </div>
+
+  <div class="wrap">
+    <section class="section split" id="how" aria-labelledby="how-h">
+      <div>
+        <p class="kick">How it works</p>
+        <h2 id="how-h">From application to your first booking</h2>
+      </div>
+      <ol class="how">
+        <li><div><h3>You apply</h3><p>Fill in the form, read the agreement and tick the two boxes. Sending it creates nothing and charges nothing.</p></div></li>
+        <li><div><h3>We invoice the set-up fee</h3><p>You pay it outside the website. Once it is paid and we have approved you, we create your business and invite your first admin.</p></div></li>
+        <li><div><h3>You set up your business</h3><p>Add your prices, logo, drivers and legal details, write your website, and connect your own Stripe account. Stripe starts in test mode, so you can try a payment before any real money moves.</p></div></li>
+        <li><div><h3>Customers start booking</h3><p>Point your own domain at your website. Requests arrive in the Operator app, you accept or decline them, and accepted customers get a confirmation with a link to pay.</p></div></li>
+      </ol>
+    </section>
+  </div>
+
+  <div class="band" id="included">
+    <div class="wrap">
+      <section class="section split" aria-labelledby="inc-h">
+        <div>
+          <p class="kick">What is included</p>
+          <h2 id="inc-h">The whole job, from the booking form to the drop-off</h2>
+        </div>
+        <dl class="index">
+          <div><dt>A website that is yours</dt><dd>Your name, logo, colours and prices on your own web address. Choose a design direction and write your own pages, services, vehicles and answers.</dd></div>
+          <div><dt>Bookings you approve</dt><dd>Website requests wait for you to accept or decline. Bookings you make yourself are accepted straight away. Return trips stay one booking.</dd></div>
+          <div><dt>Dispatch</dt><dd>See the day, week or month, spot jobs that still need a driver, and assign one from the office app on a phone or a desk.</dd></div>
+          <div><dt>The Driver App</dt><dd>Drivers sign in on their phone, see only their own jobs, move each trip along from en route to completed, and open directions.</dd></div>
+          <div><dt>Reminders</dt><dd>A week ahead and the day before, by email, and as a text handed to the driver for the customer.</dd></div>
+          <div><dt>Two-tap customer texts</dt><dd>The message is written for you. Tap, your phone's Messages opens with it filled in, press Send, then mark it sent. Nothing is sent automatically, so there is no per-text charge.</dd></div>
+          <div><dt>Flight checks, if you want them</dt><dd>For airport jobs the office can look up the flight and see if the time has changed. Off until you turn it on.</dd></div>
+          <div><dt>Invoices and records</dt><dd>Invoices with your own letterhead, a record of who changed what on each booking, and customers can look up their own booking.</dd></div>
+        </dl>
+      </section>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <section class="section split" aria-labelledby="pay-h">
+      <div>
+        <p class="kick">Payments</p>
+        <h2 id="pay-h">Your customers pay you, not us</h2>
+      </div>
+      <div class="prose">
+        <p class="statement">Card payments are taken on your own Stripe account. We never hold the money and we take no percentage of it.</p>
+        <p>You connect your Stripe account from the Operator app, using Stripe's own sign-up pages. A customer who chooses to pay by card is sent to a Stripe checkout for your business, and the payment is recorded on the booking when Stripe confirms it. Cash bookings are never marked as paid until you do it yourself.</p>
+        <p class="small">Stripe's fees are charged by Stripe to your account. We do not set them and cannot change them.</p>
+      </div>
+    </section>
+  </div>
+
+  <div class="wrap">
+    <section class="section" aria-labelledby="who-h">
+      <div class="careful">
+        <h2 id="who-h">We supply software, and nothing else</h2>
+        <p>Winjo Digital is not a private hire operator and is not a party to any of your bookings. Your licences, insurance, vehicles, driver checks and local licensing rules are yours alone, and we do not check any of them. Each operator is responsible for its own compliance. The full wording is in <a href="/platform-terms#schedule-a">Schedule A</a>.</p>
+      </div>
+    </section>
+  </div>
+
+  <div class="wrap">
+    <section class="section split faq" id="questions" aria-labelledby="faq-h">
+      <div>
+        <p class="kick">Questions</p>
+        <h2 id="faq-h">Before you apply</h2>
+      </div>
+      <div>
+        <details><summary>Who is this for?</summary><p>Private hire and transfer businesses that take bookings for airports and other journeys, with an office and drivers of their own. If you run one, it is yours; each business has its own website, prices, team and drivers.</p></details>
+        <details><summary>What does it cost?</summary><p>£999 to set up, paid before we start, then £99 a month from the day your service is live. We are not VAT registered, so no VAT is added. You also buy your own domain name from any registrar, in your own name.</p></details>
+        <details><summary>Do you take a share of my card payments?</summary><p>No. Customers pay your own Stripe account directly. Stripe charges its own fees to that account.</p></details>
+        <details><summary>Do I need my own Stripe account?</summary><p>Yes, to take card payments. You create and connect it from the Operator app. Cash bookings work without one.</p></details>
+        <details><summary>Whose licences and insurance cover the journeys?</summary><p>Yours. We supply software only: we are not a private hire operator and do not check any operator's licences, insurance, vehicles or drivers.</p></details>
+        <details><summary>Can I use my own web address?</summary><p>Yes. You buy the domain name and we connect it to your website. Your customers see your name, not ours.</p></details>
+        <details><summary>Are customers texted automatically?</summary><p>No. Texts are prepared for you and sent from your own phone, or a driver's, with one tap. Nothing is sent automatically and we do not charge per text.</p></details>
+        <details><summary>What if something goes wrong?</summary><p>Support is by email at <a href="mailto:hello@winjodigital.co.uk">hello@winjodigital.co.uk</a>, 24 hours a day, every day. The agreement sets out what support covers.</p></details>
+        <details><summary>What happens when I apply?</summary><p>We read every application ourselves. If we go ahead, we invoice the set-up fee. Once it is paid and you are approved, we create your business and invite your first admin.</p></details>
+      </div>
+    </section>
+  </div>
+
+  <section class="cta" aria-labelledby="cta-h">
+    <div class="wrap">
+      <div>
+        <h2 id="cta-h">Send an application. It creates nothing and charges nothing.</h2>
+        <p style="margin-top:14px">We read every one ourselves and come back to you by email.</p>
+      </div>
+      <a class="btn on-orange" href="/signup">Apply to join</a>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <nav aria-label="Footer">
+      <a href="/signup">Apply to join</a>
+      <a href="/platform-terms#agreement">Operator Services Agreement</a>
+      <a href="/platform-terms#schedule-a">Operator responsibilities</a>
+      <a href="/platform-terms#data-terms">Data terms</a>
+      <a href="/operator">Operator sign-in</a>
+    </nav>
+    <p class="fine">Winjo Digital supplies software and hosting. It is not a private hire operator. Support: <a href="mailto:hello@winjodigital.co.uk">hello@winjodigital.co.uk</a>, 24 hours a day.</p>
+  </div>
+</footer>
+</body>
 </html>
