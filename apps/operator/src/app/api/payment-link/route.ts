@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { paymentLink } from "@/lib/email/content.js";
 import { brandFor } from "@/lib/email/brand.js";
 import { loadBrand } from "@/lib/server/brands";
+import { skipReserved } from "@/lib/server/reserved-mail";
 import { userFromToken } from "@/lib/server/staff";
 import { stripeContext, type StripeContext } from "@/lib/server/stripeAccount";
 import { when } from "@/lib/email/template.js";
@@ -235,7 +236,9 @@ export async function POST(req: Request) {
   // ── Email (Resend) ──────────────────────────────────────────────────────────
   let emailed = false;
   let emailError = "";
-  if (isEmail(email) && RESEND_API_KEY) {
+  if (isEmail(email) && RESEND_API_KEY && skipReserved(email, "Payment link")) {
+    emailed = true;
+  } else if (isEmail(email) && RESEND_API_KEY) {
     const mail = paymentLink(booking, { url: session.url, amount });
     try {
       const res = await fetch("https://api.resend.com/emails", {

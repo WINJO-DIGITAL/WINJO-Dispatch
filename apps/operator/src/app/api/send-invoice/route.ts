@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { invoice as invoiceEmail } from "@/lib/email/content.js";
 import { loadBrand } from "@/lib/server/brands";
+import { skipReserved } from "@/lib/server/reserved-mail";
 
 // Emails an invoice PDF to the customer via Resend.
 //
@@ -99,6 +100,7 @@ export async function POST(req: Request) {
   const pdfBase64 = (body.pdfBase64 ?? "").replace(/^data:.*;base64,/, "").trim();
 
   if (!isEmail(to)) return json({ error: "This invoice has no valid customer email address." }, 422);
+  if (skipReserved(to, "Invoice")) return json({ ok: true, skipped: true });
   if (!pdfBase64) return json({ error: "Could not build the invoice PDF." }, 422);
   // Guard against oversized attachments (Resend caps ~40MB; keep well under).
   if (pdfBase64.length > 8_000_000) return json({ error: "The invoice PDF is too large to email." }, 422);
