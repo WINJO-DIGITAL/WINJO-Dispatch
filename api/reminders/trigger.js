@@ -10,6 +10,7 @@ const { logMany } = require('../../lib/notifyLog');
 const { sendOrQueue } = require('../../lib/notificationQueue');
 
 const SUPABASE_URL = require('../../lib/supabaseUrl')();
+const { cronAuthorised } = require('../../lib/config');
 
 function dbHeaders(extra = {}) {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -231,9 +232,8 @@ module.exports = async function handler(req, res) {
   await refreshBrands(); // each business's name, phone and licence for its emails
   res.setHeader('Content-Type', 'application/json');
 
-  const auth = req.headers['authorization'] || '';
-  const cronSecret = process.env.CRON_SECRET;
-  if (!cronSecret || auth !== `Bearer ${cronSecret}`) {
+  // Fails closed, and says so once in the logs when CRON_SECRET is not set (lib/config.js).
+  if (!cronAuthorised(req)) {
     res.statusCode = 401;
     return res.end(JSON.stringify({ error: 'Unauthorised' }));
   }

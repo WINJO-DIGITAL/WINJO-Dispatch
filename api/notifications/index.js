@@ -11,6 +11,7 @@ const { processDue } = require('../../lib/notificationQueue');
 const { dbRpc } = require('../../lib/supabase');
 
 const SUPABASE_URL = require('../../lib/supabaseUrl')();
+const { cronAuthorised } = require('../../lib/config');
 
 function serviceKey() {
   return process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -35,10 +36,10 @@ function operatorAuthOk(req) {
   return safeEqual(req.headers['x-operator-secret'], process.env.OPERATOR_ACTION_SECRET);
 }
 
+// Fails closed: without CRON_SECRET nothing may trigger the retry sweep (it used to let every caller
+// through). The reason is logged once (lib/config.js).
 function cronAuthOk(req) {
-  const cronSecret = process.env.CRON_SECRET;
-  if (!cronSecret) return true; // no secret configured — allow Vercel cron calls through
-  return req.headers.authorization === `Bearer ${cronSecret}`;
+  return cronAuthorised(req);
 }
 
 async function readJson(req) {
