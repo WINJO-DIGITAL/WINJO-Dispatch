@@ -1,6 +1,6 @@
 # Handover and onboarding runbook (14/11/2026)
 
-Read this first, then `docs/TASKS.md` for the live checklist. Written so the work can be picked up without anyone re-explaining it.
+Read this first, then `docs/OUTSTANDING.md` for the open checklist (only open items) and `docs/TASKS.md` for the history. Written so the work can be picked up without anyone re-explaining it.
 
 ## What exists
 
