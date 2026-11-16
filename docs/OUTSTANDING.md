@@ -4,7 +4,6 @@ Only open items are listed here. Completed work is recorded in `docs/TASKS.md` a
 
 ## Waiting on the owner
 
-- [ ] **Pay the £25 test checkout** with card `4242 4242 4242 4242` (any future expiry, any 3 digits), then confirm. Booking `SAMP-000001` should then show Paid. Afterwards remove the sample business ("Sample Cars Test") and its test Stripe account.
 - [ ] **Data terms:** sign off, or keep the "draft" label. Recommendation: keep the label.
 - [ ] **Support hours:** decide what to publish. Recommendation: leave unpublished.
 - [ ] **VAT wording:** confirm or change. Recommendation: keep the current wording.
