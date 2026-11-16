@@ -13,7 +13,6 @@ Only open items are listed here. Completed work is recorded in `docs/TASKS.md` a
 ## Owner housekeeping
 
 - [ ] Revoke the temporary Supabase access token and the full-access Resend key at go-live.
-- [ ] Delete the old disabled test webhook for an earlier domain in the Stripe account.
 
 ## Engineering, only if wanted
 
