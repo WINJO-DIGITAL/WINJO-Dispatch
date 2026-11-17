@@ -26,7 +26,7 @@ A multi-tenant booking, dispatch and payments platform (website, Operator app, D
 - Web push set up (15/11/2026): `push_config` row, keys as edge function secrets, edge functions `send-push` and `notify-job-update`, Driver App on the new public key.
 - **Send a test notification** (17/11/2026): Settings, Notifications, "Send a test notification to this device", staff only, own devices only, rate limited.
 
-**Launch readiness (17/11/2026, branch `claude/dispatch-launch-ready`)**
+**Launch readiness (17/11/2026, PR #3, merged and deployed to production the same day)**
 - Missing settings fail safely and say so: `CRON_SECRET` (cron routes refuse, one clear warning; the email retry route used to be open and is now closed), `OPERATOR_ACTION_SECRET` (emails and texts say "open your booking in the operator app" instead of carrying dead Accept and Reject links), `SUPABASE_URL` (no fallback to any live project; production refuses to start without it), Google Maps key (optional, the booking form has no map). `GET /api/health` reports each setting as true or false. Every setting is documented in `docs/ENVIRONMENT.md`.
 - Driver App: tests for the job screen (start, arrive, on board, complete with payment, errors, offline) and the jobs list; the job screen and list say "couldn't be loaded, Try again" and "No signal, so this was not saved" instead of "Booking not found" or "No jobs"; an offline banner; lint warnings 21 to 8 (the rest are standard load-on-open effects).
 - Docs: README corrected, `docs/DEPLOYMENT.md` (how the guard works), `docs/billing-design.md` (monthly billing, not built).
