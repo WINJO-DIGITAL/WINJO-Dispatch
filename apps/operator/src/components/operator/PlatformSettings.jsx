@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { useOperatorToast } from "./Toast";
 import FeesSection from "./FeesSection";
 import ApplicationsSection from "./ApplicationsSection";
+import DomainConnect from "./DomainConnect";
 import { siteAddressProblem, tidySiteAddress } from "@/lib/operator/siteAddress";
 
 // Platform actions go through the Operator app's own server route (/api/platform/tenants),
@@ -232,6 +233,8 @@ export default function PlatformSettings() {
 
   return (
     <div className="space-y-8">
+      <DomainConnect toast={toast} />
+
       <div>
         <div className="mb-3 flex items-center justify-between">
           <p className="text-[10px] uppercase tracking-[0.06em] text-slate-500">Businesses</p>
