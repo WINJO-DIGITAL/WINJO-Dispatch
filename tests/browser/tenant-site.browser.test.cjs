@@ -213,7 +213,7 @@ bt('booking page: choosing cash confirms it', async () => {
 
 bt('booking page: paid, cash-chosen, return-leg, on-the-road, completed, cancelled and rejected states', async () => {
   const cases = [
-    [{ ...BASE_BOOKING, operator_response: 'accepted', payment_status: 'Paid', payment_method: 'Card' }, 'Confirmed', /Paid by card online/, 'pDone'],
+    [{ ...BASE_BOOKING, operator_response: 'accepted', payment_status: 'Paid', payment_method: 'Card' }, 'Confirmed', /Paid in full by card \(£70\)\. Your confirmation number is OCB-ABC123\./, 'pDone'],
     [{ ...BASE_BOOKING, operator_response: 'accepted', payment_method: 'Cash' }, 'Confirmed', /cash on the day/i, 'pDone'],
     [{ ...BASE_BOOKING, operator_response: 'accepted', return_leg: true, quoted_price: 0, outbound_ref: 'OCB-OUT222' }, 'Confirmed', /OCB-OUT222/, 'pDone'],
     [{ ...BASE_BOOKING, operator_response: 'accepted', status: 'En Route' }, 'En Route', /on the way/, 'pRoad'],

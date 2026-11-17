@@ -19,7 +19,8 @@ Optional settings that show `false` in `/api/health` and are not needed: `GOOGLE
 ## Open decisions and gaps
 
 - [ ] **A privacy notice for people who apply.** `/signup` collects a name, email, phone number and a free-text message, and the site has no privacy notice for the platform itself (the agreement's data terms cover operators' customers' data, and each business gets its own privacy page). UK data protection law expects one before collecting personal data. Per the project's legal rule it must be written from official sources (ICO guidance) and recorded in `docs/legal/audit-2026-11-12.md`. Claude can draft it from the ICO's privacy-notice guidance when asked; it has not been written because it is a new legal document.
-- [ ] **Monthly billing of operators is not built.** A design note is ready for approval: `docs/billing-design.md`. Stripe Billing has its own fees, so nothing is built without approval.
+- [ ] **Operator subscription (built 17/11/2026, test mode).** To switch it on: apply the migration `supabase/migrations/20261117100000_tenant_billing.sql` to the live database (owner approval), merge and deploy, then test it from Settings, Subscription with card 4242 4242 4242 4242. **Before live mode:** read Stripe's current price for subscriptions (it is charged on top of card processing) and approve it; in Stripe, switch on the customer portal (Settings, Billing, Customer portal) so "Manage payment" works, and number invoices as you want the confirmation numbers to read.
+- [ ] Not built: billing by emailed invoice, suspending a business that does not pay, and fee-change notices (`docs/billing-design.md`).
 - [ ] **Live mode for Stripe Connect.** Review the Connect payment code once more before it, as agreed.
 - [ ] Supabase size: needs approval for VACUUM FULL, a 5-minute job schedule and a keep period.
 

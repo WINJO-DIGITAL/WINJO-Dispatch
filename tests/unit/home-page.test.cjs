@@ -29,8 +29,8 @@ test('the home page is a real, indexable page with a title, description, canonic
 test('/signup is indexable, has its own canonical address, and names the agreement version that is recorded', () => {
   assert.doesNotMatch(signup, /name="robots"/i);
   assert.match(signup, /<link rel="canonical" href="https:\/\/winjo-dispatch\.vercel\.app\/signup">/);
-  assert.match(signup, /Operator Services Agreement<\/a> \(version 3\)/);
-  assert.equal(S.CONTRACT_VERSION, '3', 'the page and the recorded version must change together');
+  assert.match(signup, /Operator Services Agreement<\/a> \(version 4\)/);
+  assert.equal(S.CONTRACT_VERSION, '4', 'the page and the recorded version must change together');
 });
 
 test('the home page links to /signup from the nav, the hero and the closing call to action', () => {

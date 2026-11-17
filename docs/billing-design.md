@@ -1,4 +1,6 @@
-# Design note: monthly billing of operators (not built)
+# Design note: monthly billing of operators
+
+> **Update 17/11/2026: a first version is built** at the owner's request, as a card subscription the operator starts themselves (Operator app, Settings, Subscription): Stripe Checkout in subscription mode on the platform's own Stripe account, the set-up fee added once to the first payment, a confirmation screen with a confirmation number, Stripe's own page to change card or cancel, and a webhook for later payments. Contract clause 3.8 (version 4) covers it. It is **test mode only**; going live needs the owner's approval because Stripe charges for subscriptions. Code: `apps/operator/src/lib/server/billing.ts`, `/api/billing`, `/api/billing/webhook`, table `tenant_billing`. The rest of this note is the original proposal and still describes what is **not** built: invoice-by-email collection, owner-driven suspension, fee-change notices and test-clock runs.
 
 **Status: a proposal for the owner to approve. Nothing here is built, and nothing in it may be started without approval**, because Stripe Billing has its own fees and a new billed service needs the owner's go-ahead (`CLAUDE.md`, cost policy). Today the fees are only a record: `platform_fees` holds the defaults (£999 set-up, £99 a month, in pence) and each business can carry its own (`tenants`, `set_tenant_fees`). The owner confirms payment of the set-up fee by hand and approves the sign-up; nobody is billed automatically.
 
