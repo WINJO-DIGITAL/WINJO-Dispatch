@@ -1,12 +1,12 @@
 # Handover and onboarding runbook (14/11/2026)
 
-Read this first, then `docs/OUTSTANDING.md` for the open checklist (only open items) and `docs/TASKS.md` for the history. Written so the work can be picked up without anyone re-explaining it.
+Read this first, then `docs/OUTSTANDING.md` for the open checklist (only open items, including the owner's go-live checklist) and `docs/TASKS.md` for what is done. `docs/ENVIRONMENT.md` explains every setting, `docs/DEPLOYMENT.md` how deploys and the build guard work. Written so the work can be picked up without anyone re-explaining it.
 
 ## What exists
 
 One platform, three apps, many businesses, one repository:
 
-- **Website** (repository root): a branded website for each business on its own domain (`lib/tenantSite.js`: home page with booking form, booking and payment page). Booking, payment, account and operator APIs are per business (each booking carries its own business). The platform's own address shows a neutral placeholder page, `/signup` is the self-serve sign-up, `/platform-terms` the contract an applicant reads.
+- **Website** (repository root): a branded website for each business on its own domain (`lib/tenantSite.js`: home page with booking form, booking and payment page). Booking, payment, account and operator APIs are per business (each booking carries its own business). The platform's own address shows the public landing page for operators (`index.html`), `/signup` is the self-serve sign-up, `/platform-terms` the contract an applicant reads.
 - **Operator app** (`apps/operator`, served under `/operator` on the platform address): the office app. Each business has its own staff, prices, branding, legal settings, Stripe connection and drivers. The platform owner (super admin) also has Settings, Platform: set up businesses, set each one's website address, record fees, and review sign-up applications.
 - **Driver App** (`apps/driver`, served under `/driver`): drivers sign in through their business's own link (`/driver/login?b=<short name>`).
 - **Database** (Supabase project WINJO DISPATCH, `lztbivgmhcgohhvgakyu`): every business-owned row has a `tenant_id`; row-level security limits staff to their own business. Verified by the local database suite (`scripts/db-test.sh`).
@@ -70,7 +70,9 @@ The cloud environment holds saved credentials for `api.vercel.com` and `api.supa
 ## Known limits (honest list)
 
 - Not yet tested on a real second domain (needs a domain and a hosting decision).
-- Stripe Connect has not had a live end-to-end payment (test mode needs a test operator's Stripe onboarding).
+- Stripe Connect has had a full test-mode payment (a test card on a sample business's own Stripe account, marked Paid by the webhook), but never a live one.
+- A real push alert has not reached a real phone yet: the "Send a test notification" button exists for that check (see `docs/OUTSTANDING.md`).
+- The platform has no privacy notice for people who apply on `/signup` yet (see `docs/OUTSTANDING.md`).
 - Customer accounts and Privilege Points exist on the platform's customer pages; a business's own website has the booking form, booking page, payment and look-up.
 - Invitation and password emails come from the platform's sender address.
 - Monthly billing of businesses is not built (fees are recorded only). It needs the owner's approval, because Stripe Billing has its own fees.
