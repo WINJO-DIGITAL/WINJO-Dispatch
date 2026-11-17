@@ -74,3 +74,31 @@ export function isNoShowJob(job: { status: string | null | undefined; driver_not
   if (job.status === 'No Show') return true
   return job.status === 'Cancelled' && (job.driver_notes ?? '').includes('[No Show]')
 }
+
+// ─── Offline and failed-update messages ─────────────────────────────────
+
+/** True when the browser knows it has no connection. (Unknown counts as online.) */
+export function isOffline(nav: { onLine?: boolean } | undefined = typeof navigator === 'undefined' ? undefined : navigator): boolean {
+  return nav?.onLine === false
+}
+
+const NETWORK_ERROR = /failed to fetch|network ?error|networkerror|load failed|fetch failed|timed? ?out|offline|internet/i
+
+/**
+ * The message a driver sees when a job update did not save. A lost connection says so in plain
+ * words (the raw "TypeError: Failed to fetch" means nothing in a car park); anything else the
+ * server said is kept; with nothing to go on, the fallback is used.
+ */
+export function updateFailureMessage(serverMessage: string | null | undefined, fallback: string, offline = isOffline()): string {
+  if (offline || (serverMessage && NETWORK_ERROR.test(serverMessage))) {
+    return 'No signal, so this was not saved. Move somewhere with better signal and try again.'
+  }
+  return serverMessage || fallback
+}
+
+/** What the job screen says when it cannot load the job at all. */
+export function loadFailureMessage(offline = isOffline()): string {
+  return offline
+    ? "You're offline, so this job can't be loaded. Reconnect and try again."
+    : "This job couldn't be loaded. Check your signal and try again."
+}

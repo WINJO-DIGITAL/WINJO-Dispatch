@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, use, useEffect, useCallback, useRef } from 'react'
+import { useState, use, useEffect, useCallback, useRef, useSyncExternalStore } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
@@ -22,8 +22,14 @@ import {
   WEEK_REMINDER_TYPE, REMINDER_TYPES, isReminderType, reminderLabel, type ReminderType,
 } from '@/lib/customer-sms'
 import type { Booking, BookingStatus } from '@/lib/types'
-import { STATUS_FLOW, TIMESTAMP_FIELD, PROGRESS_STEPS, STEP_LABELS, getGraceMinutes, formatPref, isNoShowJob } from '@/lib/job'
+import { STATUS_FLOW, TIMESTAMP_FIELD, PROGRESS_STEPS, STEP_LABELS, getGraceMinutes, formatPref, isNoShowJob, updateFailureMessage, loadFailureMessage } from '@/lib/job'
+import { useOnline } from '@/lib/use-online'
 import { withBase } from '@/lib/base-path'
+
+// Opens the phone's Messages (an sms: link) or any other address.
+function openLink(href: string) {
+  window.location.href = href
+}
 
 // ─── SwipeToConfirm ───────────────────────────────────────────────────────────
 
@@ -40,11 +46,25 @@ function SwipeToConfirm({
 }) {
   const [dragX, setDragX] = useState(0)
   const [dragging, setDragging] = useState(false)
+  // The track's width, kept in state (measured by a ResizeObserver) so rendering never reads the DOM.
+  const [trackWidth, setTrackWidth] = useState(320)
   const startXRef = useRef(0)
   const containerRef = useRef<HTMLDivElement>(null)
   const THUMB = 56
 
-  const maxDrag = () => Math.max(0, (containerRef.current?.offsetWidth ?? 320) - THUMB - 8)
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el || typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(entries => {
+      const w = entries[0]?.contentRect.width
+      if (w) setTrackWidth(w)
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
+  // In a gesture, read the live width; in render, use the measured one.
+  const maxDrag = () => Math.max(0, (containerRef.current?.offsetWidth || trackWidth) - THUMB - 8)
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (loading) return
@@ -69,9 +89,15 @@ function SwipeToConfirm({
     }
   }
 
-  useEffect(() => { if (!loading) setDragX(0) }, [loading])
+  // Put the thumb back when the action finishes (adjusting state while rendering, not in an effect).
+  const [wasLoading, setWasLoading] = useState(loading)
+  if (loading !== wasLoading) {
+    setWasLoading(loading)
+    if (!loading) setDragX(0)
+  }
 
-  const progress = maxDrag() > 0 ? dragX / maxDrag() : 0
+  const renderMax = Math.max(0, trackWidth - THUMB - 8)
+  const progress = renderMax > 0 ? dragX / renderMax : 0
   const rgb = variant === 'green' ? '16,185,129' : '213,165,56'
   const thumbBg = variant === 'green'
     ? 'linear-gradient(135deg, #34d399, #10b981 55%, #059669)'
@@ -86,7 +112,7 @@ function SwipeToConfirm({
       <div
         className="absolute inset-y-0 left-0 rounded-2xl"
         style={{
-          width: `${Math.min(100, (dragX + THUMB + 4) / (containerRef.current?.offsetWidth ?? 320) * 100)}%`,
+          width: `${Math.min(100, (dragX + THUMB + 4) / trackWidth * 100)}%`,
           background: `linear-gradient(90deg,rgba(${rgb},0.22) 0%,rgba(${rgb},${0.06 + progress * 0.16}) 100%)`,
           transition: dragging ? 'none' : 'width 0.2s ease',
         }}
@@ -359,6 +385,14 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState(false)
   const [updateError, setUpdateError] = useState<string | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const online = useOnline()
+  // Now, refreshed every minute, for the 24-hour start window.
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 60_000)
+    return () => clearInterval(timer)
+  }, [])
   const [noShowConfirm, setNoShowConfirm] = useState(false)
   const [driverNote, setDriverNote] = useState('')
   const [savingNote, setSavingNote] = useState(false)
@@ -384,7 +418,13 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   // one row per type per leg)
   const [driverId, setDriverId] = useState<string | null>(null)
   const [reminders, setReminders] = useState<Record<string, { status: string; sent_at: string | null }>>({})
-  const [reminderFocus, setReminderFocus] = useState<ReminderType | null>(null)
+  // Opened from a reminder notification (?reminder=24hr or ?reminder=7day): read from the address.
+  const reminderParam = useSyncExternalStore(
+    () => () => {},
+    () => new URLSearchParams(window.location.search).get('reminder'),
+    () => null,
+  )
+  const reminderFocus: ReminderType | null = isReminderType(reminderParam) ? reminderParam : null
   const reminderRef = useRef<HTMLDivElement>(null)
 
   // Photo / damage reports
@@ -406,46 +446,50 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   }
 
   const loadBooking = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    const [bookingRes, photosRes, driverRes, remindersRes] = await Promise.all([
-      supabase.from('bookings').select('*').eq('id', id).single(),
-      supabase.from('booking_photos').select('id, url, caption, created_at').eq('booking_id', id).order('created_at', { ascending: true }),
-      user
-        ? supabase.from('drivers').select('full_name, vehicle_model, vehicle_registration').eq('id', user.id).single()
-        : Promise.resolve({ data: null }),
-      supabase.from('driver_sms_reminders').select('reminder_type, status, sent_at')
-        .eq('booking_id', id).in('reminder_type', [...REMINDER_TYPES]),
-    ])
-    if (user) setDriverId(user.id)
-    if (driverRes.data) setSmsDriver(driverRes.data as SmsDriver)
-    if (remindersRes.data) {
-      setReminders(Object.fromEntries(remindersRes.data.map(r => [r.reminder_type, { status: r.status, sent_at: r.sent_at }])))
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      const [bookingRes, photosRes, driverRes, remindersRes] = await Promise.all([
+        supabase.from('bookings').select('*').eq('id', id).single(),
+        supabase.from('booking_photos').select('id, url, caption, created_at').eq('booking_id', id).order('created_at', { ascending: true }),
+        user
+          ? supabase.from('drivers').select('full_name, vehicle_model, vehicle_registration').eq('id', user.id).single()
+          : Promise.resolve({ data: null }),
+        supabase.from('driver_sms_reminders').select('reminder_type, status, sent_at')
+          .eq('booking_id', id).in('reminder_type', [...REMINDER_TYPES]),
+      ])
+      // "No such booking" (PGRST116) is an answer; any other error means the request itself failed
+      // (no signal, server down), which must not be shown as "Booking not found".
+      if (bookingRes.error && bookingRes.error.code !== 'PGRST116') throw new Error(bookingRes.error.message)
+      if (user) setDriverId(user.id)
+      if (driverRes.data) setSmsDriver(driverRes.data as SmsDriver)
+      if (remindersRes.data) {
+        setReminders(Object.fromEntries(remindersRes.data.map(r => [r.reminder_type, { status: r.status, sent_at: r.sent_at }])))
+      }
+      if (bookingRes.data) {
+        setBooking(bookingRes.data as Booking)
+        setDriverNote(bookingRes.data.driver_notes ?? '')
+      }
+      if (photosRes.data && photosRes.data.length > 0) {
+        const paths = photosRes.data.map(p => extractPhotoPath(p.url)).filter(Boolean) as string[]
+        const { data: signed } = await supabase.storage.from('job-photos').createSignedUrls(paths, 3600)
+        const signedMap = new Map((signed ?? []).map(s => [s.path, s.signedUrl]))
+        setPhotos(photosRes.data.map((p, i) => ({
+          ...p,
+          url: signedMap.get(paths[i]) ?? p.url,
+        })))
+      }
+      setLoadError(null)
+    } catch (err) {
+      console.warn('[job] could not load the job', err)
+      setLoadError(loadFailureMessage())
+    } finally {
+      setLoading(false)
     }
-    if (bookingRes.data) {
-      setBooking(bookingRes.data as Booking)
-      setDriverNote(bookingRes.data.driver_notes ?? '')
-    }
-    if (photosRes.data && photosRes.data.length > 0) {
-      const paths = photosRes.data.map(p => extractPhotoPath(p.url)).filter(Boolean) as string[]
-      const { data: signed } = await supabase.storage.from('job-photos').createSignedUrls(paths, 3600)
-      const signedMap = new Map((signed ?? []).map(s => [s.path, s.signedUrl]))
-      setPhotos(photosRes.data.map((p, i) => ({
-        ...p,
-        url: signedMap.get(paths[i]) ?? p.url,
-      })))
-    }
-    setLoading(false)
   }, [id, supabase])
 
   useEffect(() => { loadBooking() }, [loadBooking])
 
-  // Opened from a reminder notification (?reminder=24hr or ?reminder=7day):
-  // bring that reminder action into view once the booking has loaded.
-  useEffect(() => {
-    const type = new URLSearchParams(window.location.search).get('reminder')
-    if (isReminderType(type)) setReminderFocus(type)
-  }, [])
-
+  // Bring that reminder action into view once the booking has loaded.
   useEffect(() => {
     if (!loading && reminderFocus) reminderRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }, [loading, reminderFocus])
@@ -558,7 +602,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
     if (!body) return
     const href = smsHref(b.customer_phone, body)
     setPendingSms({ href, label: status === 'En Route' ? 'Text customer: on my way' : 'Text customer: arrived' })
-    window.location.href = href
+    openLink(href)
   }
 
   // Tap 1 opens Messages with the reminder pre-filled; the driver presses Send
@@ -570,7 +614,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
     const body = customerReminderSms(booking, business)
     const now = new Date().toISOString()
     setReminders(prev => ({ ...prev, [type]: { status: 'sent', sent_at: now } }))
-    window.location.href = smsHref(booking.customer_phone, body)
+    openLink(smsHref(booking.customer_phone, body))
     const { error } = await supabase.from('driver_sms_reminders').upsert({
       booking_id: booking.id,
       driver_id: driverId,
@@ -621,7 +665,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
     // No row back = the update didn't apply (e.g. the office has just taken
     // the job off this driver).
     if (error || !data?.length) {
-      setUpdateError(error?.message ?? 'This job could not be updated. It may have been changed by the office. Refresh and try again.')
+      setUpdateError(updateFailureMessage(error?.message, 'This job could not be updated. It may have been changed by the office. Refresh and try again.'))
     } else {
       const updated = { ...booking, status: nextStatus, ...(tsField ? { [tsField]: now } : {}) } as Booking
       setBooking(updated)
@@ -671,7 +715,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
     }).eq('id', booking.id).select('id')
 
     if (error || !data?.length) {
-      setUpdateError(error?.message ?? 'This job could not be updated. It may have been changed by the office. Refresh and try again.')
+      setUpdateError(updateFailureMessage(error?.message, 'This job could not be updated. It may have been changed by the office. Refresh and try again.'))
     } else {
       setBooking({ ...booking, status: 'Completed', completed_at: now, payment_method: paymentMethod ?? booking.payment_method })
       setShowCompletion(true)
@@ -694,7 +738,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
     // No row back = the update didn't apply (for example the office has moved the job on).
     // Don't show 'No Show' on screen unless it was saved.
     if (error || !data?.length) {
-      setUpdateError(error?.message ?? 'The no show could not be saved. The job may have been changed by the office. Refresh and try again.')
+      setUpdateError(updateFailureMessage(error?.message, 'The no show could not be saved. The job may have been changed by the office. Refresh and try again.'))
     } else {
       setBooking({ ...booking, status: 'No Show', driver_notes: noShowNote })
       setDriverNote(noShowNote)
@@ -772,6 +816,19 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   }
 
   if (!booking) {
+    if (loadError) {
+      return (
+        <div className="min-h-screen bg-[#eaeff7] flex flex-col items-center justify-center gap-4 px-6 text-center">
+          <p role="alert" className="text-[#4f6580]">{loadError}</p>
+          <button
+            onClick={() => { setLoading(true); loadBooking() }}
+            className="px-5 py-3 rounded-xl text-sm font-bold text-[#060C1A] bg-white border border-[#d5a538]/40 active:opacity-70"
+          >
+            Try again
+          </button>
+        </div>
+      )
+    }
     return (
       <div className="min-h-screen bg-[#eaeff7] flex items-center justify-center">
         <p className="text-[#4f6580]">Booking not found</p>
@@ -802,7 +859,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   const withinSwipeWindow =
     isEnRoute || isArrived || isPob || isActive ||
     !jobDateTime ||
-    (jobDateTime.getTime() - Date.now()) / 3_600_000 <= 24
+    (jobDateTime.getTime() - now) / 3_600_000 <= 24
 
   const pickupAddress = booking.pickup_location ?? booking.airport ?? '—'
   const dropoffAddress = booking.dropoff_address ?? booking.airport ?? '—'
@@ -844,6 +901,12 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   return (
     <>
       <div className="min-h-screen bg-[#eaeff7] pb-8">
+
+        {!online && (
+          <div role="status" className="px-4 py-2 text-center text-xs font-semibold text-amber-900 bg-amber-100 border-b border-amber-200">
+            You&apos;re offline. Updates will not save until you have signal.
+          </div>
+        )}
 
         {/* Header */}
         <div className="px-4 pt-12 pb-4 flex items-center gap-3 border-b border-[#d8e6f0]">

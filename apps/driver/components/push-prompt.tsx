@@ -1,26 +1,29 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState, useSyncExternalStore } from 'react'
 import { usePathname } from 'next/navigation'
 import { stripBase } from '@/lib/base-path'
 import { BellRing, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { enablePush, pushState, type PushState } from '@/lib/push'
+import { enablePush, pushState } from '@/lib/push'
+import { usePushState } from '@/lib/use-push-state'
 import { BRAND } from '@/lib/brand'
 
 const HIDE_KEY = 'push_prompt_hidden'
 
 /** Banner shown until job notifications are switched on for this phone. */
 export function PushPrompt() {
-  const [state, setState] = useState<PushState | null>(null)
+  const [state, setState] = usePushState()
   const [busy, setBusy] = useState(false)
-  const [hidden, setHidden] = useState(false)
+  // Hidden for this browser session once dismissed (read from sessionStorage, not set in an effect).
+  const hiddenBefore = useSyncExternalStore(
+    () => () => {},
+    () => { try { return sessionStorage.getItem(HIDE_KEY) === '1' } catch { return false } },
+    () => false,
+  )
+  const [hiddenNow, setHidden] = useState(false)
+  const hidden = hiddenBefore || hiddenNow
   const pathname = stripBase(usePathname())
-
-  useEffect(() => {
-    setState(pushState())
-    try { setHidden(sessionStorage.getItem(HIDE_KEY) === '1') } catch { /* private mode */ }
-  }, [])
 
   // Never in the way on a job: the driver needs the whole screen there.
   const onJob = /^\/jobs\/[^/]+/.test(pathname || '')
