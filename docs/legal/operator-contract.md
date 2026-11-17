@@ -1,4 +1,4 @@
-# Operator Services Agreement (version 3, 16/11/2026)
+# Operator Services Agreement (version 4, 17/11/2026)
 
 **Not legal advice and not a guarantee. No solicitor was used (owner decision).** Drafted from, and checked against, official UK sources: Unfair Contract Terms Act 1977 ss.2, 3, 11 and Sch.2; Late Payment of Commercial Debts (Interest) Act 1998 ss.1, 6, 7, 8; UK GDPR Art 28 (in the separate data terms); and the sources listed in `operator-responsibilities.md`. The Supplier's details are taken from its published terms (https://winjodigital.co.uk/terms, version 2026-11-12.1).
 
@@ -41,6 +41,8 @@
 3.6 **Not included** unless the Order Details say so: your own Stripe account and Stripe's charges to you; the registration fee for your domain name (you buy it in your own name, usually for a few pounds a year, and we set it up for you as part of the set-up fee), your email sending domain, and any third-party charges; SMS or messaging charges (the Service sends none: texts to customers are sent by you or your drivers from your own phones); custom design or development beyond the Order Details.
 
 3.7 The set-up fee is not refundable once we have started the set-up work, except where we fail to provide the Service as described in the Order Details and do not put it right after written notice.
+
+3.8 **Paying by card.** Instead of paying by invoice, you may choose to pay through the Service by card (Settings, Subscription). If you do: (a) you authorise us, through our payment provider Stripe, to take the set-up fee once (if it has not been paid) and the monthly fee each month in advance from that card, until you cancel the card payment or this agreement ends; (b) the amounts are the fees in this clause 3, and a change to the monthly fee still needs the notice in clause 3.5; (c) you are shown a confirmation with a confirmation number after each payment you make in the Service, and Stripe emails a receipt; (d) you may cancel the card payment at any time from Settings, Subscription. Cancelling the card payment does not by itself end this agreement: fees that fall due are then payable by invoice under clause 3.3, and the agreement ends only under clause 8; (e) if a card payment fails we will tell you, and clause 3.4 applies as it does to any late payment. We never see or store your card number: Stripe holds it.
 
 ## 4. Card payments
 
@@ -176,6 +178,7 @@ No VAT is charged (clause 3.3). Changes to the monthly fee: clause 3.5.
 
 - **Support hours** (24 hours a day, every day, by email) were decided by the owner on 16/11/2026 and are stated in clause 7.2. No reply time is promised there; reply times stay in each Order Details table.
 - **VAT:** the owner confirmed on 16/11/2026 that Winjo Digital is not VAT registered. This is the owner's statement of fact and must be kept true: if registration is ever required or chosen, clause 3.3, Schedule A and the sign-up page must change and the version must be bumped. The registration threshold was **not** looked up for this change.
+- **Paying by card (clause 3.8, added 17/11/2026, version 4)** describes the optional card subscription in Settings, Subscription. It does not change any fee, the notice periods or how the agreement ends. It is a business-to-business term. **Not verified:** whether any rule on recurring card payments applies to a sole-trader operator beyond ordinary contract law; the consumer subscription rules in the Digital Markets, Competition and Consumers Act 2024 were not read and are assumed not to apply to a business customer.
 - **Fees** are the owner's decision: £999 up front (12/11/2026); the monthly fee was changed from £49 to £99 on 13/11/2026.
 - **Liability and reimbursement (clauses 10, 11)** are business-to-business terms on the Supplier's standard terms, so they must pass the reasonableness test in the Unfair Contract Terms Act 1977 (ss.3 and 11; the burden is on the party relying on the term, s.11(5)). The cap is in a fixed sum, which s.11(4) says the court looks at against the resources and insurance available. Death or personal injury caused by negligence cannot be excluded at all (s.2(1)); clause 10.1 says so. Whether a court would find the cap reasonable cannot be promised.
 - **Late payment (clause 3.4)** uses statutory interest under the 1998 Act (s.1). The rate is set by an order under s.6, which was **not** read, so no rate is quoted.

@@ -83,7 +83,7 @@ global.fetch = async (url, opts = {}) => {
   const body = opts.body ? (typeof opts.body === 'string' && opts.body.startsWith('{') ? JSON.parse(opts.body) : opts.body) : null;
 
   if (u.host === 'api.stripe.com') {
-    (stripe.seen ||= []).push({ method, path: u.pathname, auth: opts.headers?.Authorization, account: opts.headers?.['Stripe-Account'] || null });
+    (stripe.seen ||= []).push({ method, path: u.pathname, auth: opts.headers?.Authorization, account: opts.headers?.['Stripe-Account'] || null, params: new URLSearchParams(typeof opts.body === 'string' ? opts.body : (opts.body ? String(opts.body) : '')) });
     let m = /^\/v1\/checkout\/sessions\/([^/]+)$/.exec(u.pathname);
     if (m && method === 'GET') return stripe.sessions[m[1]] ? json(stripe.sessions[m[1]]) : json({ error: {} }, 404);
     m = /^\/v1\/checkout\/sessions\/([^/]+)\/expire$/.exec(u.pathname);
@@ -643,8 +643,8 @@ test('connect: where one business holds the Stripe account (STRIPE_PLATFORM_TENA
   assert.equal(created()[0].account, null);
 });
 
-test('connect: card payment is refused, and Stripe is never called, when the account is not ready, missing, there is no platform key, or no website', async () => {
-  for (const opts of [{ ready: false }, { connected: false }, { platformKey: false }, { site: '' }]) {
+test('connect: card payment is refused, and Stripe is never called, when the account is not ready, missing, or there is no platform key', async () => {
+  for (const opts of [{ ready: false }, { connected: false }, { platformKey: false }]) {
     reset();
     delete process.env.STRIPE_PLATFORM_SECRET_KEY;
     otherBusiness(opts);
@@ -653,6 +653,17 @@ test('connect: card payment is refused, and Stripe is never called, when the acc
     assert.equal(created().length, 0, JSON.stringify(opts));
     assert.equal(stripe.created, 0, JSON.stringify(opts));
   }
+});
+
+test('connect: a business with no website address yet still takes the payment, and the customer returns to the platform\'s booking page for their confirmation', async () => {
+  otherBusiness({ site: '' });
+  const r = await checkout();
+  assert.equal(r.status, 200, JSON.stringify(r.body));
+  assert.equal(created().length, 1);
+  const p = created()[0].params;
+  assert.match(p.get('success_url'), /^https:\/\/winjo-dispatch\.vercel\.app\/booking\?id=.+&payment=success(&session_id=.*)?$/);
+  assert.match(p.get('cancel_url'), /^https:\/\/winjo-dispatch\.vercel\.app\/booking\?id=.+&payment=cancelled$/);
+  assert.equal(created()[0].account, 'acct_other1', 'still charged on the business\'s own Stripe account');
 });
 
 test('connect: a payment on the business\'s own account marks its booking Paid', async () => {

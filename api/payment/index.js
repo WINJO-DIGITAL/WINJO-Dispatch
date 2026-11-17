@@ -114,8 +114,10 @@ async function handleCreateCheckoutSession(req, res) {
   const notAccepted = await ensurePolicyAccepted(booking, body);
   if (notAccepted) return json(res, 400, { error: notAccepted });
 
-  const siteUrl = brandFor(booking.tenant_id).site;
-  if (!siteUrl) return json(res, 400, { error: `${brandFor(booking.tenant_id).name || 'This business'} has no website address set up for card payments yet. Please pay in cash or by bank transfer, or contact them.` });
+  // Where the customer lands after paying: the business's own website, or, for a business that has
+  // no website address yet, the platform's own booking page (which shows the same confirmation).
+  // Either way they always come back to a real page with their confirmation on it.
+  const siteUrl = brandFor(booking.tenant_id).site || require('../../lib/platform').PLATFORM_URL();
   const successUrl = `${siteUrl}/booking?id=${bookingId}&payment=success`;
 
   // The checkout already started for this booking: reuse it while it is open

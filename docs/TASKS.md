@@ -31,6 +31,10 @@ A multi-tenant booking, dispatch and payments platform (website, Operator app, D
 - Driver App: tests for the job screen (start, arrive, on board, complete with payment, errors, offline) and the jobs list; the job screen and list say "couldn't be loaded, Try again" and "No signal, so this was not saved" instead of "Booking not found" or "No jobs"; an offline banner; lint warnings 21 to 8 (the rest are standard load-on-open effects).
 - Docs: README corrected, `docs/DEPLOYMENT.md` (how the guard works), `docs/billing-design.md` (monthly billing, not built).
 
+**Operator subscription and payment confirmations (17/11/2026, branch `claude/operator-subscription`)**
+- Operator app, Settings, **Subscription**: an admin pays the set-up fee (once) and the monthly fee by card on Stripe's page, on the platform's own Stripe account; amounts come from the fee record, never the browser. Back in the app they see **"Payment received. Your subscription is active."** with a confirmation number, amount, date and next payment date. "Manage payment" opens Stripe's page to change card, see receipts or cancel. A failed monthly payment shows a warning. Records live in the new table `tenant_billing` (server-written only). Contract version 4, clause 3.8. Test mode only.
+- Customer payments: after paying by card the customer now sees **"Payment received. Your booking is confirmed."** with the confirmation number (their booking reference) and the amount, on a business's own website and on the platform's booking page. A business with no website address yet used to be refused card payments; its customers now return to the platform's booking page for the confirmation.
+
 **Legal wording** (16/11/2026, recorded with sources and residual risks in `docs/legal/audit-2026-11-12.md`): data terms signed off (version 1); support hours 24 hours a day, every day, by email; not VAT registered.
 
 ## Test results (17/11/2026)
@@ -46,4 +50,4 @@ A multi-tenant booking, dispatch and payments platform (website, Operator app, D
 ## Left on purpose
 
 - **Driver App, 8 lint warnings.** All are `react-hooks/set-state-in-effect` on screens that load their data when they open (`useEffect(() => { load() }, [load])`: calendar, dashboard, earnings, jobs, job detail, my jobs, notifications, profile). The loader sets state after waiting for the network, which is the standard pattern. Getting the warning to go away means moving every screen to a shared data-loading hook, a larger change than a lint fix, so it was not done blind. The job detail and jobs list now have tests, so that change can be made safely later if wanted.
-- **Monthly billing of operators** is not built: see `docs/billing-design.md`.
+- **Monthly billing by invoice, suspension for non-payment and fee-change notices** are not built: see `docs/billing-design.md`. The card subscription is.
