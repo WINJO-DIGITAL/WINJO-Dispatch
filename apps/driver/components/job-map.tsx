@@ -50,9 +50,11 @@ export function JobMap({ pickup, dropoff }: Props) {
   const [loading, setLoading] = useState(true)
   const [failed, setFailed] = useState(false)
 
+  // No usable addresses means no map; worked out here, not by setting state in an effect.
+  const invalid = !pickup || pickup === '—' || !dropoff || dropoff === '—'
+
   useEffect(() => {
-    const invalid = !pickup || pickup === '—' || !dropoff || dropoff === '—'
-    if (invalid) { setLoading(false); setFailed(true); return }
+    if (invalid) return
 
     let cancelled = false
 
@@ -121,9 +123,9 @@ export function JobMap({ pickup, dropoff }: Props) {
       cancelled = true
       if (mapInstanceRef.current) { mapInstanceRef.current.remove(); mapInstanceRef.current = null }
     }
-  }, [pickup, dropoff])
+  }, [pickup, dropoff, invalid])
 
-  if (failed) return null
+  if (failed || invalid) return null
 
   return (
     <div className="bg-white border border-[#c4d4e4] rounded-2xl overflow-hidden">

@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { BellRing } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { enablePush, pushState, sendTestPush, syncPush, type PushState } from '@/lib/push'
+import { usePushState } from '@/lib/use-push-state'
 import { BRAND } from '@/lib/brand'
 
 const LABEL: Record<PushState, string> = {
@@ -16,11 +17,9 @@ const LABEL: Record<PushState, string> = {
 
 /** Profile card: notification status, turn on, and a test send to this driver's own phone. */
 export function PushSettings() {
-  const [state, setState] = useState<PushState | null>(null)
+  const [state, setState] = usePushState()
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
-
-  useEffect(() => { setState(pushState()) }, [])
 
   const userId = async () => (await createClient().auth.getUser()).data.user?.id ?? null
 

@@ -8,6 +8,7 @@ import { BookingStatusBadge } from '@/components/badges'
 import { RouteDisplay } from '@/components/route-icons'
 import { formatDate, formatTime, paymentInfo, formatStampDate } from '@/lib/format'
 import type { Booking } from '@/lib/types'
+import { loadFailureMessage } from '@/lib/job'
 import { withBase } from '@/lib/base-path'
 
 type Tab = 'upcoming' | 'active' | 'completed'
@@ -78,31 +79,41 @@ function BookingCard({ booking }: { booking: Booking }) {
 }
 
 export default function JobsPage() {
-  const [tab, setTab] = useState<Tab>('active')
+  const [chosen, setChosen] = useState<Tab>('active')
   // Set once the driver picks a tab themselves, so the automatic choice below never overrides them.
   const [tabChosen, setTabChosen] = useState(false)
-  const chooseTab = (t: Tab) => { setTabChosen(true); setTab(t) }
+  const chooseTab = (t: Tab) => { setTabChosen(true); setChosen(t) }
   const [dateFilter, setDateFilter] = useState<DateFilter>('all')
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [search, setSearch] = useState('')
 
   const supabase = createClient()
 
   const loadBookings = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
 
-    const { data } = await supabase
-      .from('bookings')
-      .select('*')
-      .eq('assigned_driver_id', user.id)
-      .in('status', ['accepted', 'confirmed', 'Dispatched', 'En Route', 'en_route', 'Passenger On Board', 'Arrived', 'arrived', 'Active', 'active', 'No Show', 'completed', 'Completed', 'cancelled', 'Cancelled'])
-      .order('travel_date', { ascending: true })
-      .order('travel_time', { ascending: true })
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('assigned_driver_id', user.id)
+        .in('status', ['accepted', 'confirmed', 'Dispatched', 'En Route', 'en_route', 'Passenger On Board', 'Arrived', 'arrived', 'Active', 'active', 'No Show', 'completed', 'Completed', 'cancelled', 'Cancelled'])
+        .order('travel_date', { ascending: true })
+        .order('travel_time', { ascending: true })
 
-    if (data) setBookings(sortNearestFirst(data))
-    setLoading(false)
+      // A failed request (no signal, server down) is not "no jobs".
+      if (error) throw new Error(error.message)
+      if (data) setBookings(sortNearestFirst(data))
+      setLoadError(null)
+    } catch (err) {
+      console.warn('[jobs] could not load the list', err)
+      setLoadError(loadFailureMessage())
+    } finally {
+      setLoading(false)
+    }
   }, [supabase])
 
   useEffect(() => { loadBookings() }, [loadBookings])
@@ -159,10 +170,8 @@ export default function JobsPage() {
   const active = sortNearestFirst(bookings.filter((b) => ['En Route', 'en_route', 'Passenger On Board', 'Arrived', 'arrived', 'Active', 'active'].includes(b.status)))
   const completed = sortNearestFirst(bookings.filter((b) => ['completed', 'Completed', 'cancelled', 'Cancelled', 'No Show'].includes(b.status)))
 
-  // Nothing under way but jobs coming up: open on those, not an empty list.
-  useEffect(() => {
-    if (!loading && !tabChosen && tab === 'active' && active.length === 0 && upcoming.length > 0) setTab('upcoming')
-  }, [loading, tabChosen, tab, active.length, upcoming.length])
+  // Nothing under way but jobs coming up: open on those, not an empty list (until the driver picks a tab).
+  const tab: Tab = !loading && !tabChosen && chosen === 'active' && active.length === 0 && upcoming.length > 0 ? 'upcoming' : chosen
 
   const applyDateFilter = (list: Booking[]) => {
     const now = new Date()
@@ -257,6 +266,16 @@ export default function JobsPage() {
       {loading ? (
         <div className="flex items-center justify-center py-20">
           <div className="w-7 h-7 rounded-full border-2 border-[#d5a538] border-t-transparent animate-spin" />
+        </div>
+      ) : loadError && bookings.length === 0 ? (
+        <div className="bg-white border border-[#c4d4e4] rounded-2xl p-10 text-center">
+          <p role="alert" className="text-[#4f6580] text-sm mb-4">{loadError}</p>
+          <button
+            onClick={() => { setLoading(true); loadBookings() }}
+            className="px-5 py-3 rounded-xl text-sm font-bold text-[#060C1A] bg-white border border-[#d5a538]/40 active:opacity-70"
+          >
+            Try again
+          </button>
         </div>
       ) : currentList.length === 0 ? (
         <div className="bg-white border border-[#c4d4e4] rounded-2xl p-10 text-center">

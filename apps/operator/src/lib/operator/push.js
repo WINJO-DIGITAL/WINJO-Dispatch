@@ -1,6 +1,7 @@
 "use client";
 
 import { supabase } from "@/lib/supabase";
+import { authHeaders } from "@/lib/operator/authHeaders";
 
 export function isPushSupported() {
   return (
@@ -80,4 +81,35 @@ export async function disableOperatorPush() {
     /* ignore */
   }
   return false;
+}
+
+// The address of this device's push subscription, or null when it has none.
+export async function getCurrentPushEndpoint() {
+  if (!isPushSupported()) return null;
+  try {
+    const reg = await navigator.serviceWorker.getRegistration();
+    const sub = reg ? await reg.pushManager.getSubscription() : null;
+    return sub ? sub.endpoint : null;
+  } catch {
+    return null;
+  }
+}
+
+// Asks the server to send a test notification to THIS device (and only the signed-in person's own
+// devices are ever used, checked on the server). Always resolves to { ok, message } in plain words.
+export async function sendTestPush() {
+  try {
+    const endpoint = await getCurrentPushEndpoint();
+    if (!endpoint) return { ok: false, message: "This device isn't subscribed yet. Tap Enable first." };
+    const res = await fetch("/api/push/test", {
+      method: "POST",
+      headers: { "content-type": "application/json", ...(await authHeaders()) },
+      body: JSON.stringify({ endpoint }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data?.ok) return { ok: true, message: data.message || "Test notification sent." };
+    return { ok: false, message: data?.error || "The test notification could not be sent. Try again." };
+  } catch {
+    return { ok: false, message: "Couldn't reach the server. Check your connection and try again." };
+  }
 }

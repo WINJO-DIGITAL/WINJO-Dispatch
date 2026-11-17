@@ -1,18 +1,19 @@
 /* Platform pages (sign-up and the terms). Warm paper, dark green ink, one rust accent.
    Self-hosted Jost for UI text, Georgia for long reading. No gradients, shadows or card grids. */
-:root{--paper:#f6f3ec;--ink:#17261f;--soft:#4a574f;--rule:#cfc8b8;--accent:#a9441f;--accent-ink:#fff;--field:#fffdf8;--bad:#9a1c1c;--good:#1f5a3a}
+:root{--paper:#f6f1e7;--ink:#2b1d14;--soft:#5c4a3e;--rule:#d9cdb6;--accent:#a9441f;--accent-ink:#fff;--field:#fffdf8;--bad:#9a1c1c;--good:#1f5a3a;--serif:Georgia,"Iowan Old Style","Palatino Linotype",Palatino,"Times New Roman",serif}
 *{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.55 Jost,system-ui,-apple-system,"Segoe UI",sans-serif}
 a{color:var(--accent);text-underline-offset:3px}a:hover{text-decoration-thickness:2px}
 :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .bar{padding:18px max(20px,4vw);border-bottom:1px solid var(--rule)}
+.bar .mark{font-family:var(--serif);font-weight:700;font-size:1.2rem}
 .mark{color:var(--ink);font-weight:600;font-size:1.05rem;text-decoration:none;letter-spacing:.01em}
 main{padding:0 max(20px,4vw) 72px;max-width:1180px;margin:0 auto}
 
 /* Sign-up: a statement on the left, the form on the right (stacked on phones, form first after the headline). */
 .apply{display:grid;gap:40px;padding-top:44px}
 @media(min-width:920px){.apply{grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:72px;padding-top:72px;align-items:start}}
-.apply h1{margin:0 0 20px;font-weight:500;font-size:clamp(1.9rem,4.6vw,2.9rem);line-height:1.08;max-width:15ch}
+.apply h1{font-family:var(--serif);margin:0 0 20px;font-weight:500;font-size:clamp(1.9rem,4.6vw,2.9rem);line-height:1.08;max-width:15ch}
 .apply .lead{margin:0 0 28px;color:var(--soft);max-width:34rem;font-size:1.08rem}
 .jump{margin:-8px 0 26px}@media(min-width:920px){.jump{display:none}}
 .terms-of-trade{margin:0 0 30px;padding:0;list-style:none;border-top:1px solid var(--rule)}
@@ -43,14 +44,14 @@ input:focus,textarea:focus{background:#fff;outline:none;border-color:var(--accen
 button.go{font:inherit;font-weight:600;color:var(--accent-ink);background:var(--accent);border:0;border-radius:3px;min-height:52px;padding:0 26px;cursor:pointer;justify-self:start}
 button.go:hover{background:#8e3718}button.go:disabled{opacity:.55;cursor:wait}
 .formmsg{margin:0;padding:12px 14px;border-left:4px solid var(--bad);background:#f8e9e6;font-size:.95rem}
-.done{border-top:4px solid var(--good);padding-top:22px}.done h2{margin:0 0 10px;font-size:1.7rem;font-weight:500}
+.done{border-top:4px solid var(--good);padding-top:22px}.done h2{font-family:var(--serif);margin:0 0 10px;font-size:1.7rem;font-weight:500}
 .done .ref{font-weight:600;letter-spacing:.06em}
 [hidden]{display:none!important}
 
 /* The terms page: a long document set for reading. */
 .legal main{max-width:760px}
 .crumb{margin:26px 0 0;font-size:.95rem}
-.doc-title{margin:14px 0 14px;font-weight:500;font-size:clamp(1.7rem,4vw,2.4rem);line-height:1.1}
+.doc-title{font-family:var(--serif);margin:14px 0 14px;font-weight:500;font-size:clamp(1.7rem,4vw,2.4rem);line-height:1.1}
 .lede{color:var(--soft);margin:0 0 20px}
 .toc{margin:0 0 36px;padding-left:1.2em}.toc li{margin:0 0 6px}
 .doc{border-top:3px solid var(--ink);margin-top:44px;padding-top:6px;font-family:Georgia,"Times New Roman",serif;font-size:1.02rem;line-height:1.6}

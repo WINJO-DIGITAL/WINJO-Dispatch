@@ -32,7 +32,7 @@ import {
 import { useOperatorToast } from "@/components/operator/Toast";
 import { isConfigured, supabase } from "@/lib/supabase";
 import { useNotificationCenter } from "@/hooks/operator/useNotificationCenter";
-import { isPushSupported, getPushEnabled, enableOperatorPush, disableOperatorPush } from "@/lib/operator/push";
+import { isPushSupported, getPushEnabled, enableOperatorPush, disableOperatorPush, sendTestPush } from "@/lib/operator/push";
 import { PORTALS } from "@/lib/operator/portals";
 import { useIsSuperAdmin } from "@/hooks/operator/useIsSuperAdmin";
 import PlatformSettings from "@/components/operator/PlatformSettings";
@@ -276,10 +276,19 @@ function PushDeviceRow() {
   const [enabled, setEnabled] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(null);
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState(null); // { ok, message }
 
   useEffect(() => {
     getPushEnabled().then(setEnabled).catch(() => {});
   }, []);
+
+  const sendTest = async () => {
+    setTesting(true);
+    setTestResult(null);
+    setTestResult(await sendTestPush());
+    setTesting(false);
+  };
 
   const toggle = async () => {
     setBusy(true);
@@ -318,6 +327,21 @@ function PushDeviceRow() {
       </div>
       {err && <p className="mt-2 text-[11px] text-red-600">{err}</p>}
       {enabled && !err && <p className="mt-2 text-[11px] text-emerald-600">This device is set up for push alerts.</p>}
+      {enabled && !err && (
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={sendTest}
+            disabled={testing}
+            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-[#0F1B33] transition hover:bg-slate-50 disabled:opacity-50"
+          >
+            {testing ? "Sending…" : "Send a test notification to this device"}
+          </button>
+          {testResult && (
+            <p role="status" className={`text-[11px] ${testResult.ok ? "text-emerald-700" : "text-red-600"}`}>{testResult.message}</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

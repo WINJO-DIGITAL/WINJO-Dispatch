@@ -3,3 +3,7 @@ Disallow: /admin/
 Disallow: /api/
 Disallow: /booking
 Disallow: /account
+Disallow: /operator
+Disallow: /driver
+
+Sitemap: https://winjo-dispatch.vercel.app/sitemap.xml

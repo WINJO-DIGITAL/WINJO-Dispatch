@@ -14,6 +14,7 @@
 // when CRON_SECRET is set on the project -- same check as reminders/trigger.js.
 
 const SUPABASE_URL = require('../../lib/supabaseUrl')();
+const { cronAuthorised } = require('../../lib/config');
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 function dbHeaders() {
@@ -62,9 +63,8 @@ function sleep(ms) {
 module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
 
-  const auth = req.headers['authorization'] || '';
-  const cronSecret = process.env.CRON_SECRET;
-  if (!cronSecret || auth !== `Bearer ${cronSecret}`) {
+  // Fails closed, and says so once in the logs when CRON_SECRET is not set (lib/config.js).
+  if (!cronAuthorised(req)) {
     res.statusCode = 401;
     return res.end(JSON.stringify({ error: 'Unauthorised' }));
   }

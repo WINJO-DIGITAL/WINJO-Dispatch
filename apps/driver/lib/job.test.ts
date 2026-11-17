@@ -85,3 +85,34 @@ describe('no-show detection', () => {
     expect(isNoShowJob({ status: 'Arrived', driver_notes: null })).toBe(false)
   })
 })
+
+import { isOffline, updateFailureMessage, loadFailureMessage } from './job'
+
+describe('offline and failed-update messages', () => {
+  it('knows when the phone says it is offline, and treats unknown as online', () => {
+    expect(isOffline({ onLine: false })).toBe(true)
+    expect(isOffline({ onLine: true })).toBe(false)
+    expect(isOffline({})).toBe(false)
+    expect(isOffline(undefined)).toBe(false)
+  })
+
+  it('turns a lost connection into plain words, never a raw fetch error', () => {
+    const noSignal = 'No signal, so this was not saved. Move somewhere with better signal and try again.'
+    expect(updateFailureMessage('TypeError: Failed to fetch', 'x', false)).toBe(noSignal)
+    expect(updateFailureMessage('Load failed', 'x', false)).toBe(noSignal)
+    expect(updateFailureMessage('NetworkError when attempting to fetch resource.', 'x', false)).toBe(noSignal)
+    expect(updateFailureMessage(undefined, 'x', true)).toBe(noSignal)
+    expect(updateFailureMessage('permission denied', 'x', true)).toBe(noSignal)
+  })
+
+  it('keeps the server\'s own message when the connection is fine, and falls back when there is none', () => {
+    expect(updateFailureMessage('Driver may only set No Show from En Route or Arrived', 'x', false)).toBe('Driver may only set No Show from En Route or Arrived')
+    expect(updateFailureMessage(undefined, 'It may have been changed by the office.', false)).toBe('It may have been changed by the office.')
+    expect(updateFailureMessage('', 'fallback', false)).toBe('fallback')
+  })
+
+  it('says why a job could not be loaded', () => {
+    expect(loadFailureMessage(true)).toMatch(/offline/i)
+    expect(loadFailureMessage(false)).toMatch(/couldn't be loaded/)
+  })
+})

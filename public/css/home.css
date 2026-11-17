@@ -1,0 +1,100 @@
+/* The platform's public home page. Cream paper, dark brown ink, one burnt-orange accent; Georgia for
+   headings (a system font, nothing hosted), self-hosted Jost for everything else. Builds on platform.css
+   for the palette. No gradients, no shadows, no card grids: sections are separated by rules and by
+   one dark band and one orange band. */
+
+.skip{position:absolute;left:-999px;top:8px;background:var(--ink);color:#fff;padding:10px 16px;z-index:10}
+.skip:focus{left:12px}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:16px max(20px,4vw);border-bottom:1px solid var(--rule)}
+.topbar .mark{font-family:var(--serif);font-weight:700;font-size:1.25rem;letter-spacing:.005em}
+.topnav{display:flex;align-items:center;gap:26px;font-size:1rem}
+.topnav a{color:var(--ink);text-decoration:none}
+.topnav a:hover{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px}
+.topnav .join{border:2px solid var(--ink);padding:8px 16px;border-radius:2px;font-weight:600}
+.topnav .join:hover{background:var(--ink);color:var(--paper);text-decoration:none}
+@media(max-width:760px){.topnav a:not(.join){display:none}}
+
+.home main{max-width:none;margin:0;padding:0}
+.wrap{max-width:1180px;margin:0 auto;padding:0 max(20px,4vw)}
+.home h1,.home h2,.home h3{font-family:var(--serif);font-weight:500;color:inherit}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:0 28px;background:var(--accent);color:var(--accent-ink);font-weight:600;font-size:1.05rem;text-decoration:none;border-radius:2px;border:2px solid var(--accent)}
+.btn:hover{background:#8e3718;border-color:#8e3718}
+.btn.on-orange{background:var(--paper);color:var(--ink);border-color:var(--paper)}
+.btn.on-orange:hover{background:#fff;border-color:#fff}
+.textlink{color:var(--ink);font-weight:500}
+
+/* Hero: the statement takes most of the width; the cost ledger sits low and to the right. */
+.hero{display:grid;gap:40px;padding:44px 0 60px}
+.hero h1{margin:0 0 22px;font-size:clamp(2.2rem,6.4vw,4.3rem);line-height:1.04;letter-spacing:-.015em}
+.hero .lead{margin:0 0 30px;max-width:36rem;font-size:1.15rem;color:var(--soft)}
+.hero .actions{display:flex;flex-wrap:wrap;align-items:center;gap:16px 26px}
+@media(min-width:960px){.hero{grid-template-columns:minmax(0,7fr) minmax(0,4fr);gap:76px;padding:88px 0 96px;align-items:end}}
+.ledger{border-top:4px solid var(--ink);padding-top:14px}
+.ledger h2{margin:0 0 6px;font-family:Jost,system-ui,sans-serif!important;font-size:.82rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--soft)}
+.ledger dl{margin:0}
+.ledger .row{display:flex;justify-content:space-between;gap:18px;padding:12px 0;border-bottom:1px solid var(--rule)}
+.ledger dt{color:var(--soft)}
+.ledger dd{margin:0;font-weight:600;text-align:right}
+.ledger .big{font-family:var(--serif);font-size:1.6rem;font-weight:500;line-height:1.1}
+.ledger p{margin:12px 0 0;font-size:.92rem;color:var(--soft)}
+
+.section{padding:64px 0;border-top:1px solid var(--rule)}
+.section.first{border-top:0}
+.split{display:grid;gap:30px}
+@media(min-width:960px){.split{grid-template-columns:minmax(0,4fr) minmax(0,7fr);gap:76px}}
+.section h2{margin:0;font-size:clamp(1.7rem,3.6vw,2.5rem);line-height:1.1;letter-spacing:-.01em}
+.section .kick{margin:0 0 12px;font-size:.82rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--accent)}
+
+/* How it works: big numerals, hairlines, no boxes. */
+.how{margin:0;padding:0;list-style:none;counter-reset:step}
+.how li{display:grid;grid-template-columns:56px 1fr;gap:6px 18px;padding:22px 0;border-top:1px solid var(--rule)}
+.how li:first-child{border-top:0;padding-top:0}
+.how li::before{counter-increment:step;content:counter(step);font-family:var(--serif);font-size:2.6rem;line-height:1;color:var(--accent)}
+.how h3{margin:0 0 6px;font-size:1.3rem}
+.how p{margin:0;color:var(--soft);max-width:36rem}
+
+/* The one dark band: what is in it, as an index with rules between entries. */
+.band{background:var(--ink);color:#f6f1e7}
+.band .section{border-top:0}
+.band .kick{color:#f0b48f}
+.band p,.band dd{color:#e4d8c6}
+.index{margin:0;display:grid;gap:0}
+.index div{padding:20px 0;border-top:1px solid rgba(246,241,231,.22)}
+.index div:first-child{border-top:0;padding-top:0}
+.index dt{font-family:var(--serif);font-size:1.3rem;margin:0 0 6px;color:#fff}
+.index dd{margin:0;max-width:40rem}
+@media(min-width:960px){.index{grid-template-columns:1fr 1fr;column-gap:64px}.index div:nth-child(2){border-top:0;padding-top:0}}
+
+.statement{font-family:var(--serif);font-size:clamp(1.5rem,3.2vw,2.2rem);line-height:1.2;margin:0 0 22px;max-width:22em}
+.prose p{margin:0 0 14px;max-width:38rem}
+.prose p.small{font-size:.95rem;color:var(--soft)}
+
+.careful{border-left:6px solid var(--accent);padding:6px 0 6px 22px;max-width:46rem}
+.careful h2{font-size:1.5rem;margin:0 0 8px}
+.careful p{margin:0}
+
+.faq details{border-top:1px solid var(--rule)}
+.faq details:last-child{border-bottom:1px solid var(--rule)}
+.faq summary{cursor:pointer;list-style:none;padding:18px 36px 18px 0;font-family:var(--serif);font-size:1.18rem;position:relative}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";position:absolute;right:4px;top:50%;transform:translateY(-52%);font-family:Jost,system-ui,sans-serif;font-size:1.6rem;color:var(--accent)}
+.faq details[open] summary::after{content:"\2212"}
+.faq details p{margin:0 0 18px;max-width:38rem;color:var(--soft)}
+
+/* The one orange band: the call to action. */
+.cta{background:var(--accent);color:#fff}
+.cta .wrap{display:grid;gap:22px;padding-top:56px;padding-bottom:56px}
+.cta h2{margin:0;font-size:clamp(1.7rem,3.8vw,2.6rem);line-height:1.1;max-width:20em}
+.cta p{margin:0;max-width:34rem;color:#fff}
+@media(min-width:960px){.cta .wrap{grid-template-columns:minmax(0,7fr) minmax(0,4fr);align-items:center;gap:76px}.cta .btn{justify-self:start}}
+
+.foot{padding:36px 0 44px;font-size:.95rem;color:var(--soft)}
+.foot .wrap{display:grid;gap:20px}
+.foot nav{display:flex;flex-wrap:wrap;gap:8px 24px}
+.foot a{color:var(--ink)}
+.foot .fine{max-width:44rem;margin:0}
+@media(min-width:960px){.foot .wrap{grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:76px}}
+
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+html{scroll-behavior:smooth}
