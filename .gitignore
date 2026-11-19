@@ -5,3 +5,7 @@ node_modules/
 
 tests/browser/out/
 template/out/
+
+# Environment files: never commit real keys. Only the blank template is tracked.
+.env*
+!.env.example
